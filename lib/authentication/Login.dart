@@ -18,97 +18,98 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: GestureDetector(
-          onTap: null, //sửa sau
-          child: SizedBox(
-            height: 30,
-            child: SvgPicture.asset('assets/images/logo.svg'),
-          )
+    return Container(
+      constraints: const BoxConstraints.expand(),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/authenBG.png'),
+          fit: BoxFit.cover,
         ),
-        centerTitle: true,
-        actions: [
-          PopupMenuButton<String>(
+        color: Colors.white,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: GestureDetector(
+            onTap: null, //sửa sau
             child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Stack(
-                children: [
-                  Center(
-                    child: SizedBox(
-                      width: 25,
-                      height: 25,
-                      child: SvgPicture.asset(_firstSelected),
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          width: 8,
-                          color: Colors.grey,
-                        ),
-                        shape: BoxShape.circle,
+              height: 30,
+              child: SvgPicture.asset('assets/images/logo.svg'),
+            )
+          ),
+          centerTitle: true,
+          actions: [
+            PopupMenuButton<String>(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: SvgPicture.asset(_firstSelected),
                       ),
                     ),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 8,
+                            color: Colors.grey,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              offset: Offset(0, 50),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'assets/images/usaFlag.svg',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: SvgPicture.asset('assets/images/usaFlag.svg'),
+                      ),
+                      SizedBox(width: 20,),
+                      Text('Engilish')
+                    ],
                   ),
-                ],
-              ),
+                ),
+                PopupMenuItem(
+                  value: 'assets/images/vnFlag.svg',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: SvgPicture.asset('assets/images/vnFlag.svg'),
+                      ),
+                      SizedBox(width: 20,),
+                      Text('Vietnamese')
+                    ],
+                  ),
+                ),
+              ],
+              onSelected: (String value) {
+                setState(() {
+                  _firstSelected = value;
+                });
+              },
             ),
-            offset: Offset(0, 50),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'assets/images/usaFlag.svg',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset('assets/images/usaFlag.svg'),
-                    ),
-                    SizedBox(width: 20,),
-                    Text('Engilish')
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'assets/images/vnFlag.svg',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset('assets/images/vnFlag.svg'),
-                    ),
-                    SizedBox(width: 20,),
-                    Text('Vietnamese')
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (String value) {
-              setState(() {
-                _firstSelected = value;
-              });
-            },
-          ),
-        ],
-        //automaticallyImplyLeading: false,
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/authenBG.png'),
-            fit: BoxFit.cover,
-          ),
+          ],
+          //automaticallyImplyLeading: false,
         ),
-        child: Center(
+        body: Center(
           child: SingleChildScrollView(
             child: Container(
               margin: EdgeInsets.all(30),

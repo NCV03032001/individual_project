@@ -15,132 +15,133 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: GestureDetector(
-            onTap: null, //sửa sau
-            child: SizedBox(
-              height: 30,
-              child: SvgPicture.asset('assets/images/logo.svg'),
-            )
+    return Container(
+      constraints: const BoxConstraints.expand(),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/authenBG.png'),
+          fit: BoxFit.cover,
         ),
-        centerTitle: true,
-        actions: [
-          PopupMenuButton<String>(
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Stack(
-                children: [
-                  Center(
-                    child: SizedBox(
-                      width: 25,
-                      height: 25,
-                      child: SvgPicture.asset(_firstSelected),
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          width: 8,
-                          color: Colors.grey,
-                        ),
-                        shape: BoxShape.circle,
+        color: Colors.white,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: GestureDetector(
+              onTap: null, //sửa sau
+              child: SizedBox(
+                height: 30,
+                child: SvgPicture.asset('assets/images/logo.svg'),
+              )
+          ),
+          centerTitle: true,
+          actions: [
+            PopupMenuButton<String>(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: SvgPicture.asset(_firstSelected),
                       ),
                     ),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 8,
+                            color: Colors.grey,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              offset: Offset(0, 50),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'assets/images/usaFlag.svg',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: SvgPicture.asset('assets/images/usaFlag.svg'),
+                      ),
+                      SizedBox(width: 20,),
+                      Text('Engilish')
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'assets/images/vnFlag.svg',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: SvgPicture.asset('assets/images/vnFlag.svg'),
+                      ),
+                      SizedBox(width: 20,),
+                      Text('Vietnamese')
+                    ],
+                  ),
+                ),
+              ],
+              onSelected: (String value) {
+                setState(() {
+                  _firstSelected = value;
+                });
+              },
+            ),
+          ],
+          //automaticallyImplyLeading: false,
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            child: Container(
+              margin: EdgeInsets.all(30),
+              padding: EdgeInsets.all(35),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 1,
+                  color: Colors.grey,
+                ),
+                borderRadius: BorderRadius.circular(50),
+                color: Colors.white,
+              ),
+              child: Column(
+                children: [
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: Text(
+                        'Reset Password',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: Text(
+                        'Please enter your email address to search for your account.',
+                        style: TextStyle(
+                          fontSize: 15,
+                        ),
+                      )
                   ),
                 ],
               ),
-            ),
-            offset: Offset(0, 50),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'assets/images/usaFlag.svg',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset('assets/images/usaFlag.svg'),
-                    ),
-                    SizedBox(width: 20,),
-                    Text('Engilish')
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'assets/images/vnFlag.svg',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset('assets/images/vnFlag.svg'),
-                    ),
-                    SizedBox(width: 20,),
-                    Text('Vietnamese')
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (String value) {
-              setState(() {
-                _firstSelected = value;
-              });
-            },
-          ),
-        ],
-        //automaticallyImplyLeading: false,
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/authenBG.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-                margin: EdgeInsets.all(30),
-                padding: EdgeInsets.all(35),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 1,
-                    color: Colors.grey,
-                  ),
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.white,
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                        margin: EdgeInsets.only(bottom: 20),
-                        child: Text(
-                          'Reset Password',
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                    ),
-                    Container(
-                        margin: EdgeInsets.only(bottom: 20),
-                        child: Text(
-                          'Please enter your email address to search for your account.',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                        )
-                    ),
-                  ],
-                )
             ),
           ),
         ),
