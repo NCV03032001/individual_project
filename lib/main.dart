@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-
-import 'authentication/Login.dart';
+import 'package:invidual_project/authentication/Signup.dart';
+import 'package:invidual_project/authentication/forgotpassword/ForgotPassword.dart';
+import 'package:invidual_project/authentication/Login.dart';
+import 'package:invidual_project/authentication/forgotpassword/ForgotPassword_sent.dart';
 
 void main() {
   runApp(const MyApp());
