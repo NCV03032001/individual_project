@@ -22,12 +22,11 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
           image: AssetImage('assets/images/authenBG.png'),
           fit: BoxFit.cover,
         ),
-        color: Colors.white,
+        color: Theme.of(context).backgroundColor,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
+        appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
               onTap: null, //sửa sau
               child: SizedBox(
@@ -117,7 +116,7 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                   color: Colors.grey,
                 ),
                 borderRadius: BorderRadius.circular(50),
-                color: Colors.white,
+                color: Theme.of(context).backgroundColor,
               ),
               child: Column(
                 children: [

@@ -23,12 +23,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           image: AssetImage('assets/images/authenBG.png'),
           fit: BoxFit.cover,
         ),
-        color: Colors.white,
+        color: Theme.of(context).backgroundColor,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
+        appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
               onTap: null, //sửa sau
               child: SizedBox(
@@ -118,7 +117,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   color: Colors.grey,
                 ),
                 borderRadius: BorderRadius.circular(50),
-                color: Colors.white,
+                color: Theme.of(context).backgroundColor,
               ),
               child: Column(
                 children: [
@@ -157,7 +156,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         width: 1,
-                        color: Colors.grey,
+                        color: _emailErrMsg == '' ? Colors.grey : Colors.red,
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -203,11 +202,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   void validateEmail(String val) {
     if(val.isEmpty){
       setState(() {
-        _emailErrMsg = "Email can not be empty";
+        _emailErrMsg = "Please input your Email!";
       });
     }else if(!EmailValidator.validate(val, true)){
       setState(() {
-        _emailErrMsg = "Invalid Email Address";
+        _emailErrMsg = "Invalid Email Address!";
       });
     }else{
       setState(() {

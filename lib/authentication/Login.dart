@@ -25,12 +25,11 @@ class _LoginState extends State<Login> {
           image: AssetImage('assets/images/authenBG.png'),
           fit: BoxFit.cover,
         ),
-        color: Colors.white,
+        color: Theme.of(context).backgroundColor,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
+        appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
             onTap: null, //sửa sau
             child: SizedBox(
@@ -120,7 +119,7 @@ class _LoginState extends State<Login> {
                   color: Colors.grey,
                 ),
                 borderRadius: BorderRadius.circular(50),
-                color: Colors.white,
+                color: Theme.of(context).backgroundColor,
               ),
               child: Column(
                 children: [
@@ -162,7 +161,7 @@ class _LoginState extends State<Login> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         width: 1,
-                        color: Colors.grey,
+                        color: _emailErrMsg == '' ? Colors.grey : Colors.red,
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -198,7 +197,7 @@ class _LoginState extends State<Login> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         width: 1,
-                        color: Colors.grey,
+                        color: _pwErrMsg == '' ? Colors.grey : Colors.red,
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -298,6 +297,7 @@ class _LoginState extends State<Login> {
                                 color: Color(int.parse('#0071F0'.substring(1, 7), radix: 16) + 0xFF000000),
                               ),
                               shape: BoxShape.circle,
+                              color: Colors.white,
                             ),
                             child: GestureDetector(
                               child: Icon(Icons.phone_android_rounded, color: Colors.black, size: 35,),
@@ -318,8 +318,8 @@ class _LoginState extends State<Login> {
                           TextSpan(
                             text: 'Not a member yet? ',
                             style: TextStyle(
-                              color: Colors.black,
-                            )
+                              color: Theme.of(context).primaryColor,
+                            ),
                           ),
                           TextSpan(
                               text: "Sign up",
@@ -343,11 +343,11 @@ class _LoginState extends State<Login> {
   void validateEmail(String val) {
     if(val.isEmpty){
       setState(() {
-        _emailErrMsg = "Email can not be empty";
+        _emailErrMsg = "Please input your Email!";
       });
     }else if(!EmailValidator.validate(val, true)){
       setState(() {
-        _emailErrMsg = "Invalid Email Address";
+        _emailErrMsg = "Invalid Email Address!";
       });
     }else{
       setState(() {
@@ -358,7 +358,7 @@ class _LoginState extends State<Login> {
   void validatePassword(String val) {
     if(val.isEmpty){
       setState(() {
-        _pwErrMsg = "Password can not be empty";
+        _pwErrMsg = "Please input your Password!";
       });
     }else{
       setState(() {
