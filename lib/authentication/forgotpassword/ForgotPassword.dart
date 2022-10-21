@@ -11,7 +11,6 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
-  String _emailErrMsg = '';
   String _firstSelected ='assets/images/usaFlag.svg';
 
   @override
@@ -29,14 +28,22 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
-              onTap: null, //sửa sau
+              onTap: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    "/login",
+                        (route) => route.isCurrent && route.settings.name == '/login'
+                        ? false
+                        : true);
+              }, //sửa sau
               child: SizedBox(
                 height: 30,
                 child: SvgPicture.asset('assets/images/logo.svg'),
               )
           ),
           centerTitle: true,
+        automaticallyImplyLeading: false,
           actions: [
+            SizedBox(width: 50),
             PopupMenuButton<String>(
               child: SizedBox(
                 width: 40,
@@ -151,28 +158,42 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       )
                   ),
                   Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    padding:EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: _emailErrMsg == '' ? Colors.grey : Colors.red,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    margin: EdgeInsets.only(bottom: 20),
                     child: TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (val){
-                        validateEmail(val); //sửa sau
-                      },
+                        keyboardType: TextInputType.emailAddress,
+                        autovalidateMode: AutovalidateMode.always,
+                        decoration: InputDecoration(
+                          hintText: 'mail@example.com',
+                          contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1, color: Colors.grey),
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1, color: Colors.blue),
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1, color: Colors.orange),
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1, color: Colors.red),
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                ),
+                          errorStyle: TextStyle(
+                            fontSize: 15,
+                          ),
+                        ),
+                        validator: (val) {
+                          if(val == null || val.isEmpty){
+                            return "Please input your Email!";
+                          } else if(!EmailValidator.validate(val, true)){
+                            return "Invalid Email Address!";
+                          }
+                          return null;
+                        }
                     ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    child: Text(_emailErrMsg, style: TextStyle(color: Colors.red),),
                   ),
                   Container(
                     child: OutlinedButton(
@@ -188,7 +209,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           color: Colors.white,
                         ),
                       ),
-                      onPressed: null, //sửa sau
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/forgotpw_sent');
+                      }, //sửa sau
                     ),
                   ),
                 ],
@@ -198,20 +221,5 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         ),
       ),
     );
-  }
-  void validateEmail(String val) {
-    if(val.isEmpty){
-      setState(() {
-        _emailErrMsg = "Please input your Email!";
-      });
-    }else if(!EmailValidator.validate(val, true)){
-      setState(() {
-        _emailErrMsg = "Invalid Email Address!";
-      });
-    }else{
-      setState(() {
-        _emailErrMsg = "";
-      });
-    }
   }
 }

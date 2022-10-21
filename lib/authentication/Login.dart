@@ -11,9 +11,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  String _emailErrMsg = '';
   bool _isObscure = true;
-  String _pwErrMsg = '';
   String _firstSelected ='assets/images/usaFlag.svg';
 
   @override
@@ -31,14 +29,18 @@ class _LoginState extends State<Login> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
-            onTap: null, //sửa sau
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            }, //sửa sau
             child: SizedBox(
               height: 30,
               child: SvgPicture.asset('assets/images/logo.svg'),
             )
           ),
           centerTitle: true,
+        automaticallyImplyLeading: false,
           actions: [
+            SizedBox(width: 50),
             PopupMenuButton<String>(
               child: SizedBox(
                 width: 40,
@@ -156,29 +158,42 @@ class _LoginState extends State<Login> {
                       )
                   ),
                   Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    padding:EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: _emailErrMsg == '' ? Colors.grey : Colors.red,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    margin: EdgeInsets.only(bottom: 20),
                     child: TextFormField(
                       keyboardType: TextInputType.emailAddress,
+                      autovalidateMode: AutovalidateMode.always,
                       decoration: InputDecoration(
                         hintText: 'mail@example.com',
-                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.grey),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.blue),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.red),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.orange),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        errorStyle: TextStyle(
+                          fontSize: 15,
+                        ),
                       ),
-                      onChanged: (val){
-                        validateEmail(val); //sửa sau
-                      },
+                      validator: (val) {
+                        if(val == null || val.isEmpty){
+                          return "Please input your Email!";
+                        } else if(!EmailValidator.validate(val, true)){
+                          return "Invalid Email Address!";
+                        }
+                        return null;
+                      }
                     ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    child: Text(_emailErrMsg, style: TextStyle(color: Colors.red),),
                   ),
                   Container(
                       margin: EdgeInsets.only(bottom: 10),
@@ -192,20 +207,32 @@ class _LoginState extends State<Login> {
                       )
                   ),
                   Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    padding:EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: _pwErrMsg == '' ? Colors.grey : Colors.red,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    margin: EdgeInsets.only(bottom: 20),
                     child: TextFormField(
                       keyboardType: TextInputType.visiblePassword,
+                      autovalidateMode: AutovalidateMode.always,
                       obscureText: _isObscure,
                       decoration: InputDecoration(
-                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.grey),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.blue),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.red),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.orange),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        errorStyle: TextStyle(
+                          fontSize: 15,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _isObscure ? Icons.visibility : Icons.visibility_off,
@@ -217,13 +244,13 @@ class _LoginState extends State<Login> {
                           },
                         ),
                       ),
-                      onChanged: (val){
-                        validatePassword(val); //sửa sau
-                      },
+                        validator: (val) {
+                          if(val == null || val.isEmpty){
+                            return "Please input your Password!";
+                          }
+                          return null;
+                        }
                     ),
-                  ),
-                  Container(
-                    child: Text(_pwErrMsg, style: TextStyle(color: Colors.red),),
                   ),
                   Container(
                     alignment: Alignment.centerLeft,
@@ -235,7 +262,9 @@ class _LoginState extends State<Login> {
                           fontSize: 20,
                         ),
                       ),
-                      onPressed: null, //sửa sau
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/forgotpw');
+                      }, //sửa sau
                     ),
                   ),
                   Container(
@@ -255,7 +284,11 @@ class _LoginState extends State<Login> {
                           color: Colors.white,
                         ),
                       ),
-                      onPressed: null, //sửa sau
+                      onPressed: () {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            "/tutor",
+                                (route) {return false;});
+                      }, //sửa sau
                     ),
                   ),
                   Container(
@@ -294,7 +327,7 @@ class _LoginState extends State<Login> {
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 1.5,
-                                color: Color(int.parse('#0071F0'.substring(1, 7), radix: 16) + 0xFF000000),
+                                color: Color(0xFF0071F0),
                               ),
                               shape: BoxShape.circle,
                               color: Colors.white,
@@ -326,7 +359,9 @@ class _LoginState extends State<Login> {
                               style: TextStyle(
                                   color: Colors.blue
                               ),
-                              recognizer: TapGestureRecognizer()..onTap = null, //sửa sau
+                              recognizer: TapGestureRecognizer()..onTap = () {
+                                Navigator.pushNamed(context, '/signup');
+                              }, //sửa sau
                           ),
                         ]
                       ),
@@ -339,31 +374,5 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
-  }
-  void validateEmail(String val) {
-    if(val.isEmpty){
-      setState(() {
-        _emailErrMsg = "Please input your Email!";
-      });
-    }else if(!EmailValidator.validate(val, true)){
-      setState(() {
-        _emailErrMsg = "Invalid Email Address!";
-      });
-    }else{
-      setState(() {
-        _emailErrMsg = "";
-      });
-    }
-  }
-  void validatePassword(String val) {
-    if(val.isEmpty){
-      setState(() {
-        _pwErrMsg = "Please input your Password!";
-      });
-    }else{
-      setState(() {
-        _pwErrMsg = "";
-      });
-    }
   }
 }

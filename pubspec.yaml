@@ -35,7 +35,8 @@ dependencies:
   email_validator: ^2.0.1
   image_picker: ^0.7.0-nullsafety
   flutter_settings_screens: ^0.3.3-null-safety+2
-  dropdown_button2: ^1.8.5
+  dropdown_search: ^5.0.3
+  time_range_picker: ^2.2.0
 
 
   # The following adds the Cupertino Icons font to your application.

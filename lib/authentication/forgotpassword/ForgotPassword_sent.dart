@@ -28,14 +28,20 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
-              onTap: null, //sửa sau
+              onTap: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    "/login",
+                        (route) {return false;});
+              }, //sửa sau
               child: SizedBox(
                 height: 30,
                 child: SvgPicture.asset('assets/images/logo.svg'),
               )
           ),
           centerTitle: true,
+        automaticallyImplyLeading: false,
           actions: [
+            SizedBox(width: 50),
             PopupMenuButton<String>(
               child: SizedBox(
                 width: 40,
