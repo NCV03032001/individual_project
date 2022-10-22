@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
-import 'package:invidual_project/profileNsetting/Profile.dart';
-import 'package:invidual_project/authentication/Signup.dart';
-import 'package:invidual_project/authentication/forgotpassword/ForgotPassword.dart';
-import 'package:invidual_project/authentication/Login.dart';
-import 'package:invidual_project/authentication/forgotpassword/ForgotPassword_sent.dart';
-import 'package:invidual_project/profileNsetting/Setting.dart';
-import 'package:invidual_project/tutorNcourse/Tutor.dart';
-import 'package:invidual_project/tutorNcourse/TutorProfile.dart';
+import 'package:individual_project/profileNsetting/Profile.dart';
+import 'package:individual_project/authentication/Signup.dart';
+import 'package:individual_project/authentication/forgotpassword/ForgotPassword.dart';
+import 'package:individual_project/authentication/Login.dart';
+import 'package:individual_project/authentication/forgotpassword/ForgotPassword_sent.dart';
+import 'package:individual_project/profileNsetting/Setting.dart';
+import 'package:individual_project/tutorNcourse/Tutor.dart';
+import 'package:individual_project/tutorNcourse/TutorProfile.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();

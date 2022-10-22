@@ -1,4 +1,4 @@
-import 'package:invidual_project/model/choice_chip.dart';
+import 'package:individual_project/model/choice_chip.dart';
 import 'package:flutter/material.dart';
 
 class ChoiceChips {

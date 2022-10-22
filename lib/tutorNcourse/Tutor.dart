@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:invidual_project/data/choice_chips.dart';
-import 'package:invidual_project/model/choice_chip.dart';
+import 'package:individual_project/data/choice_chips.dart';
+import 'package:individual_project/model/choice_chip.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 
 class Tutor extends StatefulWidget {

@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.invidual_project">
+    package="com.example.individual_project">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="invidual_project"
+        android:label="Simple Video Study App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
