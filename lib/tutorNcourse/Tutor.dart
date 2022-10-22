@@ -52,11 +52,11 @@ class _TutorState extends State<Tutor> {
     });
   }
 
+  final _ntKey = GlobalKey<DropdownSearchState<String>>();
   final List<String> items = [
-    'Item1',
-    'Item2',
-    'Item3',
-    'Item4',
+    'Foreign Tutor',
+    'Vietnamese Tutor',
+    'Native English Tutor',
   ];
 
   final TextEditingController _nController = TextEditingController();
@@ -82,15 +82,6 @@ class _TutorState extends State<Tutor> {
         _dFocus.requestFocus();
       });
     }
-    else if (picked == selectedDate) {
-      return;
-    }
-    else {
-      setState(() {
-        _dController.clear();
-        selectedDate = DateTime.now();
-      });
-    }
   }
 
   TimeOfDay initS = TimeOfDay(hour: 7, minute: 0);
@@ -100,12 +91,24 @@ class _TutorState extends State<Tutor> {
   final FocusNode _tFocus = FocusNode();
 
   List<ChoiceChipData> choiceChips = ChoiceChips.all;
+
   final FocusNode _tgFocus = FocusNode();
 
   final FocusNode _rsFocus = FocusNode();
 
   List<String> FTutorTags = ['English for Business', 'Conversational', 'English for kids', 'IELTS', 'TOEIC'];
   List<String> STutorTags = ['English for Business', 'IELTS', 'PET', 'KET'];
+
+  bool FisOnl = true;
+  bool SisOnl = false;
+
+  bool FisFav = false;
+  bool SisFav = true;
+
+  List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
+
+  bool FhasRvw = true;
+  bool ShasRvw  = false;
 
   @override
   Widget build(BuildContext context) {
@@ -579,6 +582,7 @@ class _TutorState extends State<Tutor> {
                           FocusScope.of(context).requestFocus(_ntFocus);
                         },
                         child: DropdownSearch<String>.multiSelection(
+                          key: _ntKey,
                           items: items,
                           popupProps: PopupPropsMultiSelection.menu(
                             showSelectedItems: true,
@@ -607,7 +611,6 @@ class _TutorState extends State<Tutor> {
                               hintText: 'Select tutor nationnality',
                             ),
                           ),
-                          selectedItems: ['Item1', 'Item2'],
                           onChanged: (val) {
                             setState(() {
                               _ntFocus.requestFocus();
@@ -760,12 +763,7 @@ class _TutorState extends State<Tutor> {
                                 initE = TimeOfDay(hour: result.endTime.hour, minute: result.endTime.minute);
                               });
                             }
-                            else if (result == null) setState(() {
-                              _tController.clear();
-                              initS = TimeOfDay(hour: 7, minute: 0);
-                              initE = TimeOfDay(hour: 8, minute: 0);
-                              _tFocus.requestFocus();
-                            });
+
                           },
                         ),
                       ),
@@ -787,6 +785,7 @@ class _TutorState extends State<Tutor> {
                   Wrap(
                     runSpacing: 5,
                     spacing: 5,
+                    key: ValueKey('tag'),
                     children: choiceChips.map((value) => ChoiceChip(
                       label: Text(value.label),
                       selected: value.isSelected,
@@ -810,27 +809,34 @@ class _TutorState extends State<Tutor> {
                       }),
                     )).toList(),
                   ),
-                  OutlinedButton(
-                    onPressed: () => setState(() {
-                      _rsFocus.requestFocus();
-                      _nController.clear();
-                      _dController.clear();
-                      _tController.clear();
-                    }),
-                    focusNode: _rsFocus,
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                      backgroundColor: Colors.white,
-                      side: BorderSide(color: Colors.blue, width: 2),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _rsFocus.requestFocus();
+                          _nController.clear();
+                          _dController.clear();
+                          _tController.clear();
+                          _ntKey.currentState?.popupValidate([]);
+                          choiceChips = ChoiceChips.all;
+                        });
+                      },
+                      focusNode: _rsFocus,
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                        backgroundColor: Colors.white,
+                        side: BorderSide(color: Colors.blue, width: 2),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(50)),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Reset Filters',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.blue,
+                      child: Text(
+                        'Reset Filters',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.blue,
+                        ),
                       ),
                     ),
                   ),
@@ -870,7 +876,7 @@ class _TutorState extends State<Tutor> {
                                 SizedBox(
                                   height: 120,
                                   width: 100,
-                                  child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image, true),
+                                  child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image, FisOnl),
                                 ),
                                 SizedBox(
                                   width: 10,
@@ -911,26 +917,17 @@ class _TutorState extends State<Tutor> {
                                           margin: EdgeInsets.only(bottom: 10),
                                           child: Row(
                                             children: [
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
+                                              FhasRvw
+                                                  ? Row(
+                                                children:
+                                                tooltipMsg.map((value) => Tooltip(
+                                                  message: value,
+                                                  child: Icon(Icons.star, color: Colors.yellow,),
+                                                )).toList(),
+                                              )
+                                                  : Text('No reviews yet', style:  TextStyle(
+                                                fontStyle: FontStyle.italic,
+                                              ),),
                                             ],
                                           ),
                                         ),
@@ -939,14 +936,18 @@ class _TutorState extends State<Tutor> {
                                   ),
                                 ),
                                 IconButton(
-                                    onPressed: null,
-                                    icon: Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,)
+                                  onPressed: () => setState(() {
+                                    FisFav = !FisFav;
+                                  }),
+                                  icon: FisFav
+                                  ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                  : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
                                 ),
                               ],
                             ),
                             Container(
                               margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                              constraints: BoxConstraints(minHeight: 50, maxHeight: 50),
+                              height: 50,
                               width: double.infinity,
                               child: SingleChildScrollView(
                                 child: Wrap(
@@ -970,7 +971,7 @@ class _TutorState extends State<Tutor> {
                               ),
                             ),
                             Container(
-                              constraints: BoxConstraints(minHeight: 70),
+                              height: 70,
                               alignment: Alignment.topLeft,
                               margin: EdgeInsets.only(bottom: 15),
                               child: Text(
@@ -1029,7 +1030,7 @@ class _TutorState extends State<Tutor> {
                                 SizedBox(
                                   height: 120,
                                   width: 100,
-                                  child: ImageProfile(Image.asset('assets/images/avatars/Stutoravt.jpg').image, false),
+                                  child: ImageProfile(Image.asset('assets/images/avatars/Stutoravt.jpg').image, SisOnl),
                                 ),
                                 SizedBox(
                                   width: 10,
@@ -1070,31 +1071,17 @@ class _TutorState extends State<Tutor> {
                                           margin: EdgeInsets.only(bottom: 10),
                                           child: Row(
                                             children: [
-                                              Text('No reviews yet', style:  TextStyle(
+                                              ShasRvw
+                                                  ? Row(
+                                                children:
+                                                  tooltipMsg.map((value) => Tooltip(
+                                                      message: value,
+                                                      child: Icon(Icons.star, color: Colors.yellow,),
+                                                  )).toList(),
+                                              )
+                                                  : Text('No reviews yet', style:  TextStyle(
                                                 fontStyle: FontStyle.italic,
                                               ),),
-                                              /*
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              InkWell(
-                                                child: Icon(Icons.star, color: Colors.yellow,),
-                                                onHover: null,
-                                              ),
-                                              */
                                             ],
                                           ),
                                         ),
@@ -1103,14 +1090,18 @@ class _TutorState extends State<Tutor> {
                                   ),
                                 ),
                                 IconButton(
-                                    onPressed: null,
-                                    icon: Image.asset('assets/images/icons/Heart.png', color: Colors.red,),
+                                  onPressed: () => setState(() {
+                                    SisFav = !SisFav;
+                                  }),
+                                  icon: SisFav
+                                      ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                      : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
                                 ),
                               ],
                             ),
                             Container(
                               margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                              constraints: BoxConstraints(minHeight: 50, maxHeight: 50),
+                              height: 50,
                               width: double.infinity,
                               child: SingleChildScrollView(
                                 child: Wrap(
@@ -1134,7 +1125,7 @@ class _TutorState extends State<Tutor> {
                               ),
                             ),
                             Container(
-                              constraints: BoxConstraints(minHeight: 70),
+                              height: 70,
                               alignment: Alignment.topLeft,
                               margin: EdgeInsets.only(bottom: 15),
                               child: Text(

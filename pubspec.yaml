@@ -37,6 +37,10 @@ dependencies:
   flutter_settings_screens: ^0.3.3-null-safety+2
   dropdown_search: ^5.0.3
   time_range_picker: ^2.2.0
+  readmore: ^2.1.0
+  video_player: ^2.4.7
+  chewie: ^1.3.5
+  #url_launcher: ^6.1.6
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -39,25 +40,28 @@ class _ProfileState extends State<Profile> {
         _bdController.text = "${selectedDate.toLocal()}".split(' ')[0];
       });
     }
-    else {
-      setState(() {
-        _bdController.clear();
-        selectedDate = DateTime.now();
-      });
-    }
   }
 
-  final List<String> items = [
-    'Item1',
-    'Item2',
-    'Item3',
-    'Item4','Item5','Item6','Item7',
-  ];
   String? selectedValue;
   List<String> selectedItems = [];
 
+  final List<String> levelItems = [
+    'Pre A1 (Beginner)',
+    'A1 (Higher Beginner)',
+    'A2 (Pre-Intermediate)'
+    'B1 (Intermediate)',
+    'B2 (Upper-Intermediate)',
+    'C1 (Advance)',
+    'C2 (Proficiency)',
+  ];
+
+  final List<String> items = ['Subjects:', 'Foreign Tutor', 'Vietnamese Tutor', 'Native English Tutor', 'Test Preparation:', 'STARTERS', 'MOVERS', 'FLYERS', 'KET', 'PET', 'IELTS', 'TOEFL', 'TOEIC'];
+
   @override
   Widget build(BuildContext context) {
+    selectedValue = levelItems[0];
+    selectedItems = [items[0], items[1]];
+
     return Scaffold(
       //backgroundColor: Colors.transparent,
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
@@ -708,7 +712,7 @@ class _ProfileState extends State<Profile> {
                         child: Container(
                           margin: EdgeInsets.only(bottom: 10),
                           child: DropdownSearch<String>(
-                            items: items,
+                            items: levelItems,
                             clearButtonProps: ClearButtonProps(
                               isVisible: true,
                               alignment: Alignment.centerRight,
@@ -746,7 +750,7 @@ class _ProfileState extends State<Profile> {
                                 ),
                               ),
                             ),
-                            selectedItem: 'Item1',
+                            selectedItem: selectedValue,
                             autoValidateMode: AutovalidateMode.always,
                             validator: (val) {
                               if (val == null || val.isEmpty) {
@@ -796,6 +800,7 @@ class _ProfileState extends State<Profile> {
                             popupProps: PopupPropsMultiSelection.menu(
                               showSelectedItems: true,
                               showSearchBox: true,
+                              disabledItemFn: (String s) => s == 'Subjects:' || s == 'Test Preparation:',
                             ),
                             clearButtonProps: ClearButtonProps(
                               isVisible: true,
@@ -830,7 +835,7 @@ class _ProfileState extends State<Profile> {
                                 ),
                               ),
                             ),
-                            selectedItems: ['Item1', 'Item2'],
+                            selectedItems: selectedItems,
                             autoValidateMode: AutovalidateMode.always,
                             validator: (val) {
                               if (val == null || val.isEmpty) {
