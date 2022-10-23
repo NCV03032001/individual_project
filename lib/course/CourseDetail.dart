@@ -559,6 +559,26 @@ class _CourseDetailState extends State<CourseDetail> {
                 Expanded(child: Divider(thickness: 2,)),
               ],
             ),
+            GridView.count(
+              physics: ScrollPhysics(), // to disable GridView's scrolling
+              shrinkWrap: true,
+              crossAxisCount: itemWidth < itemHeight ? 2 : 3,
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+              childAspectRatio: itemWidth < itemHeight ? (itemHeight / itemWidth - 0.4) : (itemWidth / itemHeight - 0.4),
+              children: <Widget>[
+                TopicGrid(1, 'The Internet'),
+                TopicGrid(2, 'Artificial Intelligence (AI)'),
+                TopicGrid(3, 'Social Media'),
+                TopicGrid(4, 'Internet Privacy'),
+                TopicGrid(5, 'Live Streaming'),
+                TopicGrid(6, 'Coding'),
+                TopicGrid(7, 'Technology Transforming Healthcare'),
+                TopicGrid(8, 'Smart Home Technology'),
+                TopicGrid(9, 'Remote Work - A Dream Job?'),
+
+              ],
+            ),
             Row(
               children: [
                 Container(
@@ -604,26 +624,6 @@ class _CourseDetailState extends State<CourseDetail> {
                     ]
                 ),
               ),
-            ),
-            GridView.count(
-              physics: ScrollPhysics(), // to disable GridView's scrolling
-              shrinkWrap: true,
-              crossAxisCount: itemWidth < itemHeight ? 2 : 3,
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
-              childAspectRatio: itemWidth < itemHeight ? (itemHeight / itemWidth - 0.4) : (itemWidth / itemHeight - 0.4),
-              children: <Widget>[
-                TopicGrid(1, 'The Internet'),
-                TopicGrid(2, 'Artificial Intelligence (AI)'),
-                TopicGrid(3, 'Social Media'),
-                TopicGrid(4, 'Internet Privacy'),
-                TopicGrid(5, 'Live Streaming'),
-                TopicGrid(6, 'Coding'),
-                TopicGrid(7, 'Technology Transforming Healthcare'),
-                TopicGrid(8, 'Smart Home Technology'),
-                TopicGrid(9, 'Remote Work - A Dream Job?'),
-
-              ],
             ),
           ],
         ),
