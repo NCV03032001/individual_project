@@ -52,16 +52,15 @@ class _TutorState extends State<Tutor> {
     });
   }
 
+  final TextEditingController _nController = TextEditingController();
+  final FocusNode _nFocus = FocusNode();
+
   final _ntKey = GlobalKey<DropdownSearchState<String>>();
   final List<String> items = [
     'Foreign Tutor',
     'Vietnamese Tutor',
     'Native English Tutor',
   ];
-
-  final TextEditingController _nController = TextEditingController();
-  final FocusNode _nFocus = FocusNode();
-
   final FocusNode _ntFocus = FocusNode();
 
   DateTime selectedDate = DateTime.now();
@@ -577,6 +576,7 @@ class _TutorState extends State<Tutor> {
                           borderRadius: BorderRadius.all(Radius.circular(50)),
                         ),
                         hintText: 'Enter tutor name',
+                        suffixIcon: Icon(Icons.search_outlined),
                       ),
                       onTap: () {
                         setState(() {

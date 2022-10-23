@@ -14,6 +14,7 @@ import 'package:individual_project/course/Courses.dart';
 import 'package:individual_project/course/Schedule.dart';
 import 'package:individual_project/course/History.dart';
 import 'package:individual_project/course/CourseDetail.dart';
+import 'package:individual_project/videoconference/VideoCall.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,8 +50,9 @@ class MyApp extends StatelessWidget {
             '/history' : (context) => History(),
             '/schedule' : (context) => Schedule(),
             '/courses' : (context) => Courses(),
-            '/courses_detail' : (context) => CourseDetail(),
+            '/course_detail' : (context) => CourseDetail(),
             '/become_tutor' : (context) => BecomeTutor(),
+            '/video_cfr' : (context) => VideoCall(),
           },
 
           theme: isDarkMode?

@@ -15,7 +15,7 @@ class _HistoryState extends State<History> {
   String _firstSelected ='assets/images/usaFlag.svg';
   PickedFile? _imageFile;
 
-  List<String> _requests = ['', 'Lol'];
+    List<String> _requests = ['', 'Lol'];
 
   List<Widget> _review1 = [];
   List<Widget> _review2 = [
@@ -408,29 +408,24 @@ class _HistoryState extends State<History> {
                 SizedBox(width: 60, height: 60, child: SvgPicture.asset('assets/images/History.svg'),),
                 SizedBox(width: 10,),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                        padding: EdgeInsets.only(left: 10),
-                        alignment: Alignment.centerLeft,
-                        decoration: BoxDecoration(
-                            border: Border(
-                              left: BorderSide(color: Colors.grey, width: 5),
-                            )
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                    padding: EdgeInsets.only(left: 10),
+                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(color: Colors.grey, width: 5),
+                        )
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('The following is a list of lessons you have attended',
+                          style: TextStyle(fontSize: 15,),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('The following is a list of lessons you have attended',
-                              style: TextStyle(fontSize: 15,),
-                            ),
-                            Text('You can review the details of the lessons you have attended', style: TextStyle(fontSize: 15),),
-                          ],
-                        ),
-                      ),
-                    ],
+                        Text('You can review the details of the lessons you have attended', style: TextStyle(fontSize: 15),),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -619,7 +614,7 @@ class _HistoryState extends State<History> {
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: null, //sửa sau
+                            onPressed: () => Navigator.pushNamed(context, '/video_cfr'), //sửa sau
                           ),
                         ),
                       ],
@@ -805,7 +800,7 @@ class _HistoryState extends State<History> {
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: null, //sửa sau
+                            onPressed: () => Navigator.pushNamed(context, '/video_cfr'), //sửa sau
                           ),
                         ),
                       ],

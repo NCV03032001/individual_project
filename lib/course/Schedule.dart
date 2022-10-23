@@ -370,30 +370,25 @@ class _ScheduleState extends State<Schedule> {
                 SizedBox(width: 60, height: 60, child: SvgPicture.asset('assets/images/Schedule.svg'),),
                 SizedBox(width: 10,),
                 Expanded(
-                  child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                      padding: EdgeInsets.only(left: 10),
-                      alignment: Alignment.centerLeft,
-                      decoration: BoxDecoration(
-                          border: Border(
-                            left: BorderSide(color: Colors.grey, width: 5),
-                          )
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Here is a list of the sessions you have booked',
-                            style: TextStyle(fontSize: 15,),
-                          ),
-                          Text('You can track when the meeting starts, join the meeting with one click or can cancel the meeting before 2 hours', style: TextStyle(fontSize: 15),),
-                        ],
-                      ),
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                    padding: EdgeInsets.only(left: 10),
+                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(color: Colors.grey, width: 5),
+                        )
                     ),
-                  ],
-                ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Here is a list of the sessions you have booked',
+                          style: TextStyle(fontSize: 15,),
+                        ),
+                        Text('You can track when the meeting starts, join the meeting with one click or can cancel the meeting before 2 hours', style: TextStyle(fontSize: 15),),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -658,7 +653,7 @@ class _ScheduleState extends State<Schedule> {
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: null, //sửa sau
+                            onPressed: () => Navigator.pushNamed(context, '/video_cfr'), //sửa sau
                           ),
                         ),
                       ],
@@ -888,7 +883,7 @@ class _ScheduleState extends State<Schedule> {
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: null, //sửa sau
+                            onPressed: () => Navigator.pushNamed(context, '/video_cfr'), //sửa sau
                           ),
                         ),
                       ],
