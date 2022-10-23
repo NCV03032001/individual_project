@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:readmore/readmore.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
+import 'package:booking_calendar/booking_calendar.dart';
 //import 'package:url_launcher/url_launcher.dart';
 
 class TutorProfile extends StatefulWidget {
@@ -33,6 +34,11 @@ class _TutorProfileState extends State<TutorProfile> {
   void initState() {
     super.initState();
     initPlayer();
+    mockBookingService = BookingService(
+        serviceName: 'Mock Service',
+        serviceDuration: 30,
+        bookingEnd: DateTime(now.year, now.month, now.day, 23, 59),
+        bookingStart: DateTime(now.year, now.month, now.day, 7, 0),);
   }
 
   @override
@@ -57,7 +63,66 @@ class _TutorProfileState extends State<TutorProfile> {
     courseItem(courseName: 'Basic Conversation Topics', courseLink: 'https://sandbox.app.lettutor.com/courses/46972669-1755-4f27-8a87-dc4dd2630492'),
     courseItem(courseName: 'Life in the Internet Age', courseLink: 'https://sandbox.app.lettutor.com/courses/964bed84-6450-49ee-92d5-e8c565864bd9'),
   ];
-  
+
+  final now = DateTime.now();
+  late BookingService mockBookingService;
+
+  Stream<dynamic>? getBookingStreamMock({required DateTime end, required DateTime start}) {
+    return Stream.value([]);
+  }
+
+  Future<dynamic> uploadBookingMock({ required BookingService newBooking}) async {
+    await Future.delayed(const Duration(seconds: 1));
+    converted.add(DateTimeRange(
+        start: newBooking.bookingStart, end: newBooking.bookingEnd));
+    print('${newBooking.toJson()} has been uploaded');
+  }
+
+  List<DateTimeRange> converted = [];
+
+  List<DateTimeRange> convertStreamResultMock({dynamic streamResult}) {
+    ///here you can parse the streamresult and convert to [List<DateTimeRange>]
+    DateTime firstCall = DateTime(now.year, now.month, now.day, 8);
+    DateTime secondCall = DateTime(now.year, now.month, now.day, 10, 30);
+    DateTime thirdCall = DateTime(now.year, now.month, now.day, 14, 30);
+    DateTime fourthCall = DateTime(now.year, now.month, now.day, 16, 00);
+    DateTime fifthCall = DateTime(now.year, now.month, now.day, 20, 30);
+    DateTime sixthCall = DateTime(now.year, now.month, now.day, 22, 00);
+    converted.add(DateTimeRange(start: firstCall, end: firstCall.add(Duration(minutes: 25))));
+    //converted.add(DateTimeRange(start: secondCall, end: secondCall.add(Duration(minutes: 25))));
+    converted.add(DateTimeRange(start: thirdCall, end: thirdCall.add(Duration(minutes: 25))));
+    //converted.add(DateTimeRange(start: fourthCall, end: fourthCall.add(Duration(minutes: 25))));
+    converted.add(DateTimeRange(start: fifthCall, end: fifthCall.add(Duration(minutes: 25))));
+    converted.add(DateTimeRange(start: sixthCall, end: sixthCall.add(Duration(minutes: 25))));
+    return converted;
+  }
+
+  List<DateTimeRange> generatePauseSlots() {
+    return [
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 0, 0),
+          end: DateTime(now.year, now.month, now.day, 8, 0)),
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 8, 30),
+          end: DateTime(now.year, now.month, now.day, 10, 30)),
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 11, 0),
+          end: DateTime(now.year, now.month, now.day, 14, 30)),
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 15, 0),
+          end: DateTime(now.year, now.month, now.day, 16, 0)),
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 16, 30),
+          end: DateTime(now.year, now.month, now.day, 20, 0)),
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 21, 00),
+          end: DateTime(now.year, now.month, now.day, 22, 0)),
+      DateTimeRange(
+          start: DateTime(now.year, now.month, now.day, 22, 30),
+          end: DateTime(now.year, now.month, now.day, 23, 59)),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -362,6 +427,18 @@ class _TutorProfileState extends State<TutorProfile> {
               else if (value == 'Tutor') {
                 Navigator.popAndPushNamed(context, '/tutor');
               }
+              else if (value == 'Schedule') {
+                Navigator.popAndPushNamed(context, '/schedule');
+              }
+              else if (value == 'History') {
+                Navigator.popAndPushNamed(context, '/history');
+              }
+              else if (value == 'Courses') {
+                Navigator.popAndPushNamed(context, '/courses');
+              }
+              else if (value == 'BecomeTutor') {
+                Navigator.popAndPushNamed(context, '/become_tutor');
+              }
               else if (value == 'Setting') {
                 Navigator.popAndPushNamed(context, '/setting');
               }
@@ -375,7 +452,7 @@ class _TutorProfileState extends State<TutorProfile> {
         //automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(30),
+        padding: EdgeInsets.all(20),
         child: Column(
           children: [
             Row(
@@ -552,7 +629,7 @@ class _TutorProfileState extends State<TutorProfile> {
             ),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
               alignment: Alignment.centerLeft,
               child: Container(
                 padding: EdgeInsets.all(10),
@@ -580,7 +657,7 @@ class _TutorProfileState extends State<TutorProfile> {
             ),
             Container(
               margin: EdgeInsets.only(bottom: 20),
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
               height: 50,
               width: double.infinity,
               child: SingleChildScrollView(
@@ -620,7 +697,7 @@ class _TutorProfileState extends State<TutorProfile> {
             Column(
               children: courseList.map((value) => Container(
                 alignment: Alignment.centerLeft,
-                padding: EdgeInsets.all(5),
+                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
                 child: RichText(
                   text: TextSpan(
                     style: TextStyle(
@@ -631,6 +708,7 @@ class _TutorProfileState extends State<TutorProfile> {
                         text: value.courseName + ': ',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                       TextSpan(
@@ -639,7 +717,7 @@ class _TutorProfileState extends State<TutorProfile> {
                             fontSize: 17,
                             color: Colors.blue
                           ),
-                        recognizer: TapGestureRecognizer()..onTap = null,//_launchUrl(value.courseLink), //sửa sau
+                        recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, '/course_detail'),//_launchUrl(value.courseLink), //sửa sau
                       ),
                     ],
                   ),
@@ -658,7 +736,7 @@ class _TutorProfileState extends State<TutorProfile> {
               ),
             ),
             Container(
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
               margin: EdgeInsets.only(bottom: 20),
               child: Text('I loved the weather, the scenery and the laid-back lifestyle of the locals.',
               style: TextStyle(
@@ -677,12 +755,48 @@ class _TutorProfileState extends State<TutorProfile> {
               ),
             ),
             Container(
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
               margin: EdgeInsets.only(bottom: 20),
               child: Text('I have more than 10 years of teaching english experience.',
                 style: TextStyle(
                   fontSize: 15,
                 ),),
+            ),
+            Container(
+              margin: EdgeInsets.only(bottom: 15),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Schedule',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              alignment: Alignment.centerLeft,
+              child: Text('Choose start time of classes to book.\nEach class lasts 25 minutes.',
+                style: TextStyle(
+                  fontSize: 15,
+                ),),
+            ),
+            Container(
+              width: double.infinity,
+              height: 800,
+              child: BookingCalendar(
+                bookingService: mockBookingService,
+                convertStreamResultToDateTimeRanges: convertStreamResultMock,
+                getBookingStream: getBookingStreamMock,
+                uploadBooking: uploadBookingMock,
+                pauseSlots: generatePauseSlots(),
+                pauseSlotText: 'Not have Class',
+                hideBreakTime: false,
+                loadingWidget: SizedBox(height: 50, width: 50, child: Text('Fetching data...'),),
+                uploadingWidget: SizedBox(height: 50, width: 50, child: CircularProgressIndicator(),),
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                //disabledDays: const [1, 2, 3, 4, 5],
+              ),
             ),
           ],
         ),
@@ -704,12 +818,7 @@ class _TutorProfileState extends State<TutorProfile> {
       backgroundImage: input,
     );
   }
-  /*Future<void> _launchUrl(String link) async {
-    Uri _url = Uri.parse(link);
-    if (!await launchUrl(_url)) {
-      throw 'Could not launch $_url';
-    }
-  }*/
+  /*Future<void> _launchUrl(String link) async {Uri _url = Uri.parse(link); if (!await launchUrl(_url)) {throw 'Could not launch $_url';}}*/
 }
 
 class courseItem {

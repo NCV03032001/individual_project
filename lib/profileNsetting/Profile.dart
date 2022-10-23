@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -60,10 +59,9 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     selectedValue = levelItems[0];
-    selectedItems = [items[0], items[1]];
+    selectedItems = [items[1], items[2]];
 
     return Scaffold(
-      //backgroundColor: Colors.transparent,
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
@@ -369,6 +367,18 @@ class _ProfileState extends State<Profile> {
               else if (value == 'Tutor') {
                 Navigator.pushNamed(context, '/tutor');
               }
+              else if (value == 'Schedule') {
+                Navigator.pushNamed(context, '/schedule');
+              }
+              else if (value == 'History') {
+                Navigator.pushNamed(context, '/history');
+              }
+              else if (value == 'Courses') {
+                Navigator.pushNamed(context, '/courses');
+              }
+              else if (value == 'BecomeTutor') {
+                Navigator.pushNamed(context, '/become_tutor');
+              }
               else if (value == 'Setting') {
                 Navigator.pushNamed(context, '/setting');
               }
@@ -381,107 +391,106 @@ class _ProfileState extends State<Profile> {
         ],
         //automaticallyImplyLeading: false,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(30),
-          child: Column(
-            children: [
-              Container(
-                margin: EdgeInsets.only(bottom: 20),
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Proflie',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.only(bottom: 20),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Proflie',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  SizedBox(
+                    height: 100,
+                    width: 100,
+                    child: ImageProfile(),
                   ),
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: ImageProfile(),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        child: Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.all(10),
-                              child: Text(
-                                'Account Name',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              'Account ID: f569c202-7bbf-4620-af77-ecc1419a6b28',
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            ),
-                            TextButton(
-                              onPressed: null,
-                              child: Text(
-                                'Others review you',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(bottom: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 15),
-                          child: RichText(
-                            text: TextSpan(
-                              text: '*',
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: SizedBox(
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.all(10),
+                            child: Text(
+                              'Account Name',
                               style: TextStyle(
-                                color: Colors.red,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
-                              children: [
-                                TextSpan(
-                                    text: 'Name:',
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                    )
-                                ),
-                              ],
                             ),
                           ),
-                        )
+                          Text(
+                            'Account ID: f569c202-7bbf-4620-af77-ecc1419a6b28',
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                          TextButton(
+                            onPressed: null,
+                            child: Text(
+                              'Others review you',
+                              style: TextStyle(
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    Expanded(
-                      flex: 3,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(bottom: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                      flex: 1,
                       child: Container(
-                        margin: EdgeInsets.only(bottom: 10),
-                        child: TextFormField(
-                          keyboardType: TextInputType.text,
-                          autovalidateMode: AutovalidateMode.always,
-                          initialValue: "Account Name",
-                          decoration: InputDecoration(
+                        padding: EdgeInsets.only(top: 15),
+                        child: RichText(
+                          text: TextSpan(
+                            text: '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                            ),
+                            children: [
+                              TextSpan(
+                                  text: 'Name:',
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                  )
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 10),
+                      child: TextFormField(
+                        keyboardType: TextInputType.text,
+                        autovalidateMode: AutovalidateMode.always,
+                        initialValue: "Account Name",
+                        decoration: InputDecoration(
                             contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
                             enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(width: 1, color: Colors.grey),
@@ -502,95 +511,94 @@ class _ProfileState extends State<Profile> {
                             errorStyle: TextStyle(
                               fontSize: 15,
                             )
-                          ),
-                          validator: (val) {
-                            if(val == null || val.isEmpty){
-                              return "Please input your Name!";
-                            }
-                            return null;
-                          },
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                  margin: EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 15),
-                          child: Text('Email Address:'),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            keyboardType: TextInputType.text,
-                            initialValue: 'student@lettutor.com',
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                              disabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.grey),
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
-                              ),
-                              filled: true,
-                              fillColor: Color(0xffd9d9d9),
-                            ),
-                            enabled: false,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.only(top: 15),
-                      child: Text('Phone Number:'),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      margin: EdgeInsets.only(bottom: 10),
-                      child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        initialValue: '842499996508',
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                          disabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                          filled: true,
-                          fillColor: Color(0xffd9d9d9),
-                        ),
-                        enabled: false,
+                        validator: (val) {
+                          if(val == null || val.isEmpty){
+                            return "Please input your Name!";
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: EdgeInsets.only(left: 100),
-                margin: EdgeInsets.only(bottom: 5),
-                alignment: Alignment.centerLeft,
-                child: Text('Verified', style: TextStyle(color: Colors.green),),
-              ),
-              Container(
+            ),
+            Container(
+                margin: EdgeInsets.only(bottom: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        padding: EdgeInsets.only(top: 15),
+                        child: Text('Email Address:'),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          keyboardType: TextInputType.text,
+                          initialValue: 'student@lettutor.com',
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                            disabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.grey),
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                            ),
+                            filled: true,
+                            fillColor: Color(0xffd9d9d9),
+                          ),
+                          enabled: false,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: EdgeInsets.only(top: 15),
+                    child: Text('Phone Number:'),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 10),
+                    child: TextFormField(
+                      keyboardType: TextInputType.text,
+                      initialValue: '842499996508',
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1, color: Colors.grey),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        filled: true,
+                        fillColor: Color(0xffd9d9d9),
+                      ),
+                      enabled: false,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: EdgeInsets.only(left: 100),
+              margin: EdgeInsets.only(bottom: 5),
+              alignment: Alignment.centerLeft,
+              child: Text('Verified', style: TextStyle(color: Colors.green),),
+            ),
+            Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,92 +687,92 @@ class _ProfileState extends State<Profile> {
                     ),
                   ],
                 )
-              ),
-              Container(
+            ),
+            Container(
                 child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 15),
-                          child: RichText(
-                            text: TextSpan(
-                              text: '*',
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                              children: [
-                                TextSpan(
-                                    text: 'My Level:',
-                                    style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                    )
-                                ),
-                              ],
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        padding: EdgeInsets.only(top: 15),
+                        child: RichText(
+                          text: TextSpan(
+                            text: '*',
+                            style: TextStyle(
+                              color: Colors.red,
                             ),
+                            children: [
+                              TextSpan(
+                                  text: 'My Level:',
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                  )
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: DropdownSearch<String>(
-                            items: levelItems,
-                            clearButtonProps: ClearButtonProps(
-                              isVisible: true,
-                              alignment: Alignment.centerRight,
-                              padding: EdgeInsets.zero,
-                            ),
-                            dropdownButtonProps: DropdownButtonProps(
-                              alignment: Alignment.centerRight,
-                              padding: EdgeInsets.only(right: 12),
-                            ),
-                            popupProps: PopupProps.menu(
-                              showSelectedItems: true,
-                              showSearchBox: true,
-                            ),
-                            dropdownDecoratorProps: DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
-                                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(width: 1, color: Colors.grey),
-                                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(width: 1, color: Colors.blue),
-                                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(width: 1, color: Colors.orange),
-                                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(width: 1, color: Colors.red),
-                                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                                ),
-                                errorStyle: TextStyle(
-                                  fontSize: 15,
-                                ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: DropdownSearch<String>(
+                          items: levelItems,
+                          clearButtonProps: ClearButtonProps(
+                            isVisible: true,
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.zero,
+                          ),
+                          dropdownButtonProps: DropdownButtonProps(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.only(right: 12),
+                          ),
+                          popupProps: PopupProps.menu(
+                            showSelectedItems: true,
+                            showSearchBox: true,
+                          ),
+                          dropdownDecoratorProps: DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(width: 1, color: Colors.grey),
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(width: 1, color: Colors.blue),
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(width: 1, color: Colors.orange),
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(width: 1, color: Colors.red),
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                              ),
+                              errorStyle: TextStyle(
+                                fontSize: 15,
                               ),
                             ),
-                            selectedItem: selectedValue,
-                            autoValidateMode: AutovalidateMode.always,
-                            validator: (val) {
-                              if (val == null || val.isEmpty) {
-                                return "Please select your Level!";
-                              }
-                              return null;
-                            },
                           ),
+                          selectedItem: selectedValue,
+                          autoValidateMode: AutovalidateMode.always,
+                          validator: (val) {
+                            if (val == null || val.isEmpty) {
+                              return "Please select your Level!";
+                            }
+                            return null;
+                          },
                         ),
                       ),
-                    ],
-                  )
-              ),
-              Container(
+                    ),
+                  ],
+                )
+            ),
+            Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -848,67 +856,66 @@ class _ProfileState extends State<Profile> {
                     ),
                   ],
                 )
-              ),
-              Container(
-                  margin: EdgeInsets.only(bottom: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text('Study Schedule:'),
-                        ),
+            ),
+            Container(
+                margin: EdgeInsets.only(bottom: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Text('Study Schedule:'),
                       ),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            minLines: 3,
-                            maxLines: 8,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.grey),
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.blue),
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
-                              ),
-                              hintText: 'Note the time of the week you want to study on LetTutor.',
-                              isCollapsed: true,
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          keyboardType: TextInputType.multiline,
+                          minLines: 3,
+                          maxLines: 8,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.grey),
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.blue),
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                            ),
+                            hintText: 'Note the time of the week you want to study on LetTutor.',
+                            isCollapsed: true,
                           ),
                         ),
                       ),
-                    ],
-                  )
-              ),
-              Container(
-                alignment: Alignment.centerRight,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.all(15),
-                    backgroundColor: Colors.blue,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
-                  child: Text(
-                    'Save changes',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white,
                     ),
-                  ),
-                  onPressed: null, //sửa sau
+                  ],
+                )
+            ),
+            Container(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.all(15),
+                  backgroundColor: Colors.blue,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                 ),
+                child: Text(
+                  'Save changes',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white,
+                  ),
+                ),
+                onPressed: null, //sửa sau
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -419,6 +419,18 @@ class _TutorState extends State<Tutor> {
               else if (value == 'Tutor') {
                 Navigator.pushReplacementNamed(context, '/tutor');
               }
+              else if (value == 'Schedule') {
+                Navigator.pushNamed(context, '/schedule');
+              }
+              else if (value == 'History') {
+                Navigator.pushNamed(context, '/history');
+              }
+              else if (value == 'Courses') {
+                Navigator.pushNamed(context, '/courses');
+              }
+              else if (value == 'BecomeTutor') {
+                Navigator.pushNamed(context, '/become_tutor');
+              }
               else if (value == 'Setting') {
                 Navigator.pushNamed(context, '/setting');
               }
@@ -523,7 +535,7 @@ class _TutorState extends State<Tutor> {
               ),
             ),
             Container(
-              padding: EdgeInsets.all(30),
+              padding: EdgeInsets.all(20),
               child: Column(
                 children: [
                   Container(
@@ -763,7 +775,6 @@ class _TutorState extends State<Tutor> {
                                 initE = TimeOfDay(hour: result.endTime.hour, minute: result.endTime.minute);
                               });
                             }
-
                           },
                         ),
                       ),
@@ -816,7 +827,10 @@ class _TutorState extends State<Tutor> {
                         setState(() {
                           _rsFocus.requestFocus();
                           _nController.clear();
+                          selectedDate = DateTime.now();
                           _dController.clear();
+                          initS = TimeOfDay(hour: 7, minute: 0);
+                          initE = TimeOfDay(hour: 8, minute: 0);
                           _tController.clear();
                           _ntKey.currentState?.popupValidate([]);
                           choiceChips = ChoiceChips.all;
@@ -885,15 +899,20 @@ class _TutorState extends State<Tutor> {
                                   child: SizedBox(
                                     child: Column(
                                       children: [
-                                        Container(
-                                          alignment: Alignment.centerLeft,
-                                          padding: EdgeInsets.only(left: 10),
-                                          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                          child: Text(
-                                            'Keegan',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
+                                        GestureDetector(
+                                          onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
+                                          child: Container(
+                                            alignment: Alignment.centerLeft,
+                                            padding: EdgeInsets.only(left: 10),
+                                            margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                            child: Text(
+                                              'Keegan',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis ,
                                             ),
                                           ),
                                         ),
@@ -1039,15 +1058,20 @@ class _TutorState extends State<Tutor> {
                                   child: SizedBox(
                                     child: Column(
                                       children: [
-                                        Container(
-                                          alignment: Alignment.centerLeft,
-                                          padding: EdgeInsets.only(left: 10),
-                                          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                          child: Text(
-                                            'Keegan',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
+                                        GestureDetector(
+                                          onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
+                                          child: Container(
+                                            alignment: Alignment.centerLeft,
+                                            padding: EdgeInsets.only(left: 10),
+                                            margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                            child: Text(
+                                              'April Baldo',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis ,
                                             ),
                                           ),
                                         ),

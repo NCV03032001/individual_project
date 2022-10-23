@@ -7,8 +7,13 @@ import 'package:individual_project/authentication/forgotpassword/ForgotPassword.
 import 'package:individual_project/authentication/Login.dart';
 import 'package:individual_project/authentication/forgotpassword/ForgotPassword_sent.dart';
 import 'package:individual_project/profileNsetting/Setting.dart';
-import 'package:individual_project/tutorNcourse/Tutor.dart';
-import 'package:individual_project/tutorNcourse/TutorProfile.dart';
+import 'package:individual_project/tutor/BecomeTutor.dart';
+import 'package:individual_project/tutor/Tutor.dart';
+import 'package:individual_project/tutor/TutorProfile.dart';
+import 'package:individual_project/course/Courses.dart';
+import 'package:individual_project/course/Schedule.dart';
+import 'package:individual_project/course/History.dart';
+import 'package:individual_project/course/CourseDetail.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +46,11 @@ class MyApp extends StatelessWidget {
             '/setting': (context) =>  Setting(),
             '/forgotpw': (context) => ForgotPassword(),
             '/forgotpw_sent': (context) => ForgotPassword_sent(),
+            '/history' : (context) => History(),
+            '/schedule' : (context) => Schedule(),
+            '/courses' : (context) => Courses(),
+            '/courses_detail' : (context) => CourseDetail(),
+            '/become_tutor' : (context) => BecomeTutor(),
           },
 
           theme: isDarkMode?

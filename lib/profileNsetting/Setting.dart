@@ -324,7 +324,19 @@ class _SettingState extends State<Setting> {
                 Navigator.pushNamed(context, '/profile');
               }
               else if (value == 'Tutor') {
-                Navigator.pushNamed(context, '/Tutor');
+                Navigator.pushNamed(context, '/tutor');
+              }
+              else if (value == 'Schedule') {
+                Navigator.pushNamed(context, '/schedule');
+              }
+              else if (value == 'History') {
+                Navigator.pushNamed(context, '/history');
+              }
+              else if (value == 'Courses') {
+                Navigator.pushNamed(context, '/courses');
+              }
+              else if (value == 'BecomeTutor') {
+                Navigator.pushNamed(context, '/become_tutor');
               }
               else if (value == 'Setting') {
                 Navigator.pushReplacementNamed(context, '/setting');
@@ -339,7 +351,7 @@ class _SettingState extends State<Setting> {
         //automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(30),
+        padding: EdgeInsets.all(20),
         child: Column(
           children: [
             Container(
