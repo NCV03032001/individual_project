@@ -796,7 +796,6 @@ class _TutorState extends State<Tutor> {
                   Wrap(
                     runSpacing: 5,
                     spacing: 5,
-                    key: ValueKey('tag'),
                     children: choiceChips.map((value) => ChoiceChip(
                       label: Text(value.label),
                       selected: value.isSelected,
