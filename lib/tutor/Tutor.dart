@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/data/choice_chips.dart';
-import 'package:individual_project/model/choice_chip.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 
 class Tutor extends StatefulWidget {
@@ -17,6 +15,8 @@ class Tutor extends StatefulWidget {
 }
 
 class _TutorState extends State<Tutor> {
+  final FocusNode _screenFocus = FocusNode();
+
   String _firstSelected ='assets/images/usaFlag.svg';
   PickedFile? _imageFile;
 
@@ -26,6 +26,11 @@ class _TutorState extends State<Tutor> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      tags = ['All', 'English for kids', 'English for Business', 'Conversational', 'STARTERS', 'MOVERS', 'FLYERS', 'KET', 'PET', 'IELTS', 'TOEFL', 'TOEIC'];
+      isSelectedTag = List.generate(tags.length, (index) => false);
+      isSelectedTag[0] = true;
+    });
     startTimer();
   }
   /// Timer related methods ///
@@ -89,7 +94,9 @@ class _TutorState extends State<Tutor> {
   final TextEditingController _tController = TextEditingController();
   final FocusNode _tFocus = FocusNode();
 
-  List<ChoiceChipData> choiceChips = ChoiceChips.all;
+  List<String> tags = [];
+  List<bool> isSelectedTag = [];
+
 
   final FocusNode _tgFocus = FocusNode();
 
@@ -116,1092 +123,1109 @@ class _TutorState extends State<Tutor> {
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
 
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
-        title: GestureDetector(
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/tutor');
-            }, //sửa sau
-            child: SizedBox(
-              height: 30,
-              child: SvgPicture.asset('assets/images/logo.svg'),
-            )
-        ),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        actions: [
-          PopupMenuButton<String>(
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Stack(
-                children: [
-                  Center(
-                    child: SizedBox(
-                      width: 25,
-                      height: 25,
-                      child: SvgPicture.asset(_firstSelected),
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          width: 8,
-                          color: Colors.grey,
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            offset: Offset(0, 50),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'assets/images/usaFlag.svg',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset('assets/images/usaFlag.svg'),
-                    ),
-                    SizedBox(width: 20,),
-                    Text('Engilish')
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'assets/images/vnFlag.svg',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset('assets/images/vnFlag.svg'),
-                    ),
-                    SizedBox(width: 20,),
-                    Text('Vietnamese')
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (String value) {
-              setState(() {
-                _firstSelected = value;
-              });
-            },
-          ),
-          SizedBox(width: 10,),
-          PopupMenuButton<String>(
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Center(
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey,
-                  ),
-                  child: Icon(Icons.menu, color: Theme.of(context).backgroundColor,),
-                ),
-              ),
-            ),
-            offset: Offset(0, 50),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'Profile',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircleAvatar(
-                        radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
-                      ),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'Tutor',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/Tutor.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Tutor',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'Schedule',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/Schedule.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Schedule',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'History',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/History.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'History',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'Courses',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/Courses.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Courses',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'BecomeTutor',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BecomeTutor.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Become a Tutor',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'Setting',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/Setting.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'Logout',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/Logout.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Logout',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) {
-              if (value == 'Profile') {
-              Navigator.pushNamed(context, '/profile');
-              }
-              else if (value == 'Tutor') {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          FocusScope.of(context).requestFocus(_screenFocus);
+        });
+      },
+      child: Scaffold(
+        appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
+          title: GestureDetector(
+              onTap: () {
                 Navigator.pushReplacementNamed(context, '/tutor');
-              }
-              else if (value == 'Schedule') {
-                Navigator.pushNamed(context, '/schedule');
-              }
-              else if (value == 'History') {
-                Navigator.pushNamed(context, '/history');
-              }
-              else if (value == 'Courses') {
-                Navigator.pushNamed(context, '/courses');
-              }
-              else if (value == 'BecomeTutor') {
-                Navigator.pushNamed(context, '/become_tutor');
-              }
-              else if (value == 'Setting') {
-                Navigator.pushNamed(context, '/setting');
-              }
-              else if (value == 'Logout') {
-                Navigator.of(context).pushNamedAndRemoveUntil("/login",
-                        (route) {return false;});
-              }
-            },
+              }, //sửa sau
+              child: SizedBox(
+                height: 30,
+                child: SvgPicture.asset('assets/images/logo.svg'),
+              )
           ),
-        ],
-        //automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              height: 200,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF0C3DDF), Color(0xFF05179D)]
-                )
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+          actions: [
+            PopupMenuButton<String>(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: SvgPicture.asset(_firstSelected),
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 8,
+                            color: Colors.grey,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Center(
+              offset: Offset(0, 50),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'assets/images/usaFlag.svg',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: SvgPicture.asset('assets/images/usaFlag.svg'),
+                      ),
+                      SizedBox(width: 20,),
+                      Text('Engilish')
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'assets/images/vnFlag.svg',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: SvgPicture.asset('assets/images/vnFlag.svg'),
+                      ),
+                      SizedBox(width: 20,),
+                      Text('Vietnamese')
+                    ],
+                  ),
+                ),
+              ],
+              onSelected: (String value) {
+                setState(() {
+                  _firstSelected = value;
+                });
+              },
+            ),
+            SizedBox(width: 10,),
+            PopupMenuButton<String>(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey,
+                    ),
+                    child: Icon(Icons.menu, color: Theme.of(context).backgroundColor,),
+                  ),
+                ),
+              ),
+              offset: Offset(0, 50),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'Profile',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: CircleAvatar(
+                          radius: 80.0,
+                          backgroundImage: _imageFile == null
+                              ? Image.asset('assets/images/avatars/testavt.webp').image
+                              : FileImage(File(_imageFile!.path)),
+                        ),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Profile',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Tutor',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/Tutor.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Tutor',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Schedule',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/Schedule.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Schedule',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'History',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/History.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'History',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Courses',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/Courses.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Courses',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'BecomeTutor',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BecomeTutor.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Become a Tutor',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Setting',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/Setting.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Settings',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Logout',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/Logout.png', color: Colors.blue,),
+                      ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              onSelected: (value) {
+                if (value == 'Profile') {
+                  Navigator.pushNamed(context, '/profile');
+                }
+                else if (value == 'Tutor') {
+                  Navigator.pushReplacementNamed(context, '/tutor');
+                }
+                else if (value == 'Schedule') {
+                  Navigator.pushNamed(context, '/schedule');
+                }
+                else if (value == 'History') {
+                  Navigator.pushNamed(context, '/history');
+                }
+                else if (value == 'Courses') {
+                  Navigator.pushNamed(context, '/courses');
+                }
+                else if (value == 'BecomeTutor') {
+                  Navigator.pushNamed(context, '/become_tutor');
+                }
+                else if (value == 'Setting') {
+                  Navigator.pushNamed(context, '/setting');
+                }
+                else if (value == 'Logout') {
+                  Navigator.of(context).pushNamedAndRemoveUntil("/login",
+                          (route) {return false;});
+                }
+              },
+            ),
+          ],
+          //automaticallyImplyLeading: false,
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF0C3DDF), Color(0xFF05179D)]
+                    )
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.only(bottom: 15),
+                        child: Text(
+                          'Upcoming lesson',
+                          style: TextStyle(
+                            fontSize: 30,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(bottom: 5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Wed, 19 Oct 22 00:00 - 00:25 ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                              ),
+                            ),
+                            Text(
+                              '(starts in $hours:$minutes:$seconds)',
+                              style: TextStyle(
+                                color: Colors.yellow,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: null,
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.all(15),
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
+                        ),
+                        child: RichText(
+                          text: TextSpan(
+                              children: [
+                                WidgetSpan(
+                                    child: SizedBox(
+                                      height: 20,
+                                      child: Image.asset('assets/images/icons/Ytb.png', color: Colors.blue,),
+                                    )
+                                ),
+                                TextSpan(
+                                    text: '  Enter lesson room',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 20,
+                                    )
+                                )
+                              ]
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top: 5),
+                        child: Text(
+                          'Total lesson time is 154 hours 10 minutes',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(20),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.only(bottom: 15),
+                      margin: EdgeInsets.only(bottom: 20),
+                      alignment: Alignment.centerLeft,
                       child: Text(
-                        'Upcoming lesson',
+                        'Find a tutor',
                         style: TextStyle(
                           fontSize: 30,
-                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     Container(
                       margin: EdgeInsets.only(bottom: 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Wed, 19 Oct 22 00:00 - 00:25 ',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
-                          Text(
-                            '(starts in $hours:$minutes:$seconds)',
-                            style: TextStyle(
-                              color: Colors.yellow,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    OutlinedButton(
-                      onPressed: null,
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: EdgeInsets.all(15),
-                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
-                      ),
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            WidgetSpan(
-                              child: SizedBox(
-                                height: 20,
-                                child: Image.asset('assets/images/icons/Ytb.png', color: Colors.blue,),
-                              )
-                            ),
-                            TextSpan(
-                              text: '  Enter lesson room',
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontSize: 20,
-                              )
-                            )
-                          ]
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Specify tutor detail:',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 5),
-                      child: Text(
-                        'Total lesson time is 154 hours 10 minutes',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
+                      margin: EdgeInsets.only(bottom: 10),
+                      child: TextFormField(
+                        keyboardType: TextInputType.text,
+                        focusNode: _nFocus,
+                        controller: _nController,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 0),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1, color: Colors.grey),
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1, color: Colors.blue),
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                          hintText: 'Enter tutor name',
+                          suffixIcon: (_nController.text.isNotEmpty && _nFocus.hasFocus) ?
+                          IconButton(onPressed: () {setState(() {
+                            _nController.clear();
+                            _nFocus.requestFocus();
+                            _nFocus.unfocus();
+                          });}, icon: Icon(Icons.clear)) :
+                          Icon(Icons.search_outlined),
                         ),
-                      ),
-                    )
-                  ],
-                ),
-
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(bottom: 20),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Find a tutor',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 5),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Specify tutor detail:',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    child: TextFormField(
-                      keyboardType: TextInputType.text,
-                      focusNode: _nFocus,
-                      controller: _nController,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 0),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(width: 1, color: Colors.grey),
-                          borderRadius: BorderRadius.all(Radius.circular(50)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(width: 1, color: Colors.blue),
-                          borderRadius: BorderRadius.all(Radius.circular(50)),
-                        ),
-                        hintText: 'Enter tutor name',
-                        suffixIcon: Icon(Icons.search_outlined),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          _nFocus.requestFocus();
-                        });
-                      },
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    child: Focus(
-                      focusNode: _ntFocus,
-                      child: Listener(
-                        onPointerDown: (_) {
-                          FocusScope.of(context).requestFocus(_ntFocus);
-                        },
-                        child: DropdownSearch<String>.multiSelection(
-                          key: _ntKey,
-                          items: items,
-                          popupProps: PopupPropsMultiSelection.menu(
-                            showSelectedItems: true,
-                            showSearchBox: true,
-                          ),
-                          clearButtonProps: ClearButtonProps(
-                            isVisible: true,
-                            alignment: Alignment.centerRight,
-                            padding: EdgeInsets.zero,
-                          ),
-                          dropdownButtonProps: DropdownButtonProps(
-                            alignment: Alignment.centerRight,
-                            padding: EdgeInsets.only(right: 12),
-                          ),
-                          dropdownDecoratorProps: DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.grey),
-                                borderRadius: BorderRadius.all(Radius.circular(50)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.blue),
-                                borderRadius: BorderRadius.all(Radius.circular(50)),
-                              ),
-                              hintText: 'Select tutor nationnality',
-                            ),
-                          ),
-                          onChanged: (val) {
+                        onChanged: (val) => {
+                          if (_nController.text.isEmpty || _nController.text.length == 1) {
                             setState(() {
-                              _ntFocus.requestFocus();
-                            });
-                          },
-                        ),
-                      )
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 5),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Select available tutoring time:',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                            })
+                          }
+                        },
+                        onTap: () {
+                          setState(() {
+                            _nFocus.requestFocus();
+                          });
+                        },
                       ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            keyboardType: TextInputType.text,
-                            focusNode: _dFocus,
-                            controller: _dController,
-                            autovalidateMode: AutovalidateMode.always,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.grey),
-                                borderRadius: BorderRadius.all(Radius.circular(50)),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 10),
+                      child: Focus(
+                          focusNode: _ntFocus,
+                          child: Listener(
+                            onPointerDown: (_) {
+                              FocusScope.of(context).requestFocus(_ntFocus);
+                            },
+                            child: DropdownSearch<String>.multiSelection(
+                              key: _ntKey,
+                              items: items,
+                              popupProps: PopupPropsMultiSelection.menu(
+                                showSelectedItems: true,
+                                showSearchBox: true,
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: Colors.blue),
-                                borderRadius: BorderRadius.all(Radius.circular(50)),
+                              clearButtonProps: ClearButtonProps(
+                                isVisible: true,
+                                alignment: Alignment.centerRight,
+                                padding: EdgeInsets.zero,
                               ),
-                              hintText: 'Day',
-                              suffixIcon: (_dController.text.isNotEmpty && _dFocus.hasFocus) ?
+                              dropdownButtonProps: DropdownButtonProps(
+                                alignment: Alignment.centerRight,
+                                padding: EdgeInsets.only(right: 12),
+                              ),
+                              dropdownDecoratorProps: DropDownDecoratorProps(
+                                dropdownSearchDecoration: InputDecoration(
+                                  contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(width: 1, color: Colors.grey),
+                                    borderRadius: BorderRadius.all(Radius.circular(50)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(width: 1, color: Colors.blue),
+                                    borderRadius: BorderRadius.all(Radius.circular(50)),
+                                  ),
+                                  hintText: 'Select tutor nationnality',
+                                ),
+                              ),
+                              onChanged: (val) {
+                                setState(() {
+                                  _ntFocus.requestFocus();
+                                });
+                              },
+                            ),
+                          )
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 5),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Select available tutoring time:',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: TextFormField(
+                              keyboardType: TextInputType.text,
+                              focusNode: _dFocus,
+                              controller: _dController,
+                              autovalidateMode: AutovalidateMode.always,
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1, color: Colors.grey),
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1, color: Colors.blue),
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                                hintText: 'Day',
+                                suffixIcon: (_dController.text.isNotEmpty && _dFocus.hasFocus) ?
                                 IconButton(onPressed: () {setState(() {
                                   _dController.clear();
                                   selectedDate = DateTime.now();
+                                  _dFocus.requestFocus();
                                   _dFocus.unfocus();
                                 });}, icon: Icon(Icons.clear)) :
                                 Icon(Icons.calendar_month_outlined),
                               ),
-                            readOnly: true,
-                            onTap: () => _selectDate(context),
+                              readOnly: true,
+                              onTap: () => _selectDate(context),
+                            ),
                           ),
+                          flex: 4,
                         ),
-                        flex: 4,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                        child: Container(
-                        margin: EdgeInsets.only(bottom: 10),
-                        child: TextFormField(
-                          keyboardType: TextInputType.text,
-                          controller: _tController,
-                          focusNode: _tFocus,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(width: 1, color: Colors.grey),
-                              borderRadius: BorderRadius.all(Radius.circular(50)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(width: 1, color: Colors.blue),
-                              borderRadius: BorderRadius.all(Radius.circular(50)),
-                            ),
-                            hintText: 'Time range',
-                            suffixIcon: (_tController.text.isNotEmpty && _tFocus.hasFocus) ?
-                            IconButton(onPressed: () {setState(() {
-                              _tController.clear();
-                              initS = TimeOfDay(hour: 7, minute: 0);
-                              initE = TimeOfDay(hour: 8, minute: 0);
-                              _tFocus.unfocus();
-                            });}, icon: Icon(Icons.clear)) :
-                            Container(
-                              width: 42,
-                              child: Center(
-                                child: SizedBox(
-                                  width: 21,
-                                  height: 21,
-                                  child: Image.asset('assets/images/icons/Clock.png', color: _tFocus.hasFocus ? Colors.blue : Colors.grey,),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: TextFormField(
+                              keyboardType: TextInputType.text,
+                              controller: _tController,
+                              focusNode: _tFocus,
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1, color: Colors.grey),
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
                                 ),
-                              )
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1, color: Colors.blue),
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                                hintText: 'Time range',
+                                suffixIcon: (_tController.text.isNotEmpty && _tFocus.hasFocus) ?
+                                IconButton(onPressed: () {setState(() {
+                                  _tController.clear();
+                                  initS = TimeOfDay(hour: 7, minute: 0);
+                                  initE = TimeOfDay(hour: 8, minute: 0);
+                                  _tFocus.requestFocus();
+                                  _tFocus.unfocus();
+                                });}, icon: Icon(Icons.clear)) :
+                                Container(
+                                    width: 42,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 21,
+                                        height: 21,
+                                        child: Image.asset('assets/images/icons/Clock.png', color: _tFocus.hasFocus ? Colors.blue : Colors.grey,),
+                                      ),
+                                    )
+                                ),
+                              ),
+                              readOnly: true,
+                              onTap: () async {
+                                TimeRange? result = await showTimeRangePicker(
+                                  context: context,
+                                  strokeWidth: 4,
+                                  timeTextStyle: TextStyle(
+                                      color: Colors.orange[700],
+                                      fontSize: 24,
+                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.bold),
+                                  activeTimeTextStyle: const TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 26,
+                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.bold),
+                                  ticks: 12,
+                                  ticksOffset: 2,
+                                  ticksLength: 8,
+                                  handlerRadius: 8,
+                                  ticksColor: Colors.grey,
+                                  rotateLabels: false,
+                                  interval: const Duration(minutes: 30),
+                                  minDuration: const Duration(hours: 1),
+                                  labels: [
+                                    "24 h",
+                                    "3 h",
+                                    "6 h",
+                                    "9 h",
+                                    "12 h",
+                                    "15 h",
+                                    "18 h",
+                                    "21 h"
+                                  ].asMap().entries.map((e) {
+                                    return ClockLabel.fromIndex(idx: e.key, length: 8, text: e.value);
+                                  }).toList(),
+                                  disabledTime: TimeRange(
+                                      startTime: const TimeOfDay(hour: 0, minute: 0),
+                                      endTime: const TimeOfDay(hour: 7, minute: 0)),
+                                  disabledColor: Colors.red,
+                                  labelOffset: 30,
+                                  padding: 55,
+                                  labelStyle: const TextStyle(fontSize: 18, color: Colors.grey,),
+                                  start: initS,
+                                  end: initE,
+                                  clockRotation: 180.0,
+                                );
+                                if (result != null)  {
+                                  var sh = result.startTime.hour > 9 ? result.startTime.hour.toString() : ('0' + result.startTime.hour.toString());
+                                  var sm = result.startTime.minute > 9 ? result.startTime.minute.toString() : ('0' + result.startTime.minute.toString());
+                                  var eh = result.endTime.hour > 9 ? result.endTime.hour.toString() : ('0' + result.endTime.hour.toString());
+                                  var em = result.endTime.minute > 9 ? result.endTime.minute.toString() : ('0' + result.endTime.minute.toString());
+                                  setState(() {
+                                    _tController.text = sh + ':' + sm + ' --> ' + eh + ':' + em;
+                                    _tFocus.requestFocus();
+                                    initS = TimeOfDay(hour: result.startTime.hour, minute: result.startTime.minute);
+                                    initE = TimeOfDay(hour: result.endTime.hour, minute: result.endTime.minute);
+                                  });
+                                }
+                              },
                             ),
                           ),
-                          readOnly: true,
-                          onTap: () async {
-                            TimeRange? result = await showTimeRangePicker(
-                              context: context,
-                              strokeWidth: 4,
-                              timeTextStyle: TextStyle(
-                                  color: Colors.orange[700],
-                                  fontSize: 24,
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.bold),
-                              activeTimeTextStyle: const TextStyle(
-                                  color: Colors.orange,
-                                  fontSize: 26,
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.bold),
-                              ticks: 12,
-                              ticksOffset: 2,
-                              ticksLength: 8,
-                              handlerRadius: 8,
-                              ticksColor: Colors.grey,
-                              rotateLabels: false,
-                              interval: const Duration(minutes: 30),
-                              minDuration: const Duration(hours: 1),
-                              labels: [
-                                "24 h",
-                                "3 h",
-                                "6 h",
-                                "9 h",
-                                "12 h",
-                                "15 h",
-                                "18 h",
-                                "21 h"
-                              ].asMap().entries.map((e) {
-                                return ClockLabel.fromIndex(idx: e.key, length: 8, text: e.value);
-                              }).toList(),
-                              disabledTime: TimeRange(
-                                  startTime: const TimeOfDay(hour: 0, minute: 0),
-                                  endTime: const TimeOfDay(hour: 7, minute: 0)),
-                              disabledColor: Colors.red,
-                              labelOffset: 30,
-                              padding: 55,
-                              labelStyle: const TextStyle(fontSize: 18, color: Colors.grey,),
-                              start: initS,
-                              end: initE,
-                              clockRotation: 180.0,
-                            );
-                            if (result != null)  {
-                              var sh = result.startTime.hour > 9 ? result.startTime.hour.toString() : ('0' + result.startTime.hour.toString());
-                              var sm = result.startTime.minute > 9 ? result.startTime.minute.toString() : ('0' + result.startTime.minute.toString());
-                              var eh = result.endTime.hour > 9 ? result.endTime.hour.toString() : ('0' + result.endTime.hour.toString());
-                              var em = result.endTime.minute > 9 ? result.endTime.minute.toString() : ('0' + result.endTime.minute.toString());
-                              setState(() {
-                                _tController.text = sh + ':' + sm + ' --> ' + eh + ':' + em;
-                                _tFocus.requestFocus();
-                                initS = TimeOfDay(hour: result.startTime.hour, minute: result.startTime.minute);
-                                initE = TimeOfDay(hour: result.endTime.hour, minute: result.endTime.minute);
-                              });
-                            }
-                          },
+                          flex: 5,
                         ),
-                      ),
-                        flex: 5,
-                      ),
-                    ],
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 5),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Select a tag:',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      ],
                     ),
-                  ),
-                  Wrap(
-                    runSpacing: 5,
-                    spacing: 5,
-                    key: ValueKey('tag'),
-                    children: choiceChips.map((value) => ChoiceChip(
-                      label: Text(value.label),
-                      selected: value.isSelected,
-                      selectedColor: Colors.blue,
-                      focusNode: _tgFocus,
-                      labelStyle: TextStyle(
-                        fontSize: 15,
-                      ),
-                      onSelected: (isSltd) => setState(() {
-                        _tgFocus.requestFocus();
-                        choiceChips = choiceChips.map((other) {
-                          if (value == other && value.isSelected == true) {
-                            return value;
-                          }
-                          final newChip = other.copy(isSelected: false);
-
-                          return value == newChip
-                              ? newChip.copy(isSelected: isSltd)
-                              : newChip;
-                        }).toList();
-                      }),
-                    )).toList(),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _rsFocus.requestFocus();
-                          _nController.clear();
-                          selectedDate = DateTime.now();
-                          _dController.clear();
-                          initS = TimeOfDay(hour: 7, minute: 0);
-                          initE = TimeOfDay(hour: 8, minute: 0);
-                          _tController.clear();
-                          _ntKey.currentState?.popupValidate([]);
-                          choiceChips = ChoiceChips.all;
-                        });
-                      },
-                      focusNode: _rsFocus,
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                        backgroundColor: Colors.white,
-                        side: BorderSide(color: Colors.blue, width: 2),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(50)),
-                        ),
-                      ),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 5),
+                      alignment: Alignment.centerLeft,
                       child: Text(
-                        'Reset Filters',
+                        'Select a tag:',
                         style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.blue,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ),
-                  Divider(
-                    thickness: 2,
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 30, 0, 30),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Recommended Tutors',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+                    Wrap(
+                      runSpacing: 5,
+                      spacing: 5,
+                      //key: ValueKey('tag'),
+                      children: List.generate(tags.length, (i) {
+                        return ChoiceChip(
+                          label: Text(tags[i]),
+                          selected: isSelectedTag[i],
+                          selectedColor: Colors.blue,
+                          focusNode: _tgFocus,
+                          labelStyle: TextStyle(
+                            fontSize: 15,
+                          ),
+                          onSelected: (isSltd) => setState(() {
+                            _tgFocus.requestFocus();
+                            if (isSelectedTag[i] == true) return;
+                            isSelectedTag = List.generate(tags.length, (index) => false);
+                            isSelectedTag[i] = true;
+                          }),
+                        );
+                      })
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _rsFocus.requestFocus();
+                            _nController.clear();
+                            selectedDate = DateTime.now();
+                            _dController.clear();
+                            initS = TimeOfDay(hour: 7, minute: 0);
+                            initE = TimeOfDay(hour: 8, minute: 0);
+                            _tController.clear();
+                            _ntKey.currentState?.popupValidate([]);
+                            isSelectedTag = List.generate(tags.length, (index) => false);
+                            isSelectedTag[0] = true;
+                          });
+                        },
+                        focusNode: _rsFocus,
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.blue, width: 2),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                        ),
+                        child: Text(
+                          'Reset Filters',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.blue,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.only(bottom: 10),
-                        padding: EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.grey,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          color: Theme.of(context).backgroundColor,
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 120,
-                                  width: 100,
-                                  child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image, FisOnl),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: SizedBox(
-                                    child: Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                          child: Container(
-                                            alignment: Alignment.centerLeft,
-                                            padding: EdgeInsets.only(left: 10),
-                                            margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                            child: Text(
-                                              'Keegan',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis ,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: EdgeInsets.only(left: 10),
-                                          margin: EdgeInsets.only(bottom: 10),
-                                          child: Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: SvgPicture.asset('assets/images/frFlag.svg'),
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text('France'),
-                                            ],
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: EdgeInsets.only(left: 10),
-                                          margin: EdgeInsets.only(bottom: 10),
-                                          child: Row(
-                                            children: [
-                                              FhasRvw
-                                                  ? Row(
-                                                children:
-                                                tooltipMsg.map((value) => Tooltip(
-                                                  message: value,
-                                                  child: Icon(Icons.star, color: Colors.yellow,),
-                                                )).toList(),
-                                              )
-                                                  : Text('No reviews yet', style:  TextStyle(
-                                                fontStyle: FontStyle.italic,
-                                              ),),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () => setState(() {
-                                    FisFav = !FisFav;
-                                  }),
-                                  icon: FisFav
-                                  ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
-                                  : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                              height: 50,
-                              width: double.infinity,
-                              child: SingleChildScrollView(
-                                child: Wrap(
-                                  runSpacing: 5,
-                                  spacing: 5,
-                                  crossAxisAlignment: WrapCrossAlignment.start,
-                                  verticalDirection: VerticalDirection.down,
-                                  children: FTutorTags.map((value) => Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        width: 1,
-                                        color: Colors.grey,
-                                      ),
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: Colors.blue,
-                                    ),
-                                    child: Text(value),
-                                  )).toList(),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              height: 70,
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.only(bottom: 15),
-                              child: Text(
-                                'I am passionate about running and fitness, I often compete in trail/mountain running events and I love pushing myself. I am training to one day take part in ultra-endurance events. I also enjoy watching rugby on the weekends, reading and watching podcasts on Youtube. My most memorable life experience would be living in and traveling around Southeast Asia.',
-                                maxLines: 4,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              alignment: Alignment.centerRight,
-                              child: ElevatedButton.icon(
-                                onPressed: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                  backgroundColor: Colors.white,
-                                  side: BorderSide(color: Colors.blue, width: 2),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                                  ),
-                                ),
-                                icon: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
-                                ),
-                                label: Text(
-                                  'Book',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                    Divider(
+                      thickness: 2,
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 30, 0, 30),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Recommended Tutors',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.only(bottom: 10),
-                        padding: EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.grey,
+                    ),
+                    Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(bottom: 10),
+                          padding: EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 1,
+                              color: Colors.grey,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            color: Theme.of(context).backgroundColor,
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                          color: Theme.of(context).backgroundColor,
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 120,
-                                  width: 100,
-                                  child: ImageProfile(Image.asset('assets/images/avatars/Stutoravt.jpg').image, SisOnl),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: SizedBox(
-                                    child: Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                          child: Container(
-                                            alignment: Alignment.centerLeft,
-                                            padding: EdgeInsets.only(left: 10),
-                                            margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                            child: Text(
-                                              'April Baldo',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: 120,
+                                    width: 100,
+                                    child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image, FisOnl),
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    child: SizedBox(
+                                      child: Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
+                                            child: Container(
+                                              alignment: Alignment.centerLeft,
+                                              padding: EdgeInsets.only(left: 10),
+                                              margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                              child: Text(
+                                                'Keegan',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis ,
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis ,
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          padding: EdgeInsets.only(left: 10),
-                                          margin: EdgeInsets.only(bottom: 10),
-                                          child: Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: SvgPicture.asset('assets/images/phFlag.svg'),
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text('Philippines (the)'),
-                                            ],
+                                          Container(
+                                            padding: EdgeInsets.only(left: 10),
+                                            margin: EdgeInsets.only(bottom: 10),
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: SvgPicture.asset('assets/images/frFlag.svg'),
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text('France'),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        Container(
-                                          padding: EdgeInsets.only(left: 10),
-                                          margin: EdgeInsets.only(bottom: 10),
-                                          child: Row(
-                                            children: [
-                                              ShasRvw
-                                                  ? Row(
-                                                children:
+                                          Container(
+                                            padding: EdgeInsets.only(left: 10),
+                                            margin: EdgeInsets.only(bottom: 10),
+                                            child: Row(
+                                              children: [
+                                                FhasRvw
+                                                    ? Row(
+                                                  children:
                                                   tooltipMsg.map((value) => Tooltip(
-                                                      message: value,
-                                                      child: Icon(Icons.star, color: Colors.yellow,),
+                                                    message: value,
+                                                    child: Icon(Icons.star, color: Colors.yellow,),
                                                   )).toList(),
-                                              )
-                                                  : Text('No reviews yet', style:  TextStyle(
-                                                fontStyle: FontStyle.italic,
-                                              ),),
-                                            ],
+                                                )
+                                                    : Text('No reviews yet', style:  TextStyle(
+                                                  fontStyle: FontStyle.italic,
+                                                ),),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                IconButton(
-                                  onPressed: () => setState(() {
-                                    SisFav = !SisFav;
-                                  }),
-                                  icon: SisFav
-                                      ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
-                                      : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                              height: 50,
-                              width: double.infinity,
-                              child: SingleChildScrollView(
-                                child: Wrap(
-                                  runSpacing: 5,
-                                  spacing: 5,
-                                  crossAxisAlignment: WrapCrossAlignment.start,
-                                  verticalDirection: VerticalDirection.down,
-                                  children: STutorTags.map((value) => Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        width: 1,
-                                        color: Colors.grey,
+                                  IconButton(
+                                    onPressed: () => setState(() {
+                                      FisFav = !FisFav;
+                                    }),
+                                    icon: FisFav
+                                        ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                        : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                                height: 50,
+                                width: double.infinity,
+                                child: SingleChildScrollView(
+                                  child: Wrap(
+                                    runSpacing: 5,
+                                    spacing: 5,
+                                    crossAxisAlignment: WrapCrossAlignment.start,
+                                    verticalDirection: VerticalDirection.down,
+                                    children: FTutorTags.map((value) => Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          width: 1,
+                                          color: Colors.grey,
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: Colors.blue,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      child: Text(value),
+                                    )).toList(),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 70,
+                                alignment: Alignment.topLeft,
+                                margin: EdgeInsets.only(bottom: 15),
+                                child: Text(
+                                  'I am passionate about running and fitness, I often compete in trail/mountain running events and I love pushing myself. I am training to one day take part in ultra-endurance events. I also enjoy watching rugby on the weekends, reading and watching podcasts on Youtube. My most memorable life experience would be living in and traveling around Southeast Asia.',
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                width: double.infinity,
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => Navigator.pushNamed(context, '/tutor_profile'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                    backgroundColor: Colors.white,
+                                    side: BorderSide(color: Colors.blue, width: 2),
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                                    ),
+                                  ),
+                                  icon: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
+                                  ),
+                                  label: Text(
+                                    'Book',
+                                    style: TextStyle(
+                                      fontSize: 20,
                                       color: Colors.blue,
                                     ),
-                                    child: Text(value),
-                                  )).toList(),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              height: 70,
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.only(bottom: 15),
-                              child: Text(
-                                'Hello! My name is April Baldo, you can just call me Teacher April. I am an English teacher and currently teaching in senior high school. I have been teaching grammar and literature for almost 10 years. I am fond of reading and teaching literature as one way of knowing one’s beliefs and culture. I am friendly and full of positivity. I love teaching because I know each student has something to bring on. Molding them to become an individual is a great success.',
-                                maxLines: 4,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              alignment: Alignment.centerRight,
-                              child: ElevatedButton.icon(
-                                onPressed: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                  backgroundColor: Colors.white,
-                                  side: BorderSide(color: Colors.blue, width: 2),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                                  ),
-                                ),
-                                icon: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                    child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
-                                ),
-                                label: Text(
-                                  'Book',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.blue,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            )
-          ],
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(bottom: 10),
+                          padding: EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 1,
+                              color: Colors.grey,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            color: Theme.of(context).backgroundColor,
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: 120,
+                                    width: 100,
+                                    child: ImageProfile(Image.asset('assets/images/avatars/Stutoravt.jpg').image, SisOnl),
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    child: SizedBox(
+                                      child: Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
+                                            child: Container(
+                                              alignment: Alignment.centerLeft,
+                                              padding: EdgeInsets.only(left: 10),
+                                              margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                              child: Text(
+                                                'April Baldo',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis ,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.only(left: 10),
+                                            margin: EdgeInsets.only(bottom: 10),
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: SvgPicture.asset('assets/images/phFlag.svg'),
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text('Philippines (the)'),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.only(left: 10),
+                                            margin: EdgeInsets.only(bottom: 10),
+                                            child: Row(
+                                              children: [
+                                                ShasRvw
+                                                    ? Row(
+                                                  children:
+                                                  tooltipMsg.map((value) => Tooltip(
+                                                    message: value,
+                                                    child: Icon(Icons.star, color: Colors.yellow,),
+                                                  )).toList(),
+                                                )
+                                                    : Text('No reviews yet', style:  TextStyle(
+                                                  fontStyle: FontStyle.italic,
+                                                ),),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => setState(() {
+                                      SisFav = !SisFav;
+                                    }),
+                                    icon: SisFav
+                                        ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                        : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                                height: 50,
+                                width: double.infinity,
+                                child: SingleChildScrollView(
+                                  child: Wrap(
+                                    runSpacing: 5,
+                                    spacing: 5,
+                                    crossAxisAlignment: WrapCrossAlignment.start,
+                                    verticalDirection: VerticalDirection.down,
+                                    children: STutorTags.map((value) => Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          width: 1,
+                                          color: Colors.grey,
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: Colors.blue,
+                                      ),
+                                      child: Text(value),
+                                    )).toList(),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 70,
+                                alignment: Alignment.topLeft,
+                                margin: EdgeInsets.only(bottom: 15),
+                                child: Text(
+                                  'Hello! My name is April Baldo, you can just call me Teacher April. I am an English teacher and currently teaching in senior high school. I have been teaching grammar and literature for almost 10 years. I am fond of reading and teaching literature as one way of knowing one’s beliefs and culture. I am friendly and full of positivity. I love teaching because I know each student has something to bring on. Molding them to become an individual is a great success.',
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                width: double.infinity,
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => Navigator.pushNamed(context, '/tutor_profile'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                    backgroundColor: Colors.white,
+                                    side: BorderSide(color: Colors.blue, width: 2),
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                                    ),
+                                  ),
+                                  icon: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
+                                  ),
+                                  label: Text(
+                                    'Book',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your onPressed code here!
-        },
-        backgroundColor: Colors.grey,
-        child: const Icon(Icons.message_outlined),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // Add your onPressed code here!
+          },
+          backgroundColor: Colors.grey,
+          child: const Icon(Icons.message_outlined),
+        ),
       ),
     );
   }
