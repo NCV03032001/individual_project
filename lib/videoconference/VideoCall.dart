@@ -15,7 +15,7 @@ class _VideoCallState extends State<VideoCall> {
   @override
   Widget build(BuildContext context) {
     String _firstSelected ='assets/images/usaFlag.svg';
-    PickedFile? _imageFile;
+
 
     return Scaffold(
       /*appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
@@ -126,7 +126,7 @@ class _VideoCallState extends State<VideoCall> {
                       child: CircleAvatar(
                         radius: 80.0,
                         backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
+                            ? Image.network('${context.read<UserProvider>().thisUser.avatar}').image
                             : FileImage(File(_imageFile!.path)),
                       ),
                     ),

@@ -4,10 +4,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:booking_calendar/booking_calendar.dart';
+
+import '../model/User.dart';
 //import 'package:url_launcher/url_launcher.dart';
 
 class TutorProfile extends StatefulWidget {
@@ -19,7 +23,7 @@ class TutorProfile extends StatefulWidget {
 
 class _TutorProfileState extends State<TutorProfile> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
+
 
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
 
@@ -233,9 +237,7 @@ class _TutorProfileState extends State<TutorProfile> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),

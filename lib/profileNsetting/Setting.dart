@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
+
+import '../model/User.dart';
 
 class Setting extends StatefulWidget {
   static const keyDarkMode = 'key-darkmode';
@@ -15,7 +19,7 @@ class Setting extends StatefulWidget {
 
 class _SettingState extends State<Setting> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
+
   static const keyDarkMode = 'key-darkmode';
 
   @override
@@ -132,9 +136,7 @@ class _SettingState extends State<Setting> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),
@@ -374,9 +376,7 @@ class _SettingState extends State<Setting> {
                     width: 100,
                     child: CircleAvatar(
                       radius: 80.0,
-                      backgroundImage: _imageFile == null
-                          ? Image.asset('assets/images/avatars/testavt.webp').image
-                          : FileImage(File(_imageFile!.path)),
+                      backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                     ),
                   ),
                   SizedBox(
@@ -466,6 +466,7 @@ class _SettingState extends State<Setting> {
     ),
     title: 'Dark Mode',
   );
+
   Widget changePassword() => SimpleSettingsTile(
     title: 'Change password',
     leading: SizedBox(

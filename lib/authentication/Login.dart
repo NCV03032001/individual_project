@@ -1,10 +1,15 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:email_validator/email_validator.dart';
+import 'package:individual_project/model/Tokens.dart';
+import 'package:individual_project/model/User.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -19,6 +24,7 @@ class _LoginState extends State<Login> {
   final FocusNode _fgpwFocus = FocusNode();
   bool _isObscure = true;
   bool _isLoading = false;
+
   String _firstSelected ='assets/images/usaFlag.svg';
 
   final _loginFormKey = GlobalKey<FormState>();
@@ -290,7 +296,7 @@ class _LoginState extends State<Login> {
                             children: [
                               Image.asset('assets/images/icons/close.png', width: 15, height: 15),
                               SizedBox(width: 15,),
-                              Flexible(child: Text(_errorController.text),),
+                              Flexible(child: Text(_errorController.text, style: TextStyle(color: Colors.black),),),
                             ],
                           ),
                         ) : Container(),
@@ -364,6 +370,11 @@ class _LoginState extends State<Login> {
                                       _isLoading = false;
                                       _errorController.text = "";
                                     });
+                                    final Map parsed = json.decode(response.body);
+
+                                    Provider.of<UserProvider>(context, listen: false).thisUser = User.fromJson(parsed["user"]);
+                                    Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens.fromJson(parsed["tokens"]);
+
                                     Navigator.of(context).pushNamedAndRemoveUntil(
                                         "/tutor", (route) {return false;});
                                   }

@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
+
+import '../model/User.dart';
 
 class History extends StatefulWidget {
   const History({Key? key}) : super(key: key);
@@ -13,7 +17,7 @@ class History extends StatefulWidget {
 
 class _HistoryState extends State<History> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
+
 
     List<String> _requests = ['', 'Lol'];
 
@@ -169,9 +173,7 @@ class _HistoryState extends State<History> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),

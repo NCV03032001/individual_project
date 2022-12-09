@@ -298,7 +298,7 @@ class _SignupState extends State<Signup> {
                             ? Icon(Icons.check_circle, color: Colors.green, size: 17.5,)
                             : Image.asset('assets/images/icons/close.png', width: 15, height: 15),
                             SizedBox(width: 15,),
-                            Flexible(child: Text(_errorController.text),),
+                            Flexible(child: Text(_errorController.text, style: TextStyle(color: Colors.black),),),
                           ],
                         ),
                       ) : Container(),

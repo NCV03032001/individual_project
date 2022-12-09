@@ -5,6 +5,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
+
+import '../model/User.dart';
 
 class CourseDetail extends StatefulWidget {
   const CourseDetail({Key? key}) : super(key: key);
@@ -15,7 +19,6 @@ class CourseDetail extends StatefulWidget {
 
 class _CourseDetailState extends State<CourseDetail> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
 
   @override
   Widget build(BuildContext context) {
@@ -132,9 +135,7 @@ class _CourseDetailState extends State<CourseDetail> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image
                       ),
                     ),
                     SizedBox(width: 20,),

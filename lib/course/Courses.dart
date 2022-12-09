@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
+
+import '../model/User.dart';
 
 class Courses extends StatefulWidget {
   const Courses({Key? key}) : super(key: key);
@@ -14,7 +18,6 @@ class Courses extends StatefulWidget {
 
 class _CoursesState extends State<Courses> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
 
   final TextEditingController _nController = TextEditingController();
   final FocusNode _nFocus = FocusNode();
@@ -159,9 +162,7 @@ class _CoursesState extends State<Courses> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),

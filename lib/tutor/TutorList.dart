@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:individual_project/model/User.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 
 class Tutor extends StatefulWidget {
@@ -18,7 +21,6 @@ class _TutorState extends State<Tutor> {
   final FocusNode _screenFocus = FocusNode();
 
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
 
   Timer? countdownTimer;
   Duration myDuration = Duration(days: 1);
@@ -60,6 +62,7 @@ class _TutorState extends State<Tutor> {
   final TextEditingController _nController = TextEditingController();
   final FocusNode _nFocus = FocusNode();
 
+  List<String> selectedNation = [];
   final _ntKey = GlobalKey<DropdownSearchState<String>>();
   final List<String> items = [
     'Foreign Tutor',
@@ -237,9 +240,7 @@ class _TutorState extends State<Tutor> {
                         height: 30,
                         child: CircleAvatar(
                           radius: 80.0,
-                          backgroundImage: _imageFile == null
-                              ? Image.asset('assets/images/avatars/testavt.webp').image
-                              : FileImage(File(_imageFile!.path)),
+                          backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                         ),
                       ),
                       SizedBox(width: 20,),
@@ -619,6 +620,7 @@ class _TutorState extends State<Tutor> {
                               FocusScope.of(context).requestFocus(_ntFocus);
                             },
                             child: DropdownSearch<String>.multiSelection(
+                              selectedItems: selectedNation,
                               key: _ntKey,
                               items: items,
                               popupProps: PopupPropsMultiSelection.menu(
@@ -854,7 +856,8 @@ class _TutorState extends State<Tutor> {
                             initS = TimeOfDay(hour: 7, minute: 0);
                             initE = TimeOfDay(hour: 8, minute: 0);
                             _tController.clear();
-                            _ntKey.currentState?.popupValidate([]);
+                            selectedNation = [];
+                            _ntKey.currentState?.popupValidate(selectedNation);
                             isSelectedTag = List.generate(tags.length, (index) => false);
                             isSelectedTag[0] = true;
                           });
