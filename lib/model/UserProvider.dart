@@ -1,10 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:individual_project/model/Tokens.dart';
 import 'package:individual_project/model/User.dart';
-import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 class UserProvider  with ChangeNotifier, Diagnosticable {

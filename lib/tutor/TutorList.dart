@@ -1,14 +1,16 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/model/User.dart';
+import 'package:individual_project/model/TutorProvider.dart';
 import 'package:individual_project/model/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:time_range_picker/time_range_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:number_paginator/number_paginator.dart';
 
 class Tutor extends StatefulWidget {
   const Tutor({Key? key}) : super(key: key);
@@ -19,6 +21,12 @@ class Tutor extends StatefulWidget {
 
 class _TutorState extends State<Tutor> {
   final FocusNode _screenFocus = FocusNode();
+  bool _isLoading = false;
+
+  int _maxPage = 1;
+  final NumberPaginatorController _pagiController = NumberPaginatorController();
+
+  TextEditingController _errorController = TextEditingController();
 
   String _firstSelected ='assets/images/usaFlag.svg';
 
@@ -29,11 +37,24 @@ class _TutorState extends State<Tutor> {
   void initState() {
     super.initState();
     setState(() {
+      _errorController.text = "";
       tags = ['All', 'English for kids', 'English for Business', 'Conversational', 'STARTERS', 'MOVERS', 'FLYERS', 'KET', 'PET', 'IELTS', 'TOEFL', 'TOEIC'];
       isSelectedTag = List.generate(tags.length, (index) => false);
       isSelectedTag[0] = true;
+      _isLoading = true;
     });
-    startTimer();
+    // Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
+    //   access: Access(
+    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzExMTUyMTYsImV4cCI6MTY3MTIwMTYxNiwidHlwZSI6ImFjY2VzcyJ9._HCnjzYOgzilLAmEhehvEAcgtkBIh9dgYnNUvKkAqBk",
+    //     expires: "2022-12-08T05:35:46.286Z"
+    //   ),
+    //   refresh: Refresh(
+    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzAzOTEzNDYsImV4cCI6MTY3Mjk4MzM0NiwidHlwZSI6InJlZnJlc2gifQ.5DiiDFVhCFUnlHFosgDn7EvWUwWBGy5kcADSR9opstE",
+    //     expires: "2023-01-06T05:35:46.286Z"
+    //   )
+    // );
+    //startTimer();
+    getTutorList();
   }
   /// Timer related methods ///
   void startTimer() {
@@ -105,22 +126,72 @@ class _TutorState extends State<Tutor> {
 
   final FocusNode _rsFocus = FocusNode();
 
-  List<String> FTutorTags = ['English for Business', 'Conversational', 'English for kids', 'IELTS', 'TOEIC'];
-  List<String> STutorTags = ['English for Business', 'IELTS', 'PET', 'KET'];
+  void getTutorList({Map<String, String> queryParameters = const {'perPage': '9','page': '1',}}) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/more', queryParameters);
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
 
-  bool FisOnl = true;
-  bool SisOnl = false;
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _errorController.text = err;
+      });
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      //print(parsed);
+      var tutorProv = Provider.of<TutorProvider>(context, listen: false);
+      tutorProv.fromJson(parsed);
+      var readTutorProv = context.read<TutorProvider>();
 
-  bool FisFav = false;
-  bool SisFav = true;
+      print(readTutorProv.theList.length);
+      // for (var aTutor in readTutorProv.theList) {
+      //
+      // }
 
+      print(readTutorProv.favList.length);
+      // for (var aTutor in readTutorProv.favList) {
+      //   print(aTutor.avatar);
+      // }
+      //int? perPage = int.tryParse(queryParameters['perPage']!);
+      readTutorProv.makeList();
+      setState(() {
+        _errorController.text = "";
+      });
+    }
+    //print(response.body);
+    setState(() {
+      _isLoading = false;
+      _maxPage = context.read<TutorProvider>().count~/9;
+      if (_maxPage < 1) _maxPage = 1;
+    });
+  }
+
+  List<Map<String, String>> specList = [
+    {'inJson': 'business-english', 'toShow': 'English for Business'},
+    {'inJson': 'conversational-english', 'toShow': 'Conversational'},
+    {'inJson': 'english-for-kids', 'toShow': 'English for kids'},
+    {'inJson': 'starters', 'toShow': 'STARTERS'},
+    {'inJson': 'movers', 'toShow': 'MOVERS'},
+    {'inJson': 'flyers', 'toShow': 'FLYERS'},
+    {'inJson': 'ket', 'toShow': 'PET'},
+    {'inJson': 'ielts', 'toShow': 'IELTS'},
+    {'inJson': 'toefl', 'toShow': 'TOEFL'},
+    {'inJson': 'toeic', 'toShow': 'TOEIC'},
+  ];
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
-
-  bool FhasRvw = true;
-  bool ShasRvw  = false;
 
   @override
   Widget build(BuildContext context) {
+    var readTutorProv = context.read<TutorProvider>();
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    
     String strDigits(int n) => n.toString().padLeft(2, '0');
     final hours = strDigits(myDuration.inHours.remainder(2));
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
@@ -860,7 +931,9 @@ class _TutorState extends State<Tutor> {
                             _ntKey.currentState?.popupValidate(selectedNation);
                             isSelectedTag = List.generate(tags.length, (index) => false);
                             isSelectedTag[0] = true;
+                            //_errorController.text = "";
                           });
+                          getTutorList();
                         },
                         focusNode: _rsFocus,
                         style: OutlinedButton.styleFrom(
@@ -884,337 +957,490 @@ class _TutorState extends State<Tutor> {
                       thickness: 2,
                     ),
                     Container(
-                      margin: EdgeInsets.fromLTRB(0, 30, 0, 30),
+                      margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Recommended Tutors',
+                        'Favourite Tutors',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    Column(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          margin: EdgeInsets.only(bottom: 10),
-                          padding: EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              width: 1,
-                              color: Colors.grey,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            color: Theme.of(context).backgroundColor,
-                          ),
-                          child: Column(
+                    _isLoading == true
+                    ? CircularProgressIndicator()
+                    : _errorController.text.isEmpty
+                    ? readTutorProv.favList.isNotEmpty 
+                    ? SizedBox(
+                      height: 375,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: List.generate(readTutorProv.favList.length, (i) {
+                          return Row(
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    height: 120,
-                                    width: 100,
-                                    child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image, FisOnl),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Expanded(
-                                    child: SizedBox(
-                                      child: Column(
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                            child: Container(
-                                              alignment: Alignment.centerLeft,
-                                              padding: EdgeInsets.only(left: 10),
-                                              margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                              child: Text(
-                                                'Keegan',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis ,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(left: 10),
-                                            margin: EdgeInsets.only(bottom: 10),
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child: SvgPicture.asset('assets/images/frFlag.svg'),
-                                                ),
-                                                SizedBox(width: 10),
-                                                Text('France'),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(left: 10),
-                                            margin: EdgeInsets.only(bottom: 10),
-                                            child: Row(
-                                              children: [
-                                                FhasRvw
-                                                    ? Row(
-                                                  children:
-                                                  tooltipMsg.map((value) => Tooltip(
-                                                    message: value,
-                                                    child: Icon(Icons.star, color: Colors.yellow,),
-                                                  )).toList(),
-                                                )
-                                                    : Text('No reviews yet', style:  TextStyle(
-                                                  fontStyle: FontStyle.italic,
-                                                ),),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () => setState(() {
-                                      FisFav = !FisFav;
-                                    }),
-                                    icon: FisFav
-                                        ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
-                                        : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
-                                  ),
-                                ],
-                              ),
                               Container(
-                                margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                                height: 50,
-                                width: double.infinity,
-                                child: SingleChildScrollView(
-                                  child: Wrap(
-                                    runSpacing: 5,
-                                    spacing: 5,
-                                    crossAxisAlignment: WrapCrossAlignment.start,
-                                    verticalDirection: VerticalDirection.down,
-                                    children: FTutorTags.map((value) => Container(
-                                      padding: EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          width: 1,
-                                          color: Colors.grey,
+                                width: width-30,
+                                margin: EdgeInsets.only(bottom: 10),
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    width: 1,
+                                    color: Colors.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Theme.of(context).backgroundColor,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 120,
+                                          width: 100,
+                                          child: readTutorProv.favList[i].avatar != null
+                                              ? ImageProfile(Image.network(readTutorProv.favList[i].avatar!).image, readTutorProv.favList[i].isOnline!, readTutorProv.favList[i].userId)
+                                              : ImageProfile(Image.network("").image, readTutorProv.favList[i].isOnline!, readTutorProv.favList[i].userId),
                                         ),
-                                        borderRadius: BorderRadius.circular(20),
-                                        color: Colors.blue,
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Expanded(
+                                          child: SizedBox(
+                                            child: Column(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.favList[i].userId),
+                                                  child: Container(
+                                                    alignment: Alignment.centerLeft,
+                                                    padding: EdgeInsets.only(left: 10),
+                                                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                                    child: Text(
+                                                      readTutorProv.favList[i].name,
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis ,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 10),
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: readTutorProv.favList[i].country != null
+                                                    ? Country.tryParse(readTutorProv.favList[i].country!) != null
+                                                      ? Row(
+                                                        children: [
+                                                          SizedBox(
+                                                            width: 20,
+                                                            height: 20,
+                                                            child: Text(Country.tryParse(readTutorProv.favList[i].country!)!.flagEmoji),
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Text(Country.tryParse(readTutorProv.favList[i].country!)!.name),
+                                                        ],
+                                                      )
+                                                      : Row(
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 20,
+                                                              height: 20,
+                                                              child: Image.asset('assets/images/icons/close.png'),
+                                                            ),
+                                                            SizedBox(width: 10),
+                                                            Text("Invalid country"),
+                                                          ],
+                                                        )
+                                                    : Row(
+                                                        children: [
+                                                          SizedBox(
+                                                            width: 20,
+                                                            height: 20,
+                                                            child: Image.asset('assets/images/icons/close.png'),
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Text("Not set country"),
+                                                        ],
+                                                      ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 10),
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: Row(
+                                                    children: [
+                                                      readTutorProv.favList[i].rating != null
+                                                          ? Row(
+                                                        children: []..addAll(List.generate(readTutorProv.favList[i].rating!.toInt(), (index) {
+                                                            return Tooltip(
+                                                              message: tooltipMsg[index],
+                                                              child: Icon(Icons.star, color: Colors.yellow,),
+                                                            );
+                                                          }))
+                                                          ..addAll(List.generate((5-readTutorProv.favList[i].rating!.toInt()), (index) {
+                                                            return Tooltip(
+                                                              message: tooltipMsg[4-index],
+                                                              child: Icon(Icons.star, color: Colors.grey,),
+                                                            );
+                                                          }).reversed)
+                                                      )
+                                                          : Text('No reviews yet', style:  TextStyle(
+                                                        fontStyle: FontStyle.italic,
+                                                      ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.favList[i].userId, context.read<UserProvider>().thisTokens.access.token);
+                                            if (doFavRes != "Success") {
+                                              setState(() {
+                                                _errorController.text = doFavRes;
+                                              });
+                                            }
+                                            else {
+                                              setState(() {
+                                                _errorController.text = "";
+                                              });
+                                            }
+                                          },
+                                          icon: context.read<TutorProvider>().favList[i].isFavorite!
+                                          ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                          : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                                      height: 50,
+                                      width: double.infinity,
+                                      child: SingleChildScrollView(
+                                        child: Wrap(
+                                          runSpacing: 5,
+                                          spacing: 5,
+                                          crossAxisAlignment: WrapCrossAlignment.start,
+                                          verticalDirection: VerticalDirection.down,
+                                          children: readTutorProv.favList[i].specialties.split(',').map((value) => Container(
+                                            padding: EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                width: 1,
+                                                color: Colors.grey,
+                                              ),
+                                              borderRadius: BorderRadius.circular(20),
+                                              color: Colors.blue,
+                                            ),
+                                            child: specList.indexWhere((e) => e['inJson'] == value) != -1
+                                            ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                                            : Text(value.toUpperCase()),
+                                          )).toList(),
+                                        ),
                                       ),
-                                      child: Text(value),
-                                    )).toList(),
-                                  ),
+                                    ),
+                                    Container(
+                                      height: 70,
+                                      alignment: Alignment.topLeft,
+                                      margin: EdgeInsets.only(bottom: 15),
+                                      child: Text(
+                                        readTutorProv.favList[i].bio,
+                                        maxLines: 4,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: double.infinity,
+                                      alignment: Alignment.centerRight,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.favList[i].userId),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                          backgroundColor: Colors.white,
+                                          side: BorderSide(color: Colors.blue, width: 2),
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                                          ),
+                                        ),
+                                        icon: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
+                                        ),
+                                        label: Text(
+                                          'Book',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Container(
-                                height: 70,
-                                alignment: Alignment.topLeft,
-                                margin: EdgeInsets.only(bottom: 15),
-                                child: Text(
-                                  'I am passionate about running and fitness, I often compete in trail/mountain running events and I love pushing myself. I am training to one day take part in ultra-endurance events. I also enjoy watching rugby on the weekends, reading and watching podcasts on Youtube. My most memorable life experience would be living in and traveling around Southeast Asia.',
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Container(
-                                width: double.infinity,
-                                alignment: Alignment.centerRight,
-                                child: ElevatedButton.icon(
-                                  onPressed: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                    backgroundColor: Colors.white,
-                                    side: BorderSide(color: Colors.blue, width: 2),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                                    ),
-                                  ),
-                                  icon: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
-                                  ),
-                                  label: Text(
-                                    'Book',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ),
+                              SizedBox(
+                                width: 15,
                               ),
                             ],
-                          ),
+                          );
+                        }),
+                      ),
+                    ) : Text("No Favorite Tutor.")
+                    : Text(_errorController.text),
+                    Divider(
+                      thickness: 2,
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Filtered Tutors',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Container(
-                          width: double.infinity,
-                          margin: EdgeInsets.only(bottom: 10),
-                          padding: EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              width: 1,
-                              color: Colors.grey,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            color: Theme.of(context).backgroundColor,
-                          ),
-                          child: Column(
+                      ),
+                    ),
+                    _isLoading == true
+                        ? CircularProgressIndicator()
+                        : _errorController.text.isEmpty 
+                    ? readTutorProv.theList.isNotEmpty 
+                    ? SizedBox(
+                      height: 375,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: List.generate(readTutorProv.theList.length, (i) {
+                          if (readTutorProv.theList[i].toShow == false) {
+                            return Container();
+                          }
+                          return Row(
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    height: 120,
-                                    width: 100,
-                                    child: ImageProfile(Image.asset('assets/images/avatars/Stutoravt.jpg').image, SisOnl),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Expanded(
-                                    child: SizedBox(
-                                      child: Column(
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                            child: Container(
-                                              alignment: Alignment.centerLeft,
-                                              padding: EdgeInsets.only(left: 10),
-                                              margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                              child: Text(
-                                                'April Baldo',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis ,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(left: 10),
-                                            margin: EdgeInsets.only(bottom: 10),
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child: SvgPicture.asset('assets/images/phFlag.svg'),
-                                                ),
-                                                SizedBox(width: 10),
-                                                Text('Philippines (the)'),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(left: 10),
-                                            margin: EdgeInsets.only(bottom: 10),
-                                            child: Row(
-                                              children: [
-                                                ShasRvw
-                                                    ? Row(
-                                                  children:
-                                                  tooltipMsg.map((value) => Tooltip(
-                                                    message: value,
-                                                    child: Icon(Icons.star, color: Colors.yellow,),
-                                                  )).toList(),
-                                                )
-                                                    : Text('No reviews yet', style:  TextStyle(
-                                                  fontStyle: FontStyle.italic,
-                                                ),),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () => setState(() {
-                                      SisFav = !SisFav;
-                                    }),
-                                    icon: SisFav
-                                        ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
-                                        : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
-                                  ),
-                                ],
-                              ),
                               Container(
-                                margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                                height: 50,
-                                width: double.infinity,
-                                child: SingleChildScrollView(
-                                  child: Wrap(
-                                    runSpacing: 5,
-                                    spacing: 5,
-                                    crossAxisAlignment: WrapCrossAlignment.start,
-                                    verticalDirection: VerticalDirection.down,
-                                    children: STutorTags.map((value) => Container(
-                                      padding: EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          width: 1,
-                                          color: Colors.grey,
+                                width: width-30,
+                                margin: EdgeInsets.only(bottom: 10),
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    width: 1,
+                                    color: Colors.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Theme.of(context).backgroundColor,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 120,
+                                          width: 100,
+                                          child: readTutorProv.theList[i].avatar != null
+                                              ? ImageProfile(Image.network(readTutorProv.theList[i].avatar!).image, readTutorProv.theList[i].isOnline!, readTutorProv.theList[i].userId)
+                                              : ImageProfile(Image.network("").image, readTutorProv.theList[i].isOnline!, readTutorProv.theList[i].userId),
                                         ),
-                                        borderRadius: BorderRadius.circular(20),
-                                        color: Colors.blue,
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Expanded(
+                                          child: SizedBox(
+                                            child: Column(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.theList[i].userId),
+                                                  child: Container(
+                                                    alignment: Alignment.centerLeft,
+                                                    padding: EdgeInsets.only(left: 10),
+                                                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                                    child: Text(
+                                                      readTutorProv.theList[i].name,
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis ,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 10),
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: readTutorProv.theList[i].country != null
+                                                      ? Country.tryParse(readTutorProv.theList[i].country!) != null
+                                                      ? Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Text(Country.tryParse(readTutorProv.theList[i].country!)!.flagEmoji),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      Text(Country.tryParse(readTutorProv.theList[i].country!)!.name),
+                                                    ],
+                                                  )
+                                                      : Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Image.asset('assets/images/icons/close.png'),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      Text("Invalid country"),
+                                                    ],
+                                                  )
+                                                      : Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Image.asset('assets/images/icons/close.png'),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      Text("Not set country"),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 10),
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: Row(
+                                                    children: [
+                                                      readTutorProv.theList[i].rating != null
+                                                          ? Row(
+                                                          children: []..addAll(List.generate(readTutorProv.theList[i].rating!.toInt(), (index) {
+                                                            return Tooltip(
+                                                              message: tooltipMsg[index],
+                                                              child: Icon(Icons.star, color: Colors.yellow,),
+                                                            );
+                                                          }))
+                                                            ..addAll(List.generate((5-readTutorProv.theList[i].rating!.toInt()), (index) {
+                                                              return Tooltip(
+                                                                message: tooltipMsg[4-index],
+                                                                child: Icon(Icons.star, color: Colors.grey,),
+                                                              );
+                                                            }).reversed)
+                                                      )
+                                                          : Text('No reviews yet', style:  TextStyle(
+                                                        fontStyle: FontStyle.italic,
+                                                      ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.theList[i].userId, context.read<UserProvider>().thisTokens.access.token);
+                                            if (doFavRes != "Success") {
+                                              setState(() {
+                                                _errorController.text = doFavRes;
+                                              });
+                                            }
+                                            else {
+                                              setState(() {
+                                                _errorController.text = "";
+                                              });
+                                            }
+                                          },
+                                          icon: context.read<TutorProvider>().theList[i].isFavorite!
+                                              ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                              : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                                      height: 50,
+                                      width: double.infinity,
+                                      child: SingleChildScrollView(
+                                        child: Wrap(
+                                          runSpacing: 5,
+                                          spacing: 5,
+                                          crossAxisAlignment: WrapCrossAlignment.start,
+                                          verticalDirection: VerticalDirection.down,
+                                          children: readTutorProv.theList[i].specialties.split(',').map((value) => Container(
+                                            padding: EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                width: 1,
+                                                color: Colors.grey,
+                                              ),
+                                              borderRadius: BorderRadius.circular(20),
+                                              color: Colors.blue,
+                                            ),
+                                            child: specList.indexWhere((e) => e['inJson'] == value) != -1
+                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                                                : Text(value.toUpperCase()),
+                                          )).toList(),
+                                        ),
                                       ),
-                                      child: Text(value),
-                                    )).toList(),
-                                  ),
+                                    ),
+                                    Container(
+                                      height: 70,
+                                      alignment: Alignment.topLeft,
+                                      margin: EdgeInsets.only(bottom: 15),
+                                      child: Text(
+                                        readTutorProv.theList[i].bio,
+                                        maxLines: 4,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: double.infinity,
+                                      alignment: Alignment.centerRight,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.theList[i].userId),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                          backgroundColor: Colors.white,
+                                          side: BorderSide(color: Colors.blue, width: 2),
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                                          ),
+                                        ),
+                                        icon: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
+                                        ),
+                                        label: Text(
+                                          'Book',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Container(
-                                height: 70,
-                                alignment: Alignment.topLeft,
-                                margin: EdgeInsets.only(bottom: 15),
-                                child: Text(
-                                  'Hello! My name is April Baldo, you can just call me Teacher April. I am an English teacher and currently teaching in senior high school. I have been teaching grammar and literature for almost 10 years. I am fond of reading and teaching literature as one way of knowing one’s beliefs and culture. I am friendly and full of positivity. I love teaching because I know each student has something to bring on. Molding them to become an individual is a great success.',
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Container(
-                                width: double.infinity,
-                                alignment: Alignment.centerRight,
-                                child: ElevatedButton.icon(
-                                  onPressed: () => Navigator.pushNamed(context, '/tutor_profile'),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                    backgroundColor: Colors.white,
-                                    side: BorderSide(color: Colors.blue, width: 2),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                                    ),
-                                  ),
-                                  icon: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
-                                  ),
-                                  label: Text(
-                                    'Book',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ),
+                              SizedBox(
+                                width: 15,
                               ),
                             ],
-                          ),
-                        ),
-                      ],
+                          );
+                        }),
+                      ),
+                    ) : Text("No Tutor in this page. They may all be on the \"Favorite Tutors\" section.")
+                    : Text(_errorController.text),
+                    NumberPaginator(
+                      controller: _pagiController,
+                      // by default, the paginator shows numbers as center content
+                      numberPages: _maxPage,
+                      initialPage: 0,
+                      onPageChange: (int index) {
+                        var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
+                        getTutorList(queryParameters: queryParameters);
+                      },
                     )
                   ],
                 ),
@@ -1233,11 +1459,11 @@ class _TutorState extends State<Tutor> {
     );
   }
 
-  Widget ImageProfile(ImageProvider input, bool online) {
+  Widget ImageProfile(ImageProvider input, bool online, String id) {
     return Stack(
       children: [
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/tutor_profile'),
+          onTap: () => Navigator.pushNamed(context, '/tutor_profile' , arguments: id),
           child: CircleAvatar(
             radius: 80.0,
             backgroundImage: input,

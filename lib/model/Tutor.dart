@@ -1,97 +1,109 @@
 class Tutor {
   Tutor({
     this.level,
-    required this.email,
+    this.email,
     //this.google,
     //this.facebook,
     //this.apple,
-    required this.avatar,
+    this.avatar,
     required this.name,
-    required this.country,
-    required this.phone,
-    required this.language,
-    required this.birthday,
-    required this.requestPassword,
-    required this.isActivated,
+    this.country,
+    this.phone,
+    this.language,
+    this.birthday,
+    this.requestPassword,
+    this.isActivated,
     this.isPhoneActivated,
     //this.requireNote,
     this.timezone,
     this.phoneAuth,
-    required this.isPhoneAuthActivated,
+    this.isPhoneAuthActivated,
     this.studySchedule,
     //required this.canSendMessage,
     required this.isPublicRecord,
     //this.caredByStaffId,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     this.deletedAt,
     //this.studentGroupId,
     //required this.feedbacks,
-    required this.id,
+    this.id,
     required this.userId,
     required this.video,
     required this.bio,
     required this.education,
     required this.experience,
     required this.profession,
-    required this.accent,
+    this.accent,
     required this.targetStudent,
     required this.interests,
     required this.languages,
     required this.specialties,
-    required this.resume,
+    this.resume,
     this.rating,
     this.isNative,
-    required this.price,
-    required this.isOnline,
+    //required this.price,
+    this.isOnline,
+    this.isFavorite,
+    this.avgRating,
+    this.totalFeedback,
+    required this.toShow,
   });
+
   late String? level;
-  late String email;
+  late String? email;
   //late String google;
   //late String facebook;
   //late String apple;
-  late String avatar;
+  late String? avatar;
   late String name;
-  late String country;
-  late String phone;
-  late String language;
-  late String birthday;
-  late bool requestPassword;
-  late bool isActivated;
+  late String? country;
+  late String? phone;
+  late String? language;
+  late String? birthday;
+  late bool? requestPassword;
+  late bool? isActivated;
   late bool? isPhoneActivated;
   //late bool? requireNote;
   late int? timezone;
   late String? phoneAuth;
-  late bool isPhoneAuthActivated;
+  late bool? isPhoneAuthActivated;
   late String? studySchedule;
   //late bool canSendMessage;
   late bool isPublicRecord;
   //late String caredByStaffId;
-  late String createdAt;
-  late String updatedAt;
+  late String? createdAt;
+  late String? updatedAt;
   late String? deletedAt;
   //late String? studentGroupId;
+  //late List<Null> courses;
   //** late List<dynamic> feedbacks; **
-  late String id;
+  late String? id;
   late String userId;
   late String video;
   late String bio;
   late String education;
   late String experience;
   late String profession;
-  late String accent;
+  late String? accent;
   late String targetStudent;
   late String interests;
   late String languages;
   late String specialties;
-  late String resume;
+  late String? resume;
   late double? rating;
   late bool? isNative;
-  late int price;
-  late bool isOnline;
+  //late int price;
+  late bool? isOnline;
+  late bool? isFavorite;
+  late double? avgRating;
+  late int? totalFeedback;
+  late bool toShow;
 
-  Tutor.fromJson(Map<String, dynamic> json){
-    level = null;
+  Tutor.fromListJson(Map<String, dynamic> json){
+    toShow = true;
+    isFavorite = false;
+    level = json['level'];
     email = json['email'];
     // google = null;
     // facebook = null;
@@ -117,6 +129,12 @@ class Tutor {
     updatedAt = json['updatedAt'];
     deletedAt = json['deletedAt'];
     //studentGroupId = null;
+    /*if (json['courses'] != null) {
+      courses = new List<Null>();
+      json['courses'].forEach((v) {
+        courses.add(new Null.fromJson(v));
+      });
+    }*/
     //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
     id = json['id'];
     userId = json['userId'];
@@ -133,56 +151,279 @@ class Tutor {
     resume = json['resume'];
     rating = json['rating'];
     isNative = json['isNative'];
-    price = json['price'];
+    //price = json['price'];
     isOnline = json['isOnline'];
+  }
+  // fromListJson(Map<String, dynamic> json){
+  //   toShow = true;
+  //   isFavorite = false;
+  //   level = json['level'];
+  //   email = json['email'];
+  //   // google = null;
+  //   // facebook = null;
+  //   // apple = null;
+  //   avatar = json['avatar'];
+  //   name = json['name'];
+  //   country = json['country'];
+  //   phone = json['phone'];
+  //   language = json['language'];
+  //   birthday = json['birthday'];
+  //   requestPassword = json['requestPassword'];
+  //   isActivated = json['isActivated'];
+  //   isPhoneActivated = json['isActivated'];
+  //   //requireNote = null;
+  //   timezone = json['timezone'];
+  //   phoneAuth = json['phoneAuth'];
+  //   isPhoneAuthActivated = json['isPhoneAuthActivated'];
+  //   studySchedule = json['studySchedule'];
+  //   //canSendMessage = json['canSendMessage'];
+  //   isPublicRecord = json['isPublicRecord'];
+  //   //caredByStaffId = null;
+  //   createdAt = json['createdAt'];
+  //   updatedAt = json['updatedAt'];
+  //   deletedAt = json['deletedAt'];
+  //   //studentGroupId = null;
+  //   /*if (json['courses'] != null) {
+  //     courses = new List<Null>();
+  //     json['courses'].forEach((v) {
+  //       courses.add(new Null.fromJson(v));
+  //     });
+  //   }*/
+  //   //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
+  //   id = json['id'];
+  //   userId = json['userId'];
+  //   video = json['video'];
+  //   bio = json['bio'];
+  //   education = json['education'];
+  //   experience = json['experience'];
+  //   profession = json['profession'];
+  //   accent = json['accent'];
+  //   targetStudent = json['targetStudent'];
+  //   interests = json['interests'];
+  //   languages = json['languages'];
+  //   specialties = json['specialties'];
+  //   resume = json['resume'];
+  //   rating = json['rating'];
+  //   isNative = json['isNative'];
+  //   //price = json['price'];
+  //   isOnline = json['isOnline'];
+  // }
+
+  Tutor.fromFavJson(Map<String, dynamic> json){
+    toShow = true;
+    isOnline = false;
+    isFavorite = true;
+    level = json["secondInfo"]['level'];
+    email = json["secondInfo"]['email'];
+    // google = null;
+    // facebook = null;
+    // apple = null;
+    avatar = json["secondInfo"]['avatar'];
+    name = json["secondInfo"]['name'];
+    country = json["secondInfo"]['country'];
+    phone = json["secondInfo"]['phone'];
+    language = json["secondInfo"]['language'];
+    birthday = json["secondInfo"]['birthday'];
+    requestPassword = json["secondInfo"]['requestPassword'];
+    isActivated = json["secondInfo"]['isActivated'];
+    isPhoneActivated = json["secondInfo"]['isActivated'];
+    //requireNote = null;
+    timezone = json["secondInfo"]['timezone'];
+    phoneAuth = json["secondInfo"]['phoneAuth'];
+    isPhoneAuthActivated = json["secondInfo"]['isPhoneAuthActivated'];
+    studySchedule = json["secondInfo"]['studySchedule'];
+    //canSendMessage = json['canSendMessage'];
+    isPublicRecord = json["secondInfo"]['isPublicRecord'];
+    //caredByStaffId = null;
+    createdAt = json["secondInfo"]['tutorInfo']['createdAt'];
+    updatedAt = json["secondInfo"]['tutorInfo']['updatedAt'];
+    deletedAt = json["secondInfo"]['deletedAt'];
+    //studentGroupId = null;
+    /*if (json['courses'] != null) {
+      courses = new List<Null>();
+      json['courses'].forEach((v) {
+        courses.add(new Null.fromJson(v));
+      });
+    }*/
+    //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
+    id = json['secondInfo']["tutorInfo"]['id'];
+    userId = json["secondInfo"]['tutorInfo']['userId'];
+    video = json["secondInfo"]['tutorInfo']['video'];
+    bio = json["secondInfo"]['tutorInfo']['bio'];
+    education = json["secondInfo"]['tutorInfo']['education'];
+    experience = json["secondInfo"]['tutorInfo']['experience'];
+    profession = json["secondInfo"]['tutorInfo']['profession'];
+    accent = json["secondInfo"]['tutorInfo']['accent'];
+    targetStudent = json["secondInfo"]['tutorInfo']['targetStudent'];
+    interests = json["secondInfo"]['tutorInfo']['interests'];
+    languages = json["secondInfo"]['tutorInfo']['languages'];
+    specialties = json["secondInfo"]['tutorInfo']['specialties'];
+    resume = json["secondInfo"]['tutorInfo']['resume'];
+    rating = json["secondInfo"]['tutorInfo']['rating'];
+    isNative = json["secondInfo"]['tutorInfo']['isNative'];
+    //price = json['price'];
+    //isOnline = json["secondInfo"]['tutorInfo']['isOnline'];
+  }
+  // fromFavJson(Map<String, dynamic> json){
+  //   toShow = true;
+  //   isOnline = false;
+  //   isFavorite = true;
+  //   level = json["secondInfo"]['level'];
+  //   email = json["secondInfo"]['email'];
+  //   // google = null;
+  //   // facebook = null;
+  //   // apple = null;
+  //   avatar = json["secondInfo"]['avatar'];
+  //   name = json["secondInfo"]['name'];
+  //   country = json["secondInfo"]['country'];
+  //   phone = json["secondInfo"]['phone'];
+  //   language = json["secondInfo"]['language'];
+  //   birthday = json["secondInfo"]['birthday'];
+  //   requestPassword = json["secondInfo"]['requestPassword'];
+  //   isActivated = json["secondInfo"]['isActivated'];
+  //   isPhoneActivated = json["secondInfo"]['isActivated'];
+  //   //requireNote = null;
+  //   timezone = json["secondInfo"]['timezone'];
+  //   phoneAuth = json["secondInfo"]['phoneAuth'];
+  //   isPhoneAuthActivated = json["secondInfo"]['isPhoneAuthActivated'];
+  //   studySchedule = json["secondInfo"]['studySchedule'];
+  //   //canSendMessage = json['canSendMessage'];
+  //   isPublicRecord = json["secondInfo"]['isPublicRecord'];
+  //   //caredByStaffId = null;
+  //   createdAt = json["secondInfo"]['tutorInfo']['createdAt'];
+  //   updatedAt = json["secondInfo"]['tutorInfo']['updatedAt'];
+  //   deletedAt = json["secondInfo"]['deletedAt'];
+  //   //studentGroupId = null;
+  //   /*if (json['courses'] != null) {
+  //     courses = new List<Null>();
+  //     json['courses'].forEach((v) {
+  //       courses.add(new Null.fromJson(v));
+  //     });
+  //   }*/
+  //   //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
+  //   id = json['secondInfo']["tutorInfo"]['id'];
+  //   userId = json["secondInfo"]['tutorInfo']['userId'];
+  //   video = json["secondInfo"]['tutorInfo']['video'];
+  //   bio = json["secondInfo"]['tutorInfo']['bio'];
+  //   education = json["secondInfo"]['tutorInfo']['education'];
+  //   experience = json["secondInfo"]['tutorInfo']['experience'];
+  //   profession = json["secondInfo"]['tutorInfo']['profession'];
+  //   accent = json["secondInfo"]['tutorInfo']['accent'];
+  //   targetStudent = json["secondInfo"]['tutorInfo']['targetStudent'];
+  //   interests = json["secondInfo"]['tutorInfo']['interests'];
+  //   languages = json["secondInfo"]['tutorInfo']['languages'];
+  //   specialties = json["secondInfo"]['tutorInfo']['specialties'];
+  //   resume = json["secondInfo"]['tutorInfo']['resume'];
+  //   rating = json["secondInfo"]['tutorInfo']['rating'];
+  //   isNative = json["secondInfo"]['tutorInfo']['isNative'];
+  //   //price = json['price'];
+  //   //isOnline = json["secondInfo"]['tutorInfo']['isOnline'];
+  // }
+  Tutor.fromDetailJson(Map<String, dynamic> json){
+    toShow = true;
+    isFavorite = json['isFavorite'];
+    totalFeedback = json['totalFeedback'];
+    level = json['User']['level'];
+    //email = json['User']['email'];
+    // google = null;
+    // facebook = null;
+    // apple = null;
+    avatar = json['User']['avatar'];
+    name = json['User']['name'];
+    country = json['User']['country'];
+    language = json['User']['language'];
+    //isPhoneActivated = json['isActivated'];
+    //requireNote = null;
+    //timezone = json['timezone'];
+    //phoneAuth = json['phoneAuth'];
+    //isPhoneAuthActivated = json['isPhoneAuthActivated'];
+    //studySchedule = json['studySchedule'];
+    //canSendMessage = json['canSendMessage'];
+    isPublicRecord = json['User']['isPublicRecord'];
+    //caredByStaffId = null;
+    //createdAt = json['createdAt'];
+    //updatedAt = json['updatedAt'];
+    //deletedAt = json['deletedAt'];
+    //studentGroupId = null;
+    /*if (json['courses'] != null) {
+      courses = new List<Null>();
+      json['courses'].forEach((v) {
+        courses.add(new Null.fromJson(v));
+      });
+    }*/
+    //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
+    //id = json['id'];
+    userId = json['User']['id'];
+    video = json['video'];
+    bio = json['bio'];
+    education = json['education'];
+    experience = json['experience'];
+    profession = json['profession'];
+    accent = json['accent'];
+    targetStudent = json['targetStudent'];
+    interests = json['interests'];
+    languages = json['languages'];
+    specialties = json['specialties'];
+    rating = json['rating'];
+    isNative = json['isNative'];
+    //price = json['price'];
   }
 
   Map<String, dynamic> toJson() {
-    final _data = <String, dynamic>{};
-    _data['level'] = level;
-    _data['email'] = email;
+    final data = <String, dynamic>{};
+    data['level'] = level;
+    data['email'] = email;
     //_data['google'] = google;
     //_data['facebook'] = facebook;
     //_data['apple'] = apple;
-    _data['avatar'] = avatar;
-    _data['name'] = name;
-    _data['country'] = country;
-    _data['phone'] = phone;
-    _data['language'] = language;
-    _data['birthday'] = birthday;
-    _data['requestPassword'] = requestPassword;
-    _data['isActivated'] = isActivated;
-    _data['isPhoneActivated'] = isPhoneActivated;
+    data['avatar'] = avatar;
+    data['name'] = name;
+    data['country'] = country;
+    data['phone'] = phone;
+    data['language'] = language;
+    data['birthday'] = birthday;
+    data['requestPassword'] = requestPassword;
+    data['isActivated'] = isActivated;
+    data['isPhoneActivated'] = isPhoneActivated;
     //_data['requireNote'] = requireNote;
-    _data['timezone'] = timezone;
-    _data['phoneAuth'] = phoneAuth;
-    _data['isPhoneAuthActivated'] = isPhoneAuthActivated;
-    _data['studySchedule'] = studySchedule;
+    data['timezone'] = timezone;
+    data['phoneAuth'] = phoneAuth;
+    data['isPhoneAuthActivated'] = isPhoneAuthActivated;
+    data['studySchedule'] = studySchedule;
     //_data['canSendMessage'] = canSendMessage;
-    _data['isPublicRecord'] = isPublicRecord;
+    data['isPublicRecord'] = isPublicRecord;
     //_data['caredByStaffId'] = caredByStaffId;
-    _data['createdAt'] = createdAt;
-    _data['updatedAt'] = updatedAt;
-    _data['deletedAt'] = deletedAt;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    data['deletedAt'] = deletedAt;
     //_data['studentGroupId'] = studentGroupId;
+    /*if (json['courses'] != null) {
+      courses = new List<Null>();
+      json['courses'].forEach((v) {
+        courses.add(new Null.fromJson(v));
+      });
+    }*/
     //** _data['feedbacks'] = feedbacks; **
-    _data['id'] = id;
-    _data['userId'] = userId;
-    _data['video'] = video;
-    _data['bio'] = bio;
-    _data['education'] = education;
-    _data['experience'] = experience;
-    _data['profession'] = profession;
-    _data['accent'] = accent;
-    _data['targetStudent'] = targetStudent;
-    _data['interests'] = interests;
-    _data['languages'] = languages;
-    _data['specialties'] = specialties;
-    _data['resume'] = resume;
-    _data['rating'] = rating;
-    _data['isNative'] = isNative;
-    _data['price'] = price;
-    _data['isOnline'] = isOnline;
-    return _data;
+    data['id'] = id;
+    data['userId'] = userId;
+    data['video'] = video;
+    data['bio'] = bio;
+    data['education'] = education;
+    data['experience'] = experience;
+    data['profession'] = profession;
+    data['accent'] = accent;
+    data['targetStudent'] = targetStudent;
+    data['interests'] = interests;
+    data['languages'] = languages;
+    data['specialties'] = specialties;
+    data['resume'] = resume;
+    data['rating'] = rating;
+    data['isNative'] = isNative;
+    //data['price'] = price;
+    data['isOnline'] = isOnline;
+    //data['isFavorite'] = isFavorite;
+    //data['avgRating'] = avgRating;
+    //data['totalFeedback'] = totalFeedback;
+    return data;
   }
 }

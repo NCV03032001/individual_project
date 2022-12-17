@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/model/Tokens.dart';
+import 'package:individual_project/model/TutorProvider.dart';
 import 'package:individual_project/model/UserProvider.dart';
 
 import 'package:individual_project/profileNsetting/Profile.dart';
@@ -34,18 +36,49 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        //ChangeNotifierProvider(create: (context) => User(id: "", email: "", name: "", avatar: "", phone: "", isActivated: false, isPhoneActivated: true)),
-        //ChangeNotifierProvider(create: (context) => Tokens(access: null, refresh:null)),
         ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(create: (context) => TutorProvider()),
       ],
       child: MaterialApp(
+        localizationsDelegates: [
+          LocaleNamesLocalizationsDelegate(),
+          // ... more localization delegates
+        ],
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
+
+        onGenerateRoute: (settings) {
+          if (settings.name == '/tutor_profile') {
+            // Cast the arguments to the correct
+            // type: ScreenArguments.
+            final args = settings.arguments as String;
+
+            // Then, extract the required data from
+            // the arguments and pass the data to the
+            // correct screen.
+            return MaterialPageRoute(
+              builder: (context) {
+                return TutorProfile(
+                  id: args,
+                );
+              },
+            );
+          }
+          // The code only supports
+          // PassArgumentsScreen.routeName right now.
+          // Other values need to be implemented if we
+          // add them. The assertion here will help remind
+          // us of that higher up in the call stack, since
+          // this assertion would otherwise fire somewhere
+          // in the framework.
+          assert(false, 'Need to implement ${settings.name}');
+          return null;
+        },
 
         routes:  {
           '/login': (context) => Login(),
           '/tutor': (context) => Tutor(),
-          '/tutor_profile': (context) => TutorProfile(),
+          //'/tutor_profile': (context) => TutorProfile(),
           '/profile': (context) => Profile(),
           '/signup': (context) => Signup(),
           '/setting': (context) =>  Setting(),
