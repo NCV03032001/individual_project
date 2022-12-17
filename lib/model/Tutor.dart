@@ -26,6 +26,7 @@ class Tutor {
     this.updatedAt,
     this.deletedAt,
     //this.studentGroupId,
+    required this.courses,
     //required this.feedbacks,
     this.id,
     required this.userId,
@@ -76,7 +77,7 @@ class Tutor {
   late String? updatedAt;
   late String? deletedAt;
   //late String? studentGroupId;
-  //late List<Null> courses;
+  late List<TempCourse> courses;
   //** late List<dynamic> feedbacks; **
   late String? id;
   late String userId;
@@ -100,7 +101,7 @@ class Tutor {
   late int? totalFeedback;
   late bool toShow;
 
-  Tutor.fromListJson(Map<String, dynamic> json){
+  Tutor.fromPreListJson(Map<String, dynamic> json){
     toShow = true;
     isFavorite = false;
     level = json['level'];
@@ -154,60 +155,59 @@ class Tutor {
     //price = json['price'];
     isOnline = json['isOnline'];
   }
-  // fromListJson(Map<String, dynamic> json){
-  //   toShow = true;
-  //   isFavorite = false;
-  //   level = json['level'];
-  //   email = json['email'];
-  //   // google = null;
-  //   // facebook = null;
-  //   // apple = null;
-  //   avatar = json['avatar'];
-  //   name = json['name'];
-  //   country = json['country'];
-  //   phone = json['phone'];
-  //   language = json['language'];
-  //   birthday = json['birthday'];
-  //   requestPassword = json['requestPassword'];
-  //   isActivated = json['isActivated'];
-  //   isPhoneActivated = json['isActivated'];
-  //   //requireNote = null;
-  //   timezone = json['timezone'];
-  //   phoneAuth = json['phoneAuth'];
-  //   isPhoneAuthActivated = json['isPhoneAuthActivated'];
-  //   studySchedule = json['studySchedule'];
-  //   //canSendMessage = json['canSendMessage'];
-  //   isPublicRecord = json['isPublicRecord'];
-  //   //caredByStaffId = null;
-  //   createdAt = json['createdAt'];
-  //   updatedAt = json['updatedAt'];
-  //   deletedAt = json['deletedAt'];
-  //   //studentGroupId = null;
-  //   /*if (json['courses'] != null) {
-  //     courses = new List<Null>();
-  //     json['courses'].forEach((v) {
-  //       courses.add(new Null.fromJson(v));
-  //     });
-  //   }*/
-  //   //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
-  //   id = json['id'];
-  //   userId = json['userId'];
-  //   video = json['video'];
-  //   bio = json['bio'];
-  //   education = json['education'];
-  //   experience = json['experience'];
-  //   profession = json['profession'];
-  //   accent = json['accent'];
-  //   targetStudent = json['targetStudent'];
-  //   interests = json['interests'];
-  //   languages = json['languages'];
-  //   specialties = json['specialties'];
-  //   resume = json['resume'];
-  //   rating = json['rating'];
-  //   isNative = json['isNative'];
-  //   //price = json['price'];
-  //   isOnline = json['isOnline'];
-  // }
+
+  Tutor.fromListJson(Map<String, dynamic> json){
+    level = json['level'];
+    email = json['email'];
+    // google = null;
+    // facebook = null;
+    // apple = null;
+    avatar = json['avatar'];
+    name = json['name'];
+    country = json['country'];
+    phone = json['phone'];
+    language = json['language'];
+    birthday = json['birthday'];
+    requestPassword = json['requestPassword'];
+    isActivated = json['isActivated'];
+    isPhoneActivated = json['isActivated'];
+    //requireNote = null;
+    timezone = json['timezone'];
+    phoneAuth = json['phoneAuth'];
+    isPhoneAuthActivated = json['isPhoneAuthActivated'];
+    studySchedule = json['studySchedule'];
+    //canSendMessage = json['canSendMessage'];
+    isPublicRecord = json['isPublicRecord'];
+    //caredByStaffId = null;
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    deletedAt = json['deletedAt'];
+    //studentGroupId = null;
+    courses = [];
+    //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
+    id = json['id'];
+    userId = json['userId'];
+    video = json['video'];
+    bio = json['bio'];
+    education = json['education'];
+    experience = json['experience'];
+    profession = json['profession'];
+    accent = json['accent'];
+    targetStudent = json['targetStudent'];
+    interests = json['interests'];
+    languages = json['languages'];
+    specialties = json['specialties'];
+    resume = json['resume'];
+    rating = json['rating'];
+    isNative = json['isNative'];
+    //price = json['price'];
+    //isOnline = json['isOnline'];
+    isOnline = false;
+    if (json['isfavoritetutor'] == null)
+      isFavorite = false;
+    else isFavorite = true;
+    toShow = true;
+  }
 
   Tutor.fromFavJson(Map<String, dynamic> json){
     toShow = true;
@@ -239,12 +239,7 @@ class Tutor {
     updatedAt = json["secondInfo"]['tutorInfo']['updatedAt'];
     deletedAt = json["secondInfo"]['deletedAt'];
     //studentGroupId = null;
-    /*if (json['courses'] != null) {
-      courses = new List<Null>();
-      json['courses'].forEach((v) {
-        courses.add(new Null.fromJson(v));
-      });
-    }*/
+    courses = [];
     //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
     id = json['secondInfo']["tutorInfo"]['id'];
     userId = json["secondInfo"]['tutorInfo']['userId'];
@@ -264,61 +259,7 @@ class Tutor {
     //price = json['price'];
     //isOnline = json["secondInfo"]['tutorInfo']['isOnline'];
   }
-  // fromFavJson(Map<String, dynamic> json){
-  //   toShow = true;
-  //   isOnline = false;
-  //   isFavorite = true;
-  //   level = json["secondInfo"]['level'];
-  //   email = json["secondInfo"]['email'];
-  //   // google = null;
-  //   // facebook = null;
-  //   // apple = null;
-  //   avatar = json["secondInfo"]['avatar'];
-  //   name = json["secondInfo"]['name'];
-  //   country = json["secondInfo"]['country'];
-  //   phone = json["secondInfo"]['phone'];
-  //   language = json["secondInfo"]['language'];
-  //   birthday = json["secondInfo"]['birthday'];
-  //   requestPassword = json["secondInfo"]['requestPassword'];
-  //   isActivated = json["secondInfo"]['isActivated'];
-  //   isPhoneActivated = json["secondInfo"]['isActivated'];
-  //   //requireNote = null;
-  //   timezone = json["secondInfo"]['timezone'];
-  //   phoneAuth = json["secondInfo"]['phoneAuth'];
-  //   isPhoneAuthActivated = json["secondInfo"]['isPhoneAuthActivated'];
-  //   studySchedule = json["secondInfo"]['studySchedule'];
-  //   //canSendMessage = json['canSendMessage'];
-  //   isPublicRecord = json["secondInfo"]['isPublicRecord'];
-  //   //caredByStaffId = null;
-  //   createdAt = json["secondInfo"]['tutorInfo']['createdAt'];
-  //   updatedAt = json["secondInfo"]['tutorInfo']['updatedAt'];
-  //   deletedAt = json["secondInfo"]['deletedAt'];
-  //   //studentGroupId = null;
-  //   /*if (json['courses'] != null) {
-  //     courses = new List<Null>();
-  //     json['courses'].forEach((v) {
-  //       courses.add(new Null.fromJson(v));
-  //     });
-  //   }*/
-  //   //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
-  //   id = json['secondInfo']["tutorInfo"]['id'];
-  //   userId = json["secondInfo"]['tutorInfo']['userId'];
-  //   video = json["secondInfo"]['tutorInfo']['video'];
-  //   bio = json["secondInfo"]['tutorInfo']['bio'];
-  //   education = json["secondInfo"]['tutorInfo']['education'];
-  //   experience = json["secondInfo"]['tutorInfo']['experience'];
-  //   profession = json["secondInfo"]['tutorInfo']['profession'];
-  //   accent = json["secondInfo"]['tutorInfo']['accent'];
-  //   targetStudent = json["secondInfo"]['tutorInfo']['targetStudent'];
-  //   interests = json["secondInfo"]['tutorInfo']['interests'];
-  //   languages = json["secondInfo"]['tutorInfo']['languages'];
-  //   specialties = json["secondInfo"]['tutorInfo']['specialties'];
-  //   resume = json["secondInfo"]['tutorInfo']['resume'];
-  //   rating = json["secondInfo"]['tutorInfo']['rating'];
-  //   isNative = json["secondInfo"]['tutorInfo']['isNative'];
-  //   //price = json['price'];
-  //   //isOnline = json["secondInfo"]['tutorInfo']['isOnline'];
-  // }
+
   Tutor.fromDetailJson(Map<String, dynamic> json){
     toShow = true;
     isFavorite = json['isFavorite'];
@@ -345,12 +286,10 @@ class Tutor {
     //updatedAt = json['updatedAt'];
     //deletedAt = json['deletedAt'];
     //studentGroupId = null;
-    /*if (json['courses'] != null) {
-      courses = new List<Null>();
-      json['courses'].forEach((v) {
-        courses.add(new Null.fromJson(v));
-      });
-    }*/
+    if (json['User']['courses'] != null) {
+      courses = List.from(json['User']['courses']).map((e) => TempCourse.fromJson(e)).toList();
+    }
+    else courses = [];
     //** feedbacks = List.castFrom<dynamic, dynamic>(json['feedbacks']); **
     //id = json['id'];
     userId = json['User']['id'];
@@ -425,5 +364,19 @@ class Tutor {
     //data['avgRating'] = avgRating;
     //data['totalFeedback'] = totalFeedback;
     return data;
+  }
+}
+
+class TempCourse{
+  TempCourse({
+    required this.id,
+    required this.name,
+  });
+  late final String id;
+  late final String name;
+
+  TempCourse.fromJson(Map<String, dynamic> json){
+    id = json['id'];
+    name = json['name'];
   }
 }

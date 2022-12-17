@@ -5,15 +5,23 @@ import 'package:individual_project/model/Tutor.dart';
 import 'package:http/http.dart' as http;
 
 
-class TutorProvider  with ChangeNotifier, Diagnosticable {
+class TutorProvider with ChangeNotifier, Diagnosticable {
   late int count;
   late List<Tutor> theList;
   late List<Tutor> favList;
+  late List<Tutor> crrList = [];
 
   void fromJson(Map<dynamic, dynamic> json){
     count = json['tutors']['count'];
     theList = List.from(json['tutors']['rows']).map((e)=>Tutor.fromListJson(e)).toList();
     favList = List.from(json['favoriteTutor']).map((e)=>Tutor.fromFavJson(e)).toList();
+    notifyListeners();
+  }
+
+  void fromSearchJson(Map<dynamic, dynamic> json){
+    count = json['count'];
+    crrList = List.from(json['rows']).map((e)=>Tutor.fromListJson(e)).toList();
+    //favList = List.from(json['favoriteTutor']).map((e)=>Tutor.fromFavJson(e)).toList();
     notifyListeners();
   }
 

@@ -28,7 +28,7 @@ class _TutorProfileState extends State<TutorProfile> {
   String _firstSelected ='assets/images/usaFlag.svg';
   bool _isLoading = false;
   Tutor thisTutor = Tutor(
-      name: "", isPublicRecord: false,
+      name: "", isPublicRecord: false, courses: [],
       userId: "", video: "", bio: "", education: "", experience: "", profession: "",
       targetStudent: "", interests: "", languages: "", specialties: "", toShow: false);
 
@@ -48,8 +48,6 @@ class _TutorProfileState extends State<TutorProfile> {
     {'inJson': 'toefl', 'toShow': 'TOEFL'},
     {'inJson': 'toeic', 'toShow': 'TOEIC'},
   ];
-
-  bool FhasRvw = true;
 
   bool isFav = false;
 
@@ -94,10 +92,6 @@ class _TutorProfileState extends State<TutorProfile> {
         _errorController.text = "";
       });
     }
-
-    thisTutor.languages.split(',').forEach((element) {
-      print(LocaleNames.of(context)!.nameOf(element));
-    });
 
     _videoPlayerController = VideoPlayerController.network(thisTutor.video)..addListener(() {
       if (_videoPlayerController.value.hasError) {
@@ -748,23 +742,6 @@ class _TutorProfileState extends State<TutorProfile> {
               ),
             ),
           ),
-          // Container(
-          //   width: double.infinity,
-          //   padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-          //   alignment: Alignment.centerLeft,
-          //   child: Container(
-          //     padding: EdgeInsets.all(10),
-          //     decoration: BoxDecoration(
-          //       border: Border.all(
-          //         width: 1,
-          //         color: Colors.grey,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //       color: Colors.blue,
-          //     ),
-          //     child: Text('English'),
-          //   ),
-          // ),
           Container(
             margin: EdgeInsets.only(bottom: 20),
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -794,7 +771,7 @@ class _TutorProfileState extends State<TutorProfile> {
             ),
           ),
           Container(
-            margin: EdgeInsets.fromLTRB(0, 20, 0, 15),
+            margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
               'Specialties',
@@ -832,7 +809,7 @@ class _TutorProfileState extends State<TutorProfile> {
               ),
             ),
           ),
-          courseList.isNotEmpty
+          thisTutor.courses.isNotEmpty
               ? Container(
             margin: EdgeInsets.only(bottom: 10),
             alignment: Alignment.centerLeft,
@@ -845,8 +822,9 @@ class _TutorProfileState extends State<TutorProfile> {
             ),
           )
               : Container(),
-          Column(
-            children: courseList.map((value) => Container(
+          thisTutor.courses.isNotEmpty
+          ? Column(
+            children: thisTutor.courses.map((value) => Container(
               alignment: Alignment.centerLeft,
               padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
               child: RichText(
@@ -856,7 +834,7 @@ class _TutorProfileState extends State<TutorProfile> {
                   ),
                   children: [
                     TextSpan(
-                      text: value.courseName + ': ',
+                      text: value.name + ': ',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).primaryColor,
@@ -868,13 +846,14 @@ class _TutorProfileState extends State<TutorProfile> {
                           fontSize: 17,
                           color: Colors.blue
                       ),
-                      recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, '/course_detail'),//_launchUrl(value.courseLink), //sửa sau
+                      recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, '/course_detail', arguments: value.id),//_launchUrl(value.courseLink), //sửa sau
                     ),
                   ],
                 ),
               ),
             )).toList(),
-          ),
+          )
+          : Container(),
           Container(
             margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
             alignment: Alignment.centerLeft,

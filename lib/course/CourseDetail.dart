@@ -1,17 +1,16 @@
-import 'dart:io';
-import 'dart:ui';
+import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:individual_project/model/CourseList.dart';
 import 'package:individual_project/model/UserProvider.dart';
 import 'package:provider/provider.dart';
-
-import '../model/User.dart';
+import 'package:http/http.dart' as http;
 
 class CourseDetail extends StatefulWidget {
-  const CourseDetail({Key? key}) : super(key: key);
+  final String id;
+  const CourseDetail({Key? key, required this.id}) : super(key: key);
 
   @override
   State<CourseDetail> createState() => _CourseDetailState();
@@ -19,6 +18,62 @@ class CourseDetail extends StatefulWidget {
 
 class _CourseDetailState extends State<CourseDetail> {
   String _firstSelected ='assets/images/usaFlag.svg';
+  CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
+      reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
+      createdAt: "", updatedAt: "", topics: [], categories: [], users: []);
+
+  bool _isLoading = false;
+  TextEditingController _errorController = TextEditingController();
+
+  final List<Map<String, String>> lvMap = [
+    {"level": "0", "levelName": "Any Level",},
+    {"level": "1", "levelName": "Beginner",},
+    {"level": "2", "levelName": "Upper-Beginner",},
+    {"level": "3", "levelName": "Pre-Intermediate",},
+    {"level": "4", "levelName": "Intermediate",},
+    {"level": "5", "levelName": "Upper-Intermediate",},
+    {"level": "6", "levelName": "Pre-Advanced",},
+    {"level": "7", "levelName": "Advanced",},
+    {"level": "8", "levelName": "Very Advanced",},
+  ];
+
+  void initState() {
+    super.initState();
+    setState(() {
+      _isLoading = true;
+      _errorController.text = "";
+    });
+    getACourse();
+  }
+
+  void getACourse() async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'course/${widget.id}');
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _errorController.text = err;
+      });
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      setState(() {
+        thisCourse = CourseClass.fromJson(parsed['data']);
+        _errorController.text = "";
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -353,7 +408,11 @@ class _CourseDetailState extends State<CourseDetail> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
-        child: Column(
+        child: _isLoading == true
+          ? Center(child: CircularProgressIndicator())
+          : _errorController.text.isNotEmpty
+          ? Center(child: Text(_errorController.text))
+          : Column(
           children: [
             Card(
               shape: const RoundedRectangleBorder(
@@ -361,7 +420,7 @@ class _CourseDetailState extends State<CourseDetail> {
               ),
               child: Column(
                 children: [
-                  Image.asset('assets/images/CourseExample1.png'),
+                  Image.network(thisCourse.imageUrl),
                   Container(
                     padding: EdgeInsets.all(15),
                     child: Column(
@@ -370,7 +429,7 @@ class _CourseDetailState extends State<CourseDetail> {
                         Container(
                           margin: EdgeInsets.only(bottom: 15),
                           alignment: Alignment.center,
-                          child: Text('Life in the Internet Age', style: TextStyle(
+                          child: Text(thisCourse.name, style: TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                               overflow: TextOverflow.ellipsis
@@ -379,7 +438,7 @@ class _CourseDetailState extends State<CourseDetail> {
                         Container(
                           margin: EdgeInsets.only(bottom: 25),
                           alignment: Alignment.centerLeft,
-                          child: Text('Let\'s discuss how technology is changing the way we live', style: TextStyle(
+                          child: Text(thisCourse.description, style: TextStyle(
                               fontSize: 15,
                               overflow: TextOverflow.ellipsis
                           ), maxLines: 3,),
@@ -412,7 +471,7 @@ class _CourseDetailState extends State<CourseDetail> {
             SizedBox(height: 20,),
             Row(
               children: [
-                Container(
+                SizedBox(
                   width: 20,
                   child: Divider(
                     thickness: 2,
@@ -448,7 +507,7 @@ class _CourseDetailState extends State<CourseDetail> {
             Container(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
               margin: EdgeInsets.only(bottom: 15),
-              child: Text('Our world is rapidly changing thanks to new technology, and the vocabulary needed to discuss modern life is evolving almost daily. In this course you will learn the most up-to-date terminology from expertly crafted lessons as well from your native-speaking tutor.'),
+              child: Text(thisCourse.reason),
             ),
             Container(
               alignment: Alignment.centerLeft,
@@ -470,7 +529,7 @@ class _CourseDetailState extends State<CourseDetail> {
             Container(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
               margin: EdgeInsets.only(bottom: 15),
-              child: Text('You will learn vocabulary related to timely topics like remote work, artificial intelligence, online privacy, and more. In addition to discussion questions, you will practice intermediate level speaking tasks such as using data to describe trends.'),
+              child: Text(thisCourse.purpose),
             ),
             Row(
               children: [
@@ -500,7 +559,7 @@ class _CourseDetailState extends State<CourseDetail> {
                           alignment: PlaceholderAlignment.middle,
                           child: Icon(Icons.people_alt_sharp, color: Colors.deepPurple, size: 20,),
                         ),
-                        TextSpan(text: ' Intermediate', style: TextStyle(
+                        TextSpan(text: " " + lvMap[lvMap.indexWhere((element) => element['level'] == thisCourse.level)]["levelName"]!, style: TextStyle(
                           fontSize: 17,
                         )),
                       ]
@@ -535,7 +594,7 @@ class _CourseDetailState extends State<CourseDetail> {
                           alignment: PlaceholderAlignment.middle,
                           child: Icon(Icons.book, color: Colors.deepPurple, size: 20,),
                         ),
-                        TextSpan(text: ' 9 topics', style: TextStyle(
+                        TextSpan(text: ' ' + thisCourse.topics.length.toString() + ' topics', style: TextStyle(
                           fontSize: 17,
                         )),
                       ]
@@ -567,20 +626,23 @@ class _CourseDetailState extends State<CourseDetail> {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
               childAspectRatio: itemWidth < itemHeight ? (itemHeight / itemWidth - 0.4) : (itemWidth / itemHeight - 0.4),
-              children: <Widget>[
-                TopicGrid(1, 'The Internet'),
-                TopicGrid(2, 'Artificial Intelligence (AI)'),
-                TopicGrid(3, 'Social Media'),
-                TopicGrid(4, 'Internet Privacy'),
-                TopicGrid(5, 'Live Streaming'),
-                TopicGrid(6, 'Coding'),
-                TopicGrid(7, 'Technology Transforming Healthcare'),
-                TopicGrid(8, 'Smart Home Technology'),
-                TopicGrid(9, 'Remote Work - A Dream Job?'),
-
-              ],
+              children: List.generate(thisCourse.topics.length, (i) {
+                return TopicGrid(i, thisCourse.topics[i].name);
+              }),
+              // children: <Widget>[
+              //   TopicGrid(1, 'The Internet'),
+              //   TopicGrid(2, 'Artificial Intelligence (AI)'),
+              //   TopicGrid(3, 'Social Media'),
+              //   TopicGrid(4, 'Internet Privacy'),
+              //   TopicGrid(5, 'Live Streaming'),
+              //   TopicGrid(6, 'Coding'),
+              //   TopicGrid(7, 'Technology Transforming Healthcare'),
+              //   TopicGrid(8, 'Smart Home Technology'),
+              //   TopicGrid(9, 'Remote Work - A Dream Job?'),
+              // ],
             ),
-            Row(
+            thisCourse.users.isNotEmpty
+            ? Row(
               children: [
                 Container(
                   width: 20,
@@ -597,35 +659,72 @@ class _CourseDetailState extends State<CourseDetail> {
                 ),
                 Expanded(child: Divider(thickness: 2,)),
               ],
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-              child: RichText(
-                text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 17,
+            )
+            : Container(),
+            thisCourse.users.isNotEmpty
+            ? Column(
+              children: thisCourse.users.map((e) {
+                return Container(
+                  alignment: Alignment.centerLeft,
+                  margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                  child: RichText(
+                    text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 17,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: e.name,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          TextSpan(
+                            text: " More info",
+                            style: TextStyle(
+                                color: Colors.blue
+                            ),
+                            recognizer: TapGestureRecognizer()..onTap = () {
+                              Navigator.pushNamed(context, '/tutor_profile', arguments:  e.id);
+                            }, //sửa sau
+                          ),
+                        ]
                     ),
-                    children: [
-                      TextSpan(
-                        text: 'Keegan ',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      TextSpan(
-                        text: "More info",
-                        style: TextStyle(
-                            color: Colors.blue
-                        ),
-                        recognizer: TapGestureRecognizer()..onTap = () {
-                          Navigator.pushNamed(context, '/tutor_profile');
-                        }, //sửa sau
-                      ),
-                    ]
-                ),
-              ),
-            ),
+                  ),
+                );
+              }).toList(),
+              // children: [
+              //   Container(
+              //     alignment: Alignment.centerLeft,
+              //     margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
+              //     child: RichText(
+              //       text: TextSpan(
+              //           style: TextStyle(
+              //             fontSize: 17,
+              //           ),
+              //           children: [
+              //             TextSpan(
+              //               text: 'Keegan ',
+              //               style: TextStyle(
+              //                 color: Theme.of(context).primaryColor,
+              //               ),
+              //             ),
+              //             TextSpan(
+              //               text: "More info",
+              //               style: TextStyle(
+              //                   color: Colors.blue
+              //               ),
+              //               recognizer: TapGestureRecognizer()..onTap = () {
+              //                 Navigator.pushNamed(context, '/tutor_profile');
+              //               }, //sửa sau
+              //             ),
+              //           ]
+              //       ),
+              //     ),
+              //   )
+              // ],
+            )
+            : Container(),
           ],
         ),
       ),

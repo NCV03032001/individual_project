@@ -54,7 +54,8 @@ class _TutorState extends State<Tutor> {
     //   )
     // );
     //startTimer();
-    getTutorList();
+    //searchTutorList();
+    getPreTutorList();
   }
   /// Timer related methods ///
   void startTimer() {
@@ -126,7 +127,7 @@ class _TutorState extends State<Tutor> {
 
   final FocusNode _rsFocus = FocusNode();
 
-  void getTutorList({Map<String, String> queryParameters = const {'perPage': '9','page': '1',}}) async {
+  void getPreTutorList({Map<String, String> queryParameters = const {'perPage': '99999999','page': '1',}}) async {
     var url = Uri.https('sandbox.api.lettutor.com', 'tutor/more', queryParameters);
     var response = await http.get(url,
       headers: {
@@ -172,6 +173,52 @@ class _TutorState extends State<Tutor> {
     });
   }
 
+  void searchTutorList({Map<String, dynamic> postBody = const {
+    "filter": {
+      "date": null,
+      "nationality": {},
+      "specialties": [],
+      "tutoringTimeAvailable": [null, null]
+    },
+    "page": 1,
+    "perPage": 9,
+    "search": "",
+  }, }
+  ) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/search');
+    var response = await http.post(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+      body: jsonEncode(postBody)
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      print(err);
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      //print(parsed);
+      var tutorProv = Provider.of<TutorProvider>(context, listen: false);
+      tutorProv.fromSearchJson(parsed);
+      var readTutorProv = context.read<TutorProvider>();
+
+      print(tutorProv.crrList.length);
+      for (var aTutor in readTutorProv.theList) {
+        print(aTutor.isFavorite);
+      }
+      // tutorProv.makeList();
+      setState(() {
+        _errorController.text = "";
+      });
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   List<Map<String, String>> specList = [
     {'inJson': 'business-english', 'toShow': 'English for Business'},
     {'inJson': 'conversational-english', 'toShow': 'Conversational'},
@@ -196,6 +243,19 @@ class _TutorState extends State<Tutor> {
     final hours = strDigits(myDuration.inHours.remainder(2));
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
+
+    Map<String, bool> nation = {};
+
+    Map<String, dynamic> postBody = {
+      "filter": {
+        "date": null,
+        "nationality": {},
+        "specialties": [],
+        "tutoringTimeAvailable": [null, null]
+      },
+      "page": 1,
+      "perPage": 9
+    };
 
     return GestureDetector(
       onTap: () {
@@ -919,6 +979,10 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                       child: OutlinedButton(
                         onPressed: () {
+                          // nation.addAll({"isVietNamese": true}); làm sau
+                          // print(nation);
+                          // print("Name: " + _nController.text);
+                          // print("Name: " + _nController.text);
                           setState(() {
                             _rsFocus.requestFocus();
                             _nController.clear();
@@ -931,9 +995,11 @@ class _TutorState extends State<Tutor> {
                             _ntKey.currentState?.popupValidate(selectedNation);
                             isSelectedTag = List.generate(tags.length, (index) => false);
                             isSelectedTag[0] = true;
+                            //_isLoading = true; làm sau
                             //_errorController.text = "";
                           });
-                          getTutorList();
+                          //getPreTutorList();
+                          //searchTutorList(); làm sau
                         },
                         focusNode: _rsFocus,
                         style: OutlinedButton.styleFrom(
@@ -960,6 +1026,244 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
                       alignment: Alignment.centerLeft,
                       child: Text(
+                        'Recommened Tutors',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    /*_isLoading == true
+                        ? CircularProgressIndicator()
+                        : _errorController.text.isEmpty
+                        ? readTutorProv.crrList.isNotEmpty
+                        ? SizedBox(
+                      height: 375,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: List.generate(readTutorProv.crrList.length, (i) {
+                          return Row(
+                            children: [
+                              Container(
+                                width: width-30,
+                                margin: EdgeInsets.only(bottom: 10),
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    width: 1,
+                                    color: Colors.grey,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Theme.of(context).backgroundColor,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 120,
+                                          width: 100,
+                                          child: readTutorProv.crrList[i].avatar != null
+                                              ? ImageProfile(Image.network(readTutorProv.crrList[i].avatar!).image, readTutorProv.crrList[i].isOnline!, readTutorProv.crrList[i].userId)
+                                              : ImageProfile(Image.network("").image, readTutorProv.crrList[i].isOnline!, readTutorProv.crrList[i].userId),
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Expanded(
+                                          child: SizedBox(
+                                            child: Column(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.crrList[i].userId),
+                                                  child: Container(
+                                                    alignment: Alignment.centerLeft,
+                                                    padding: EdgeInsets.only(left: 10),
+                                                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                                    child: Text(
+                                                      readTutorProv.crrList[i].name,
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis ,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 10),
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: readTutorProv.crrList[i].country != null
+                                                      ? Country.tryParse(readTutorProv.crrList[i].country!) != null
+                                                      ? Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Text(Country.tryParse(readTutorProv.crrList[i].country!)!.flagEmoji),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      Text(Country.tryParse(readTutorProv.crrList[i].country!)!.name),
+                                                    ],
+                                                  )
+                                                      : Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Image.asset('assets/images/icons/close.png'),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      Text("Invalid country"),
+                                                    ],
+                                                  )
+                                                      : Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: Image.asset('assets/images/icons/close.png'),
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      Text("Not set country"),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(left: 10),
+                                                  margin: EdgeInsets.only(bottom: 10),
+                                                  child: Row(
+                                                    children: [
+                                                      readTutorProv.crrList[i].rating != null
+                                                          ? Row(
+                                                          children: []..addAll(List.generate(readTutorProv.crrList[i].rating!.toInt(), (index) {
+                                                            return Tooltip(
+                                                              message: tooltipMsg[index],
+                                                              child: Icon(Icons.star, color: Colors.yellow,),
+                                                            );
+                                                          }))
+                                                            ..addAll(List.generate((5-readTutorProv.crrList[i].rating!.toInt()), (index) {
+                                                              return Tooltip(
+                                                                message: tooltipMsg[4-index],
+                                                                child: Icon(Icons.star, color: Colors.grey,),
+                                                              );
+                                                            }).reversed)
+                                                      )
+                                                          : Text('No reviews yet', style:  TextStyle(
+                                                        fontStyle: FontStyle.italic,
+                                                      ),),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.crrList[i].userId, context.read<UserProvider>().thisTokens.access.token);
+                                            if (doFavRes != "Success") {
+                                              setState(() {
+                                                _errorController.text = doFavRes;
+                                              });
+                                            }
+                                            else {
+                                              setState(() {
+                                                _errorController.text = "";
+                                              });
+                                            }
+                                          },
+                                          icon: context.read<TutorProvider>().crrList[i].isFavorite!
+                                              ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
+                                              : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                                      height: 50,
+                                      width: double.infinity,
+                                      child: SingleChildScrollView(
+                                        child: Wrap(
+                                          runSpacing: 5,
+                                          spacing: 5,
+                                          crossAxisAlignment: WrapCrossAlignment.start,
+                                          verticalDirection: VerticalDirection.down,
+                                          children: readTutorProv.crrList[i].specialties.split(',').map((value) => Container(
+                                            padding: EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                width: 1,
+                                                color: Colors.grey,
+                                              ),
+                                              borderRadius: BorderRadius.circular(20),
+                                              color: Colors.blue,
+                                            ),
+                                            child: specList.indexWhere((e) => e['inJson'] == value) != -1
+                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                                                : Text(value.toUpperCase()),
+                                          )).toList(),
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      height: 70,
+                                      alignment: Alignment.topLeft,
+                                      margin: EdgeInsets.only(bottom: 15),
+                                      child: Text(
+                                        readTutorProv.crrList[i].bio,
+                                        maxLines: 4,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: double.infinity,
+                                      alignment: Alignment.centerRight,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.crrList[i].userId),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                          backgroundColor: Colors.white,
+                                          side: BorderSide(color: Colors.blue, width: 2),
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                                          ),
+                                        ),
+                                        icon: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
+                                        ),
+                                        label: Text(
+                                          'Book',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: 15,
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                    ) : Text("No Tutor found.")
+                        : Text(_errorController.text),*/
+                    Divider(
+                      thickness: 2,
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
                         'Favourite Tutors',
                         style: TextStyle(
                           fontSize: 30,
@@ -970,7 +1274,7 @@ class _TutorState extends State<Tutor> {
                     _isLoading == true
                     ? CircularProgressIndicator()
                     : _errorController.text.isEmpty
-                    ? readTutorProv.favList.isNotEmpty 
+                    ? readTutorProv.favList.isNotEmpty
                     ? SizedBox(
                       height: 375,
                       child: ListView(
@@ -1207,8 +1511,8 @@ class _TutorState extends State<Tutor> {
                     ),
                     _isLoading == true
                         ? CircularProgressIndicator()
-                        : _errorController.text.isEmpty 
-                    ? readTutorProv.theList.isNotEmpty 
+                        : _errorController.text.isEmpty
+                    ? readTutorProv.theList.isNotEmpty
                     ? SizedBox(
                       height: 375,
                       child: ListView(
@@ -1439,7 +1743,7 @@ class _TutorState extends State<Tutor> {
                       initialPage: 0,
                       onPageChange: (int index) {
                         var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
-                        getTutorList(queryParameters: queryParameters);
+                        getPreTutorList(queryParameters: queryParameters);
                       },
                     )
                   ],

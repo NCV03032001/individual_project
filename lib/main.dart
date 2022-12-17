@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:individual_project/model/CourseList.dart';
 import 'package:individual_project/model/Tokens.dart';
 import 'package:individual_project/model/TutorProvider.dart';
 import 'package:individual_project/model/UserProvider.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TutorProvider()),
+        ChangeNotifierProvider(create: (context) => CourseList()),
       ],
       child: MaterialApp(
         localizationsDelegates: [
@@ -49,13 +51,7 @@ class MyApp extends StatelessWidget {
 
         onGenerateRoute: (settings) {
           if (settings.name == '/tutor_profile') {
-            // Cast the arguments to the correct
-            // type: ScreenArguments.
             final args = settings.arguments as String;
-
-            // Then, extract the required data from
-            // the arguments and pass the data to the
-            // correct screen.
             return MaterialPageRoute(
               builder: (context) {
                 return TutorProfile(
@@ -64,13 +60,16 @@ class MyApp extends StatelessWidget {
               },
             );
           }
-          // The code only supports
-          // PassArgumentsScreen.routeName right now.
-          // Other values need to be implemented if we
-          // add them. The assertion here will help remind
-          // us of that higher up in the call stack, since
-          // this assertion would otherwise fire somewhere
-          // in the framework.
+          if (settings.name == '/course_detail') {
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) {
+                return CourseDetail(
+                  id: args,
+                );
+              },
+            );
+          }
           assert(false, 'Need to implement ${settings.name}');
           return null;
         },
@@ -87,7 +86,7 @@ class MyApp extends StatelessWidget {
           '/history' : (context) => History(),
           '/schedule' : (context) => Schedule(),
           '/courses' : (context) => Courses(),
-          '/course_detail' : (context) => CourseDetail(),
+          //'/course_detail' : (context) => CourseDetail(),
           '/become_tutor' : (context) => BecomeTutor(),
           '/video_cfr' : (context) => VideoCall(),
         },
