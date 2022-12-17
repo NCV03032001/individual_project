@@ -90,18 +90,7 @@ class _CoursesState extends State<Courses> {
       _errorController.text = "";
       _isLoading = true;
     });
-    // Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
-    //   access: Access(
-    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzExMTUyMTYsImV4cCI6MTY3MTIwMTYxNiwidHlwZSI6ImFjY2VzcyJ9._HCnjzYOgzilLAmEhehvEAcgtkBIh9dgYnNUvKkAqBk",
-    //     expires: "2022-12-08T05:35:46.286Z"
-    //   ),
-    //   refresh: Refresh(
-    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzAzOTEzNDYsImV4cCI6MTY3Mjk4MzM0NiwidHlwZSI6InJlZnJlc2gifQ.5DiiDFVhCFUnlHFosgDn7EvWUwWBGy5kcADSR9opstE",
-    //     expires: "2023-01-06T05:35:46.286Z"
-    //   )
-    // );
-    //startTimer();
-    //searchTutorList();
+
     getCourseList();
   }
 
@@ -739,10 +728,10 @@ class _CoursesState extends State<Courses> {
                 thickness: 2,
               ),
               _isLoading == true
-              ? CircularProgressIndicator()
-              : _errorController.text.isNotEmpty
-              ? Text(_errorController.text)
-              : GridView.count(
+                  ? CircularProgressIndicator()
+                  : _errorController.text.isNotEmpty
+                  ? Text(_errorController.text)
+                  : GridView.count(
                 physics: ScrollPhysics(), // to disable GridView's scrolling
                 shrinkWrap: true,
                 crossAxisCount: itemWidth < itemHeight ? 2 : 3,

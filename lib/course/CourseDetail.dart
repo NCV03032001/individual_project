@@ -629,17 +629,6 @@ class _CourseDetailState extends State<CourseDetail> {
               children: List.generate(thisCourse.topics.length, (i) {
                 return TopicGrid(i, thisCourse.topics[i].name);
               }),
-              // children: <Widget>[
-              //   TopicGrid(1, 'The Internet'),
-              //   TopicGrid(2, 'Artificial Intelligence (AI)'),
-              //   TopicGrid(3, 'Social Media'),
-              //   TopicGrid(4, 'Internet Privacy'),
-              //   TopicGrid(5, 'Live Streaming'),
-              //   TopicGrid(6, 'Coding'),
-              //   TopicGrid(7, 'Technology Transforming Healthcare'),
-              //   TopicGrid(8, 'Smart Home Technology'),
-              //   TopicGrid(9, 'Remote Work - A Dream Job?'),
-              // ],
             ),
             thisCourse.users.isNotEmpty
             ? Row(
@@ -693,36 +682,6 @@ class _CourseDetailState extends State<CourseDetail> {
                   ),
                 );
               }).toList(),
-              // children: [
-              //   Container(
-              //     alignment: Alignment.centerLeft,
-              //     margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-              //     child: RichText(
-              //       text: TextSpan(
-              //           style: TextStyle(
-              //             fontSize: 17,
-              //           ),
-              //           children: [
-              //             TextSpan(
-              //               text: 'Keegan ',
-              //               style: TextStyle(
-              //                 color: Theme.of(context).primaryColor,
-              //               ),
-              //             ),
-              //             TextSpan(
-              //               text: "More info",
-              //               style: TextStyle(
-              //                   color: Colors.blue
-              //               ),
-              //               recognizer: TapGestureRecognizer()..onTap = () {
-              //                 Navigator.pushNamed(context, '/tutor_profile');
-              //               }, //sửa sau
-              //             ),
-              //           ]
-              //       ),
-              //     ),
-              //   )
-              // ],
             )
             : Container(),
           ],

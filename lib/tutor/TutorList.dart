@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
+import 'package:intl/intl.dart';
 
 class Tutor extends StatefulWidget {
   const Tutor({Key? key}) : super(key: key);
@@ -22,11 +23,15 @@ class Tutor extends StatefulWidget {
 class _TutorState extends State<Tutor> {
   final FocusNode _screenFocus = FocusNode();
   bool _isLoading = false;
+  bool _upcommingLoading = false;
+  bool _hasUpcomming = false;
 
   int _maxPage = 1;
   final NumberPaginatorController _pagiController = NumberPaginatorController();
 
   TextEditingController _errorController = TextEditingController();
+  TextEditingController _upErrController = TextEditingController();
+  String dateFormat = "";
 
   String _firstSelected ='assets/images/usaFlag.svg';
 
@@ -38,10 +43,12 @@ class _TutorState extends State<Tutor> {
     super.initState();
     setState(() {
       _errorController.text = "";
+      _upErrController.text = "";
       tags = ['All', 'English for kids', 'English for Business', 'Conversational', 'STARTERS', 'MOVERS', 'FLYERS', 'KET', 'PET', 'IELTS', 'TOEFL', 'TOEIC'];
       isSelectedTag = List.generate(tags.length, (index) => false);
       isSelectedTag[0] = true;
       _isLoading = true;
+      _upcommingLoading = true;
     });
     // Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
     //   access: Access(
@@ -55,6 +62,7 @@ class _TutorState extends State<Tutor> {
     // );
     //startTimer();
     //searchTutorList();
+    getUpcommingLession();
     getPreTutorList();
   }
   /// Timer related methods ///
@@ -121,7 +129,6 @@ class _TutorState extends State<Tutor> {
 
   List<String> tags = [];
   List<bool> isSelectedTag = [];
-
 
   final FocusNode _tgFocus = FocusNode();
 
@@ -219,6 +226,58 @@ class _TutorState extends State<Tutor> {
     });
   }
 
+  void getUpcommingLession() async{
+    var timeStampNow = DateTime.now().millisecondsSinceEpoch.toString();
+
+    Map<String, dynamic> queryParameters = {"dateTime": timeStampNow};
+    var url = Uri.https('sandbox.api.lettutor.com', 'booking/next', queryParameters);
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _upErrController.text = err;
+      });
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      if (parsed["data"].length == 1) {
+        int timeNow = DateTime.now().millisecondsSinceEpoch;
+        int startTime = parsed['data'][0]['scheduleDetailInfo']['startPeriodTimestamp'];
+        int endTime = parsed['data'][0]['scheduleDetailInfo']['endPeriodTimestamp'];
+        setState(() {
+          dateFormat = DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))
+          + " - " + DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime));
+          myDuration = Duration(milliseconds: startTime - timeNow);
+          _hasUpcomming = true;
+        });
+        startTimer();
+      }
+      else {
+        setState(() {
+          _hasUpcomming = false;
+        });
+      }
+    }
+
+    setState(() {
+      _upErrController.text = "";
+      _upcommingLoading = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    stopTimer();
+    super.dispose();
+  }
+
   List<Map<String, String>> specList = [
     {'inJson': 'business-english', 'toShow': 'English for Business'},
     {'inJson': 'conversational-english', 'toShow': 'Conversational'},
@@ -240,7 +299,7 @@ class _TutorState extends State<Tutor> {
     double height = MediaQuery.of(context).size.height;
     
     String strDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = strDigits(myDuration.inHours.remainder(2));
+    final hours = strDigits(myDuration.inHours.remainder(24));
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
 
@@ -601,80 +660,84 @@ class _TutorState extends State<Tutor> {
                     )
                 ),
                 child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.only(bottom: 15),
-                        child: Text(
-                          'Upcoming lesson',
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(bottom: 5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Wed, 19 Oct 22 00:00 - 00:25 ',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
+                  child: _upcommingLoading == true
+                    ? CircularProgressIndicator(color: Colors.white,)
+                    : _upErrController.text.isNotEmpty
+                    ? Text(_upErrController.text)
+                    : _hasUpcomming == false
+                    ? Container()
+                    : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.only(bottom: 15),
+                          child: Text(
+                            'Upcoming lesson',
+                            style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
                             ),
-                            Text(
-                              '(starts in $hours:$minutes:$seconds)',
-                              style: TextStyle(
-                                color: Colors.yellow,
-                                fontSize: 15,
-                              ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(bottom: 5),
+                          child: Text(
+                            dateFormat,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
                             ),
-                          ],
-                        ),
-                      ),
-                      OutlinedButton(
-                        onPressed: null,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          padding: EdgeInsets.all(15),
-                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
-                        ),
-                        child: RichText(
-                          text: TextSpan(
-                              children: [
-                                WidgetSpan(
-                                    child: SizedBox(
-                                      height: 20,
-                                      child: Image.asset('assets/images/icons/Ytb.png', color: Colors.blue,),
-                                    )
-                                ),
-                                TextSpan(
-                                    text: '  Enter lesson room',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      fontSize: 20,
-                                    )
-                                )
-                              ]
                           ),
                         ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 5),
-                        child: Text(
-                          'Total lesson time is 154 hours 10 minutes',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
+                        Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            '  (starts in $hours:$minutes:$seconds)',
+                            style: TextStyle(
+                              color: Colors.yellow,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
-                      )
-                    ],
-                  ),
+                        OutlinedButton(
+                          onPressed: null,
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            padding: EdgeInsets.all(15),
+                            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50))),
+                          ),
+                          child: RichText(
+                            text: TextSpan(
+                                children: [
+                                  WidgetSpan(
+                                      child: SizedBox(
+                                        height: 20,
+                                        child: Image.asset('assets/images/icons/Ytb.png', color: Colors.blue,),
+                                      )
+                                  ),
+                                  TextSpan(
+                                      text: '  Enter lesson room',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: 20,
+                                      )
+                                  )
+                                ]
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 5),
+                          child: Text(
+                            'Welcome to LetTutor!',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
 
                 ),
               ),
