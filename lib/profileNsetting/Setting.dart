@@ -1,13 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/model/UserProvider.dart';
 import 'package:provider/provider.dart';
-
-import '../model/User.dart';
 
 class Setting extends StatefulWidget {
   static const keyDarkMode = 'key-darkmode';
@@ -389,7 +384,7 @@ class _SettingState extends State<Setting> {
                           Container(
                             margin: EdgeInsets.all(10),
                             child: Text(
-                              'Account Name',
+                              '${context.read<UserProvider>().thisUser.name}',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -397,7 +392,7 @@ class _SettingState extends State<Setting> {
                             ),
                           ),
                           Text(
-                            'Account ID: f569c202-7bbf-4620-af77-ecc1419a6b28',
+                            'Account ID: ${context.read<UserProvider>().thisUser.id}',
                             softWrap: false,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
@@ -474,7 +469,9 @@ class _SettingState extends State<Setting> {
       height: 30,
       child: Image.asset('assets/images/icons/ChangePassword.png', color: Colors.blue,),
     ),
-    onTap: null, //lead to change password page
+    onTap: () {
+      Navigator.pushNamed(context, '/change_pw');
+    }, //lead to change password page
   );
   Widget deleteAccount() => SimpleSettingsTile(
       title: 'Delete account',

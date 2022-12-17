@@ -5,6 +5,7 @@ import 'package:individual_project/model/CourseList.dart';
 import 'package:individual_project/model/Tokens.dart';
 import 'package:individual_project/model/TutorProvider.dart';
 import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/profileNsetting/ChangePassword.dart';
 
 import 'package:individual_project/profileNsetting/Profile.dart';
 import 'package:individual_project/authentication/Signup.dart';
@@ -23,7 +24,15 @@ import 'package:individual_project/videoconference/VideoCall.dart';
 import 'package:provider/provider.dart';
 
 
-void main() async {
+// void main() async {
+//   runApp(const MyApp());
+// }
+
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Settings.init(cacheProvider: SharePreferenceCache());
+
   runApp(const MyApp());
 }
 
@@ -33,9 +42,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode = false;
+    //bool isDarkMode = false;
+    bool? isDarkMode = Settings.getValue<bool>(Setting.keyDarkMode);
 
-    return MultiProvider(
+    return ValueChangeObserver<bool>(
+        cacheKey: Setting.keyDarkMode,
+        defaultValue: false,
+
+        builder: (_, isDarkMode, __) => MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TutorProvider()),
@@ -83,6 +97,7 @@ class MyApp extends StatelessWidget {
           '/setting': (context) =>  Setting(),
           '/forgotpw': (context) => ForgotPassword(),
           '/forgotpw_sent': (context) => ForgotPassword_sent(),
+          '/change_pw' : (context) => ChangePassword(),
           '/history' : (context) => History(),
           '/schedule' : (context) => Schedule(),
           '/courses' : (context) => Courses(),
@@ -98,14 +113,15 @@ class MyApp extends StatelessWidget {
           backgroundColor: Color(0xff170635),
           canvasColor: Color(0xff170635),
         )
-            : ThemeData.light().copyWith(
-          primaryColor: Color(0xff170635),
-          scaffoldBackgroundColor: Colors.white,
-          backgroundColor: Colors.white,
-          canvasColor: Colors.white,
+          : ThemeData.light().copyWith(
+        primaryColor: Color(0xff170635),
+        scaffoldBackgroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        canvasColor: Colors.white,
         ),
         home: const Login(),
       ),
+    )
     );
   }
 }
