@@ -23,8 +23,9 @@ class Tutor extends StatefulWidget {
 class _TutorState extends State<Tutor> {
   final FocusNode _screenFocus = FocusNode();
   bool _isLoading = false;
-  bool _upcommingLoading = false;
-  bool _hasUpcomming = false;
+  bool _upcomingLoading = false;
+  bool _hasUpcoming = false;
+  int totalLearn = 0;
 
   int _maxPage = 1;
   final NumberPaginatorController _pagiController = NumberPaginatorController();
@@ -48,7 +49,9 @@ class _TutorState extends State<Tutor> {
       isSelectedTag = List.generate(tags.length, (index) => false);
       isSelectedTag[0] = true;
       _isLoading = true;
-      _upcommingLoading = true;
+      _upcomingLoading = true;
+      _hasUpcoming = false;
+      totalLearn = 0;
     });
     // Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
     //   access: Access(
@@ -62,8 +65,9 @@ class _TutorState extends State<Tutor> {
     // );
     //startTimer();
     //searchTutorList();
-    getUpcommingLession();
-    getPreTutorList();
+    getUpcomingLesson();
+    //getPreTutorList();
+    searchTutorList();
   }
   /// Timer related methods ///
   void startTimer() {
@@ -83,11 +87,14 @@ class _TutorState extends State<Tutor> {
       final seconds = myDuration.inSeconds - reduceSecondsBy;
       if (seconds < 0) {
         countdownTimer!.cancel();
+        getUpcomingLesson();
       } else {
         myDuration = Duration(seconds: seconds);
       }
     });
   }
+
+  List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
 
   final TextEditingController _nController = TextEditingController();
   final FocusNode _nFocus = FocusNode();
@@ -100,6 +107,11 @@ class _TutorState extends State<Tutor> {
     'Native English Tutor',
   ];
   final FocusNode _ntFocus = FocusNode();
+  List<Map<String, dynamic>> nationList = [
+    {"nation": "Vietnamese Tutor", "nationClause": {"isVietNamese": true}},
+    {"nation": "Native English Tutor", "nationClause": {"isNative": true}},
+    {"nation": "Foreign Tutor", "nationClause": {"isVietNamese": false, "isNative": false}},
+  ];
 
   DateTime selectedDate = DateTime.now();
   final TextEditingController _dController = TextEditingController();
@@ -129,9 +141,22 @@ class _TutorState extends State<Tutor> {
 
   List<String> tags = [];
   List<bool> isSelectedTag = [];
+  List<Map<String, String>> specList = [
+    {'inJson': 'business-english', 'toShow': 'English for Business'},
+    {'inJson': 'conversational-english', 'toShow': 'Conversational'},
+    {'inJson': 'english-for-kids', 'toShow': 'English for kids'},
+    {'inJson': 'starters', 'toShow': 'STARTERS'},
+    {'inJson': 'movers', 'toShow': 'MOVERS'},
+    {'inJson': 'flyers', 'toShow': 'FLYERS'},
+    {'inJson': 'ket', 'toShow': 'PET'},
+    {'inJson': 'ielts', 'toShow': 'IELTS'},
+    {'inJson': 'toefl', 'toShow': 'TOEFL'},
+    {'inJson': 'toeic', 'toShow': 'TOEIC'},
+  ];
 
   final FocusNode _tgFocus = FocusNode();
 
+  final FocusNode _searchFocus = FocusNode();
   final FocusNode _rsFocus = FocusNode();
 
   void getPreTutorList({Map<String, String> queryParameters = const {'perPage': '99999999','page': '1',}}) async {
@@ -152,42 +177,29 @@ class _TutorState extends State<Tutor> {
     }
     else {
       final Map parsed = json.decode(response.body);
-      //print(parsed);
+
       var tutorProv = Provider.of<TutorProvider>(context, listen: false);
       tutorProv.fromJson(parsed);
       var readTutorProv = context.read<TutorProvider>();
 
-      print(readTutorProv.theList.length);
-      // for (var aTutor in readTutorProv.theList) {
-      //
-      // }
+      print(readTutorProv.total.length);
 
       print(readTutorProv.favList.length);
-      // for (var aTutor in readTutorProv.favList) {
-      //   print(aTutor.avatar);
-      // }
-      //int? perPage = int.tryParse(queryParameters['perPage']!);
-      readTutorProv.makeList();
+
       setState(() {
         _errorController.text = "";
       });
     }
-    //print(response.body);
-    setState(() {
-      _isLoading = false;
-      _maxPage = context.read<TutorProvider>().count~/9;
-      if (_maxPage < 1) _maxPage = 1;
-    });
   }
 
   void searchTutorList({Map<String, dynamic> postBody = const {
-    "filter": {
+    "filters": {
       "date": null,
       "nationality": {},
       "specialties": [],
       "tutoringTimeAvailable": [null, null]
     },
-    "page": 1,
+    "page": "1",
     "perPage": 9,
     "search": "",
   }, }
@@ -212,29 +224,33 @@ class _TutorState extends State<Tutor> {
       tutorProv.fromSearchJson(parsed);
       var readTutorProv = context.read<TutorProvider>();
 
-      print(tutorProv.crrList.length);
-      for (var aTutor in readTutorProv.theList) {
-        print(aTutor.isFavorite);
-      }
-      // tutorProv.makeList();
+      print(readTutorProv.theList.length);
+      // for (var aTutor in readTutorProv.theList) {
+      //   print(aTutor.isFavorite);
+      // }
+
       setState(() {
         _errorController.text = "";
       });
     }
     setState(() {
       _isLoading = false;
+      _maxPage = context.read<TutorProvider>().count~/9;
+      if (_maxPage < 1) _maxPage = 1;
     });
   }
 
-  void getUpcommingLession() async{
+  void getUpcomingLesson() async{
     var timeStampNow = DateTime.now().millisecondsSinceEpoch.toString();
+
+    String thisToken = context.read<UserProvider>().thisTokens.access.token;
 
     Map<String, dynamic> queryParameters = {"dateTime": timeStampNow};
     var url = Uri.https('sandbox.api.lettutor.com', 'booking/next', queryParameters);
     var response = await http.get(url,
       headers: {
         "Content-Type": "application/json",
-        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+        'Authorization': "Bearer $thisToken"
       },
     );
 
@@ -252,23 +268,36 @@ class _TutorState extends State<Tutor> {
         int startTime = parsed['data'][0]['scheduleDetailInfo']['startPeriodTimestamp'];
         int endTime = parsed['data'][0]['scheduleDetailInfo']['endPeriodTimestamp'];
         setState(() {
-          dateFormat = DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))
-          + " - " + DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime));
+          dateFormat = "${DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
           myDuration = Duration(milliseconds: startTime - timeNow);
-          _hasUpcomming = true;
+          _hasUpcoming = true;
         });
         startTimer();
       }
       else {
         setState(() {
-          _hasUpcomming = false;
+          _hasUpcoming = false;
         });
       }
     }
 
+    var urlTotal = Uri.https('sandbox.api.lettutor.com', 'call/total');
+    var responseTotal = await http.get(urlTotal,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer $thisToken"
+      },
+    );
+    if (responseTotal.statusCode == 200) {
+      final Map parsed = json.decode(responseTotal.body);
+      setState(() {
+        totalLearn = parsed["total"];
+      });
+    }
+
     setState(() {
       _upErrController.text = "";
-      _upcommingLoading = false;
+      _upcomingLoading = false;
     });
   }
 
@@ -277,20 +306,6 @@ class _TutorState extends State<Tutor> {
     stopTimer();
     super.dispose();
   }
-
-  List<Map<String, String>> specList = [
-    {'inJson': 'business-english', 'toShow': 'English for Business'},
-    {'inJson': 'conversational-english', 'toShow': 'Conversational'},
-    {'inJson': 'english-for-kids', 'toShow': 'English for kids'},
-    {'inJson': 'starters', 'toShow': 'STARTERS'},
-    {'inJson': 'movers', 'toShow': 'MOVERS'},
-    {'inJson': 'flyers', 'toShow': 'FLYERS'},
-    {'inJson': 'ket', 'toShow': 'PET'},
-    {'inJson': 'ielts', 'toShow': 'IELTS'},
-    {'inJson': 'toefl', 'toShow': 'TOEFL'},
-    {'inJson': 'toeic', 'toShow': 'TOEIC'},
-  ];
-  List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
 
   @override
   Widget build(BuildContext context) {
@@ -303,10 +318,8 @@ class _TutorState extends State<Tutor> {
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
 
-    Map<String, bool> nation = {};
-
     Map<String, dynamic> postBody = {
-      "filter": {
+      "filters": {
         "date": null,
         "nationality": {},
         "specialties": [],
@@ -660,12 +673,44 @@ class _TutorState extends State<Tutor> {
                     )
                 ),
                 child: Center(
-                  child: _upcommingLoading == true
+                  child: _upcomingLoading == true
                     ? CircularProgressIndicator(color: Colors.white,)
                     : _upErrController.text.isNotEmpty
                     ? Text(_upErrController.text)
-                    : _hasUpcomming == false
-                    ? Container()
+                    : _hasUpcoming == false
+                    ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.only(bottom: 15),
+                          child: Text(
+                            'You have no upcoming lesson',
+                            style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 5),
+                          child: totalLearn > 0
+                          ? Text(
+                            'Total lesson time is ${totalLearn~/60} hours ${totalLearn%60} minutes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          )
+                          : Text(
+                            'Welcome to LetTutor!',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                        )
+                      ],
+                    )
                     : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -728,7 +773,15 @@ class _TutorState extends State<Tutor> {
                         ),
                         Container(
                           margin: EdgeInsets.only(top: 5),
-                          child: Text(
+                          child: totalLearn > 0
+                              ? Text(
+                            'Total lesson time is ${totalLearn~/60} hours ${totalLearn%60} minutes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          )
+                              : Text(
                             'Welcome to LetTutor!',
                             style: TextStyle(
                               color: Colors.white,
@@ -1009,7 +1062,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Select a tag:',
+                        'Select specialtie:',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -1038,54 +1091,150 @@ class _TutorState extends State<Tutor> {
                         );
                       })
                     ),
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // nation.addAll({"isVietNamese": true}); làm sau
-                          // print(nation);
-                          // print("Name: " + _nController.text);
-                          // print("Name: " + _nController.text);
-                          setState(() {
-                            _rsFocus.requestFocus();
-                            _nController.clear();
-                            selectedDate = DateTime.now();
-                            _dController.clear();
-                            initS = TimeOfDay(hour: 7, minute: 0);
-                            initE = TimeOfDay(hour: 8, minute: 0);
-                            _tController.clear();
-                            selectedNation = [];
-                            _ntKey.currentState?.popupValidate(selectedNation);
-                            isSelectedTag = List.generate(tags.length, (index) => false);
-                            isSelectedTag[0] = true;
-                            //_isLoading = true; làm sau
-                            //_errorController.text = "";
-                          });
-                          //getPreTutorList();
-                          //searchTutorList(); làm sau
-                        },
-                        focusNode: _rsFocus,
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                          backgroundColor: Colors.white,
-                          side: BorderSide(color: Colors.blue, width: 2),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.all(10),
+                            child: OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _searchFocus.requestFocus();
+                                  _isLoading = true;
+                                });
+                                if (_nController.text.isNotEmpty) {
+                                  postBody['search'] = _nController.text;
+                                }
+                                else postBody.remove('search');
+
+                                Map<String, bool> nationMap = {};
+                                List<String> tempNations = _ntKey.currentState!.getSelectedItems;
+                                tempNations.forEach((element) {
+                                  var tempNL = nationList.indexWhere((e) => e['nation'] == element);
+                                  if (nationList[tempNL]['nationClause']['isVietNamese'] != null) {
+                                    if(nationMap['isVietNamese'] == null) {
+                                      nationMap['isVietNamese'] = nationList[tempNL]['nationClause']['isVietNamese'];
+                                    }
+                                    else if(nationMap['isVietNamese'] != null) {
+                                      if (nationMap['isVietNamese']! || nationList[tempNL]['nationClause']['isVietNamese']) {
+                                        nationMap.remove('isVietNamese');
+                                      }
+                                    }
+                                  }
+                                  if (nationList[tempNL]['nationClause']['isNative'] != null) {
+                                    if(nationMap['isNative'] == null) {
+                                      nationMap['isNative'] = nationList[tempNL]['nationClause']['isNative'];
+                                    }
+                                    else if(nationMap['isNative'] != null) {
+                                      if (nationMap['isNative']! || nationList[tempNL]['nationClause']['isNative']) {
+                                        nationMap.remove('isNative');
+                                      }
+                                    }
+                                  }
+                                });
+                                postBody['filters']['nationality'] = nationMap;
+
+                                if(_dController.text.isNotEmpty) {
+                                  String tempDate = _dController.text;
+                                  DateTime tempDatetime = DateTime.parse(tempDate);
+                                  postBody['filters']['date'] = tempDate;
+
+                                  if(_tController.text.isEmpty) {
+                                    int tempStart = tempDatetime.millisecondsSinceEpoch;
+                                    int tempEnd = tempDatetime.add(Duration(days: 1)).millisecondsSinceEpoch;
+                                    postBody['filters']['tutoringTimeAvailable'] = [tempStart, tempEnd];
+                                  }
+                                  else {
+                                    int tempStart = tempDatetime.add(Duration(hours: initS.hour, minutes: initS.minute)).millisecondsSinceEpoch;
+                                    int tempEnd = tempDatetime.add(Duration(hours: initE.hour, minutes: initE.minute)).millisecondsSinceEpoch;
+                                    postBody['filters']['tutoringTimeAvailable'] = [tempStart, tempEnd];
+                                  }
+                                }
+                                else {
+                                  postBody['filters']['date'] = null;
+                                  postBody['filters']['tutoringTimeAvailable'] = [null, null];
+                                }
+
+                                if (specList.indexWhere((element) => element['toShow'] == tags[isSelectedTag.indexWhere((element) => element == true)]) > 0) {
+                                  String? tempSpec = specList[specList.indexWhere((
+                                      element) => element['toShow'] ==
+                                      tags[isSelectedTag.indexWhere((
+                                          element) => element == true)])]['inJson'];
+                                  postBody['filters']['specialties'].add(tempSpec);
+                                }
+                                else {
+                                  postBody['filters']['specialties'] = [];
+                                }
+
+                                postBody['page'] = 1;
+
+                                print(postBody);
+                                searchTutorList(postBody: postBody);
+                              },
+                              focusNode: _searchFocus,
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                backgroundColor: Colors.white,
+                                side: BorderSide(color: Colors.blue, width: 2),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                              ),
+                              child: Text(
+                                'Search',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        child: Text(
-                          'Reset Filters',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.blue,
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.all(10),
+                            child: OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _rsFocus.requestFocus();
+                                  _nController.clear();
+                                  selectedDate = DateTime.now();
+                                  _dController.clear();
+                                  initS = TimeOfDay(hour: 7, minute: 0);
+                                  initE = TimeOfDay(hour: 8, minute: 0);
+                                  _tController.clear();
+                                  selectedNation = [];
+                                  _ntKey.currentState?.popupValidate(selectedNation);
+                                  isSelectedTag = List.generate(tags.length, (index) => false);
+                                  isSelectedTag[0] = true;
+                                });
+                              },
+                              focusNode: _rsFocus,
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                backgroundColor: Colors.white,
+                                side: BorderSide(color: Colors.blue, width: 2),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                                ),
+                              ),
+                              child: Text(
+                                'Reset Filters',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                     Divider(
                       thickness: 2,
                     ),
-                    /*Container(
+                    Container(
                       margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -1099,491 +1248,12 @@ class _TutorState extends State<Tutor> {
                     _isLoading == true
                         ? CircularProgressIndicator()
                         : _errorController.text.isEmpty
-                        ? readTutorProv.crrList.isNotEmpty
+                        ? readTutorProv.theList.isNotEmpty
                         ? SizedBox(
                       height: 375,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
-                        children: List.generate(readTutorProv.crrList.length, (i) {
-                          return Row(
-                            children: [
-                              Container(
-                                width: width-30,
-                                margin: EdgeInsets.only(bottom: 10),
-                                padding: EdgeInsets.all(15),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    width: 1,
-                                    color: Colors.grey,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Theme.of(context).backgroundColor,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          height: 120,
-                                          width: 100,
-                                          child: readTutorProv.crrList[i].avatar != null
-                                              ? ImageProfile(Image.network(readTutorProv.crrList[i].avatar!).image, readTutorProv.crrList[i].isOnline!, readTutorProv.crrList[i].userId)
-                                              : ImageProfile(Image.network("").image, readTutorProv.crrList[i].isOnline!, readTutorProv.crrList[i].userId),
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Expanded(
-                                          child: SizedBox(
-                                            child: Column(
-                                              children: [
-                                                GestureDetector(
-                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.crrList[i].userId),
-                                                  child: Container(
-                                                    alignment: Alignment.centerLeft,
-                                                    padding: EdgeInsets.only(left: 10),
-                                                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                                    child: Text(
-                                                      readTutorProv.crrList[i].name,
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis ,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: EdgeInsets.only(left: 10),
-                                                  margin: EdgeInsets.only(bottom: 10),
-                                                  child: readTutorProv.crrList[i].country != null
-                                                      ? Country.tryParse(readTutorProv.crrList[i].country!) != null
-                                                      ? Row(
-                                                    children: [
-                                                      SizedBox(
-                                                        width: 20,
-                                                        height: 20,
-                                                        child: Text(Country.tryParse(readTutorProv.crrList[i].country!)!.flagEmoji),
-                                                      ),
-                                                      SizedBox(width: 10),
-                                                      Text(Country.tryParse(readTutorProv.crrList[i].country!)!.name),
-                                                    ],
-                                                  )
-                                                      : Row(
-                                                    children: [
-                                                      SizedBox(
-                                                        width: 20,
-                                                        height: 20,
-                                                        child: Image.asset('assets/images/icons/close.png'),
-                                                      ),
-                                                      SizedBox(width: 10),
-                                                      Text("Invalid country"),
-                                                    ],
-                                                  )
-                                                      : Row(
-                                                    children: [
-                                                      SizedBox(
-                                                        width: 20,
-                                                        height: 20,
-                                                        child: Image.asset('assets/images/icons/close.png'),
-                                                      ),
-                                                      SizedBox(width: 10),
-                                                      Text("Not set country"),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: EdgeInsets.only(left: 10),
-                                                  margin: EdgeInsets.only(bottom: 10),
-                                                  child: Row(
-                                                    children: [
-                                                      readTutorProv.crrList[i].rating != null
-                                                          ? Row(
-                                                          children: []..addAll(List.generate(readTutorProv.crrList[i].rating!.toInt(), (index) {
-                                                            return Tooltip(
-                                                              message: tooltipMsg[index],
-                                                              child: Icon(Icons.star, color: Colors.yellow,),
-                                                            );
-                                                          }))
-                                                            ..addAll(List.generate((5-readTutorProv.crrList[i].rating!.toInt()), (index) {
-                                                              return Tooltip(
-                                                                message: tooltipMsg[4-index],
-                                                                child: Icon(Icons.star, color: Colors.grey,),
-                                                              );
-                                                            }).reversed)
-                                                      )
-                                                          : Text('No reviews yet', style:  TextStyle(
-                                                        fontStyle: FontStyle.italic,
-                                                      ),),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () async {
-                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.crrList[i].userId, context.read<UserProvider>().thisTokens.access.token);
-                                            if (doFavRes != "Success") {
-                                              setState(() {
-                                                _errorController.text = doFavRes;
-                                              });
-                                            }
-                                            else {
-                                              setState(() {
-                                                _errorController.text = "";
-                                              });
-                                            }
-                                          },
-                                          icon: context.read<TutorProvider>().crrList[i].isFavorite!
-                                              ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
-                                              : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                                      height: 50,
-                                      width: double.infinity,
-                                      child: SingleChildScrollView(
-                                        child: Wrap(
-                                          runSpacing: 5,
-                                          spacing: 5,
-                                          crossAxisAlignment: WrapCrossAlignment.start,
-                                          verticalDirection: VerticalDirection.down,
-                                          children: readTutorProv.crrList[i].specialties.split(',').map((value) => Container(
-                                            padding: EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                width: 1,
-                                                color: Colors.grey,
-                                              ),
-                                              borderRadius: BorderRadius.circular(20),
-                                              color: Colors.blue,
-                                            ),
-                                            child: specList.indexWhere((e) => e['inJson'] == value) != -1
-                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
-                                                : Text(value.toUpperCase()),
-                                          )).toList(),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 70,
-                                      alignment: Alignment.topLeft,
-                                      margin: EdgeInsets.only(bottom: 15),
-                                      child: Text(
-                                        readTutorProv.crrList[i].bio,
-                                        maxLines: 4,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Container(
-                                      width: double.infinity,
-                                      alignment: Alignment.centerRight,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.crrList[i].userId),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                          backgroundColor: Colors.white,
-                                          side: BorderSide(color: Colors.blue, width: 2),
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                                          ),
-                                        ),
-                                        icon: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
-                                        ),
-                                        label: Text(
-                                          'Book',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            color: Colors.blue,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                width: 15,
-                              ),
-                            ],
-                          );
-                        }),
-                      ),
-                    ) : Text("No Tutor found.")
-                        : Text(_errorController.text),*/
-                    Divider(
-                      thickness: 2,
-                    ),
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Favourite Tutors',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    _isLoading == true
-                    ? CircularProgressIndicator()
-                    : _errorController.text.isEmpty
-                    ? readTutorProv.favList.isNotEmpty
-                    ? SizedBox(
-                      height: 375,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: List.generate(readTutorProv.favList.length, (i) {
-                          return Row(
-                            children: [
-                              Container(
-                                width: width-30,
-                                margin: EdgeInsets.only(bottom: 10),
-                                padding: EdgeInsets.all(15),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    width: 1,
-                                    color: Colors.grey,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Theme.of(context).backgroundColor,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          height: 120,
-                                          width: 100,
-                                          child: readTutorProv.favList[i].avatar != null
-                                              ? ImageProfile(Image.network(readTutorProv.favList[i].avatar!).image, readTutorProv.favList[i].isOnline!, readTutorProv.favList[i].userId)
-                                              : ImageProfile(Image.network("").image, readTutorProv.favList[i].isOnline!, readTutorProv.favList[i].userId),
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Expanded(
-                                          child: SizedBox(
-                                            child: Column(
-                                              children: [
-                                                GestureDetector(
-                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.favList[i].userId),
-                                                  child: Container(
-                                                    alignment: Alignment.centerLeft,
-                                                    padding: EdgeInsets.only(left: 10),
-                                                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                                                    child: Text(
-                                                      readTutorProv.favList[i].name,
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis ,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: EdgeInsets.only(left: 10),
-                                                  margin: EdgeInsets.only(bottom: 10),
-                                                  child: readTutorProv.favList[i].country != null
-                                                    ? Country.tryParse(readTutorProv.favList[i].country!) != null
-                                                      ? Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 20,
-                                                            height: 20,
-                                                            child: Text(Country.tryParse(readTutorProv.favList[i].country!)!.flagEmoji),
-                                                          ),
-                                                          SizedBox(width: 10),
-                                                          Text(Country.tryParse(readTutorProv.favList[i].country!)!.name),
-                                                        ],
-                                                      )
-                                                      : Row(
-                                                          children: [
-                                                            SizedBox(
-                                                              width: 20,
-                                                              height: 20,
-                                                              child: Image.asset('assets/images/icons/close.png'),
-                                                            ),
-                                                            SizedBox(width: 10),
-                                                            Text("Invalid country"),
-                                                          ],
-                                                        )
-                                                    : Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 20,
-                                                            height: 20,
-                                                            child: Image.asset('assets/images/icons/close.png'),
-                                                          ),
-                                                          SizedBox(width: 10),
-                                                          Text("Not set country"),
-                                                        ],
-                                                      ),
-                                                ),
-                                                Container(
-                                                  padding: EdgeInsets.only(left: 10),
-                                                  margin: EdgeInsets.only(bottom: 10),
-                                                  child: Row(
-                                                    children: [
-                                                      readTutorProv.favList[i].rating != null
-                                                          ? Row(
-                                                        children: []..addAll(List.generate(readTutorProv.favList[i].rating!.toInt(), (index) {
-                                                            return Tooltip(
-                                                              message: tooltipMsg[index],
-                                                              child: Icon(Icons.star, color: Colors.yellow,),
-                                                            );
-                                                          }))
-                                                          ..addAll(List.generate((5-readTutorProv.favList[i].rating!.toInt()), (index) {
-                                                            return Tooltip(
-                                                              message: tooltipMsg[4-index],
-                                                              child: Icon(Icons.star, color: Colors.grey,),
-                                                            );
-                                                          }).reversed)
-                                                      )
-                                                          : Text('No reviews yet', style:  TextStyle(
-                                                        fontStyle: FontStyle.italic,
-                                                      ),),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () async {
-                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.favList[i].userId, context.read<UserProvider>().thisTokens.access.token);
-                                            if (doFavRes != "Success") {
-                                              setState(() {
-                                                _errorController.text = doFavRes;
-                                              });
-                                            }
-                                            else {
-                                              setState(() {
-                                                _errorController.text = "";
-                                              });
-                                            }
-                                          },
-                                          icon: context.read<TutorProvider>().favList[i].isFavorite!
-                                          ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
-                                          : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                                      height: 50,
-                                      width: double.infinity,
-                                      child: SingleChildScrollView(
-                                        child: Wrap(
-                                          runSpacing: 5,
-                                          spacing: 5,
-                                          crossAxisAlignment: WrapCrossAlignment.start,
-                                          verticalDirection: VerticalDirection.down,
-                                          children: readTutorProv.favList[i].specialties.split(',').map((value) => Container(
-                                            padding: EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                width: 1,
-                                                color: Colors.grey,
-                                              ),
-                                              borderRadius: BorderRadius.circular(20),
-                                              color: Colors.blue,
-                                            ),
-                                            child: specList.indexWhere((e) => e['inJson'] == value) != -1
-                                            ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
-                                            : Text(value.toUpperCase()),
-                                          )).toList(),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 70,
-                                      alignment: Alignment.topLeft,
-                                      margin: EdgeInsets.only(bottom: 15),
-                                      child: Text(
-                                        readTutorProv.favList[i].bio,
-                                        maxLines: 4,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Container(
-                                      width: double.infinity,
-                                      alignment: Alignment.centerRight,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.favList[i].userId),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                          backgroundColor: Colors.white,
-                                          side: BorderSide(color: Colors.blue, width: 2),
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                                          ),
-                                        ),
-                                        icon: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
-                                        ),
-                                        label: Text(
-                                          'Book',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            color: Colors.blue,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                width: 15,
-                              ),
-                            ],
-                          );
-                        }),
-                      ),
-                    ) : Text("No Favorite Tutor.")
-                    : Text(_errorController.text),
-                    Divider(
-                      thickness: 2,
-                    ),
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Filtered Tutors',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    _isLoading == true
-                        ? CircularProgressIndicator()
-                        : _errorController.text.isEmpty
-                    ? readTutorProv.theList.isNotEmpty
-                    ? SizedBox(
-                      height: 375,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
                         children: List.generate(readTutorProv.theList.length, (i) {
-                          if (readTutorProv.theList[i].toShow == false) {
-                            return Container();
-                          }
                           return Row(
                             children: [
                               Container(
@@ -1705,6 +1375,30 @@ class _TutorState extends State<Tutor> {
                                         ),
                                         IconButton(
                                           onPressed: () async {
+                                            var url = Uri.https('sandbox.api.lettutor.com', 'user/manageFavoriteTutor');
+                                            var response = await http.post(url,
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'Authorization': 'Bearer ${context.read<UserProvider>().thisTokens.access.token}',
+                                                },
+                                                body: jsonEncode({'tutorId': readTutorProv.theList[i].userId})
+                                            );
+
+                                            if (response.statusCode != 200) {
+                                              final Map parsed = json.decode(response.body);
+                                              final String err = parsed["message"];
+                                              setState(() {
+                                                _errorController.text = err;
+                                              });
+                                            }
+                                            else {
+                                              searchTutorList(postBody: postBody);
+                                              setState(() {
+                                                _errorController.text = "";
+                                              });
+                                            }
+                                          },
+                                          /*onPressed: () async {
                                             var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.theList[i].userId, context.read<UserProvider>().thisTokens.access.token);
                                             if (doFavRes != "Success") {
                                               setState(() {
@@ -1716,8 +1410,8 @@ class _TutorState extends State<Tutor> {
                                                 _errorController.text = "";
                                               });
                                             }
-                                          },
-                                          icon: context.read<TutorProvider>().theList[i].isFavorite!
+                                          },*/
+                                          icon: readTutorProv.theList[i].isFavorite!
                                               ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
                                               : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
                                         ),
@@ -1797,16 +1491,19 @@ class _TutorState extends State<Tutor> {
                           );
                         }),
                       ),
-                    ) : Text("No Tutor in this page. They may all be on the \"Favorite Tutors\" section.")
-                    : Text(_errorController.text),
+                    ) : Text("No Tutor found.")
+                        : Text(_errorController.text),
                     NumberPaginator(
                       controller: _pagiController,
                       // by default, the paginator shows numbers as center content
                       numberPages: _maxPage,
                       initialPage: 0,
                       onPageChange: (int index) {
-                        var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
-                        getPreTutorList(queryParameters: queryParameters);
+                        postBody['page'] = _pagiController.currentPage + 1;
+                        getPreTutorList();
+                        searchTutorList(postBody: postBody);
+                        //var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
+                        //getPreTutorList(queryParameters: queryParameters);
                       },
                     )
                   ],

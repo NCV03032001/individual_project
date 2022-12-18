@@ -27,7 +27,7 @@ import 'package:provider/provider.dart';
 // }
 
 Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  //WidgetsFlutterBinding.ensureInitialized();
 
   await Settings.init(cacheProvider: SharePreferenceCache());
 
@@ -41,7 +41,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //bool isDarkMode = false;
-    bool? isDarkMode = Settings.getValue<bool>(Setting.keyDarkMode);
 
     return ValueChangeObserver<bool>(
         cacheKey: Setting.keyDarkMode,

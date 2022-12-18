@@ -348,9 +348,6 @@ class _SettingState extends State<Setting> {
               else if (value == 'BecomeTutor') {
                 Navigator.pushNamed(context, '/become_tutor');
               }
-              else if (value == 'Setting') {
-                Navigator.pushReplacementNamed(context, '/setting');
-              }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
                         (route) {return false;});
@@ -397,7 +394,7 @@ class _SettingState extends State<Setting> {
                           Container(
                             margin: EdgeInsets.all(10),
                             child: Text(
-                              '${context.read<UserProvider>().thisUser.name}',
+                              '${context.watch<UserProvider>().thisUser.name}',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -473,6 +470,11 @@ class _SettingState extends State<Setting> {
       color: Colors.blue,
     ),
     title: 'Dark Mode',
+    onChange: (val) {
+      print(val);
+      print(Settings.getValue<bool>(Setting.keyDarkMode));
+      //Settings.setValue<bool>(keyDarkMode, val);
+    },
   );
 
   Widget changePassword() => SimpleSettingsTile(

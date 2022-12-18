@@ -115,12 +115,6 @@ class _CoursesState extends State<Courses> {
       //print(parsed);
       var courseList = Provider.of<CourseList>(context, listen: false);
       courseList.fromJson(parsed["data"]);
-      // var readCourseList = context.read<CourseList>();
-      //
-      // readCourseList.rows.forEach((element) {
-      //   print(element.name);
-      // });
-
       setState(() {
         _errorController.text = "";
       });

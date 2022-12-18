@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class CourseList with ChangeNotifier, Diagnosticable {
   late int count;
-  late List<CourseClass> rows;
+  late List<CourseClass> rows = [];
 
   void fromJson(Map<String, dynamic> json){
     count = json['count'];

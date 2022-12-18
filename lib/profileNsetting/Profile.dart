@@ -525,7 +525,7 @@ class _ProfileState extends State<Profile> {
                               Container(
                                 margin: EdgeInsets.all(10),
                                 child: Text(
-                                  '${context.read<UserProvider>().thisUser.name}',
+                                  '${context.watch<UserProvider>().thisUser.name}',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
