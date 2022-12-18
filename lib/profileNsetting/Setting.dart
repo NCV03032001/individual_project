@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/model/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class Setting extends StatefulWidget {
   static const keyDarkMode = 'key-darkmode';
@@ -16,6 +19,16 @@ class _SettingState extends State<Setting> {
   String _firstSelected ='assets/images/usaFlag.svg';
 
   static const keyDarkMode = 'key-darkmode';
+
+  TextEditingController _pwController = TextEditingController();
+  TextEditingController _npwController = TextEditingController();
+  TextEditingController _cnpwController = TextEditingController();
+  TextEditingController _errorController = TextEditingController();
+  bool _isSuccess = false;
+  bool _isLoading = false;
+  final FocusNode _cpwFocus = FocusNode();
+  final FocusNode _dialogFocus = FocusNode();
+  final _cpwKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -470,7 +483,262 @@ class _SettingState extends State<Setting> {
       child: Image.asset('assets/images/icons/ChangePassword.png', color: Colors.blue,),
     ),
     onTap: () {
-      Navigator.pushNamed(context, '/change_pw');
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+                builder: (context, setState) {
+                  return AlertDialog(
+                    title: Text('Change Password'),
+                    content: GestureDetector(
+                      onTap: () {
+                        FocusScope.of(context).requestFocus(_dialogFocus);
+                      },
+                      child: SizedBox(
+                        width: 280,
+                        height: 300,
+                        child: SingleChildScrollView(
+                          child: Form(
+                            key: _cpwKey,
+                            child: Column(
+                              children: [
+                                Container(
+                                    margin: EdgeInsets.only(bottom: 10),
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Current Password',
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(bottom: 10),
+                                  child: TextFormField(
+                                      keyboardType: TextInputType.visiblePassword,
+                                      controller: _pwController,
+                                      autovalidateMode: AutovalidateMode.always,
+                                      obscureText: true,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.grey),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.blue),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.red),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.orange),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        errorStyle: TextStyle(
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      validator: (val) {
+                                        if(val == null || val.isEmpty){
+                                          return "Please input your Password!";
+                                        }
+                                        return null;
+                                      }
+                                  ),
+                                ),
+                                Container(
+                                    margin: EdgeInsets.only(bottom: 10),
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'New Password',
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(bottom: 10),
+                                  child: TextFormField(
+                                      keyboardType: TextInputType.visiblePassword,
+                                      controller: _npwController,
+                                      autovalidateMode: AutovalidateMode.always,
+                                      obscureText: true,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.grey),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.blue),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.red),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.orange),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        errorStyle: TextStyle(
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      validator: (val) {
+                                        if(val == null || val.isEmpty){
+                                          return "Please input New Password!";
+                                        }
+                                        return null;
+                                      }
+                                  ),
+                                ),
+                                Container(
+                                    margin: EdgeInsets.only(bottom: 10),
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Confirm New Password',
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(bottom: 10),
+                                  child: TextFormField(
+                                      keyboardType: TextInputType.visiblePassword,
+                                      controller: _cnpwController,
+                                      autovalidateMode: AutovalidateMode.always,
+                                      obscureText: true,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.grey),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.blue),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.red),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: Colors.orange),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                        errorStyle: TextStyle(
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      validator: (val) {
+                                        if(val == null || val.isEmpty){
+                                          return "Please input Confirm!";
+                                        }
+                                        return null;
+                                      }
+                                  ),
+                                ),
+                                _errorController.text.isNotEmpty
+                                    ? Container(
+                                  margin: EdgeInsets.only(bottom: 20),
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      width: 1,
+                                      color: _isSuccess ? Color(0xff99FF99) : Color(0xffffccc7),
+                                    ),
+                                    color: _isSuccess ? Color(0xffF2FFF0) : Color(0xfffff2f0),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      _isSuccess
+                                          ? Icon(Icons.check_circle, color: Colors.green, size: 17.5,)
+                                          : Image.asset('assets/images/icons/close.png', width: 15, height: 15),
+                                      SizedBox(width: 15,),
+                                      Flexible(child: Text(_errorController.text, style: TextStyle(color: Colors.black),),),
+                                    ],
+                                  ),
+                                ) : Container(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    actions: [
+                      OutlinedButton(
+                        focusNode: _cpwFocus,
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.all(15),
+                          backgroundColor: Colors.blue,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _isLoading
+                                ? SizedBox(height: 15, width: 15, child: CircularProgressIndicator(color: Colors.white,),)
+                                : SizedBox(width: 15,),
+                            SizedBox(width: 10,),
+                            Text(
+                              'Confirm Change',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: 25,),
+                          ],
+                        ),
+                        onPressed: () async {
+                          _cpwFocus.requestFocus();
+                          if (_cpwKey.currentState!.validate()) {
+                            if (_cnpwController.text != _npwController.text) {
+                              setState(() {
+                                _errorController.text = "Confirm doesn't match!";
+                                _isSuccess = false;
+                              });
+                              return;
+                            }
+                            setState(() {
+                              _isLoading = true;
+                              _isSuccess = false;
+                              _errorController.text = "";
+                            });
+                            var url = Uri.https('sandbox.api.lettutor.com', 'auth/change-password');
+                            var response = await http.post(url,
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+                                },
+                                body: jsonEncode({'password': _pwController.text, "newPassword": _npwController.text})
+                            );
+                            if (response.statusCode != 200) {
+                              final Map parsed = json.decode(response.body);
+                              final String err = parsed["message"];
+                              setState(() {
+                                _isLoading = false;
+                                _isSuccess = false;
+                                _errorController.text = err;
+                              });
+                            }
+                            else {
+                              setState(() {
+                                _isLoading = false;
+                                _isSuccess = true;
+                                _errorController.text = "Successfully changed password!";
+                              });
+                            }
+                          }
+                          else setState(() {
+                            _isSuccess = false;
+                            _errorController.text = "";
+                          });
+                        }, //sửa sau
+                      ),
+                    ],
+                  );
+                }
+            );
+          }
+      );
     }, //lead to change password page
   );
   Widget deleteAccount() => SimpleSettingsTile(
