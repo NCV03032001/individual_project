@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -58,20 +59,22 @@ class _CoursesState extends State<Courses> {
 
   final _cKey = GlobalKey<DropdownSearchState<String>>();
   final List<String> cItems = [
-    'For Study Aboard',
+    'For studying abroad',
     'English for Traveling',
     'English for Beginners',
     'Business English',
     'Conversational English',
-    'English for kids',
+    'English for Kid',
     'STARTERS',
     'MOVERS',
     'FLYERS',
+    'KET',
     'PET',
     'IELTS',
     'TOEFL',
     'TOEIC',
   ];
+  List<Categories> cFetch = [];
   final FocusNode _cFocus = FocusNode();
 
   final _sKey = GlobalKey<DropdownSearchState<String>>();
@@ -82,6 +85,8 @@ class _CoursesState extends State<Courses> {
   final FocusNode _sFocus = FocusNode();
 
   final FocusNode _rsFocus = FocusNode();
+  final FocusNode _searchFocus = FocusNode();
+
 
   @override
   void initState() {
@@ -91,10 +96,29 @@ class _CoursesState extends State<Courses> {
       _isLoading = true;
     });
 
+    getCourseCategory();
     getCourseList();
   }
 
-  void getCourseList({Map<String, String> queryParameters = const {'size': '6','page': '1',}}) async {
+  void getCourseCategory() async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'content-category');
+
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+    if (response.statusCode == 200) {
+      final Map parsed = json.decode(response.body);
+      cFetch = List.from(parsed['rows']).map((e)=>Categories.fromJson(e)).toList();
+      cFetch.forEach((element) {
+        print(element.title);
+      });
+    }
+  }
+
+  void getCourseList({Map<String, dynamic> queryParameters = const {'size': '6','page': '1',}}) async {
     var url = Uri.https('sandbox.api.lettutor.com', 'course', queryParameters);
 
     var response = await http.get(url,
@@ -126,6 +150,8 @@ class _CoursesState extends State<Courses> {
       if (_maxPage < 1) _maxPage = 1;
     });
   }
+
+  Map<String, dynamic> queryParameters = {'size': '6','page': '1',};
 
   @override
   Widget build(BuildContext context) {
@@ -685,38 +711,120 @@ class _CoursesState extends State<Courses> {
                   ),
                 ),
               ),
-              Container(
-                margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                child: OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _rsFocus.requestFocus();
-                      _nController.clear();
-                      _lvKey.currentState?.popupValidate([]);
-                      _cKey.currentState?.popupValidate([]);
-                      _sKey.currentState?.popupValidate([]);
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.all(10),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _searchFocus.requestFocus();
+                            _isLoading = true;
+                          });
 
-                      _isLoading= true;
-                    });
-                    getCourseList();
-                  },
-                  focusNode: _rsFocus,
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                    backgroundColor: Colors.white,
-                    side: BorderSide(color: Colors.blue, width: 2),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                          if (_nController.text.isNotEmpty) {
+                            queryParameters['q'] = _nController.text;
+                          }
+                          else queryParameters.remove('q');
+
+                          List<String> tempLevel = _lvKey.currentState!.getSelectedItems;
+                          List<String> tempLevelInt = [];
+                          tempLevel.forEach((element) {
+                            tempLevelInt.add(lvItems.indexWhere((e) => e == element).toString());
+                          });
+                          if (tempLevelInt.isNotEmpty) {
+                            queryParameters['level[]'] = tempLevelInt;
+                          }
+                          else {
+                            queryParameters.remove('level[]');
+                          }
+
+                          List<String> tempCats = _cKey.currentState!.getSelectedItems;
+                          List<String> tempCatIds = [];
+                          tempCats.forEach((element) {
+                            Categories aTempCat = cFetch[cFetch.indexWhere((e) => e.title == element)];
+                            tempCatIds.add(aTempCat.id);
+                          });
+                          if (tempCatIds.isNotEmpty) {
+                            queryParameters['categoryId[]'] = tempCatIds;
+                          }
+                          else {
+                            queryParameters.remove('categoryId[]');
+                          }
+
+                          String? tempSort = _sKey.currentState?.getSelectedItem;
+                          if (tempSort != null) {
+                            if (tempSort == 'Level ascending') {
+                              queryParameters['orderBy[]'] = "DESC";
+                            }
+                            else if (tempSort == 'Level decreasing') {
+                              queryParameters['orderBy[]'] = "ASC";
+                            }
+                          }
+                          else {
+                            queryParameters.remove('orderBy[]');
+                          }
+
+                          _pagiController.currentPage = 0;
+                          queryParameters['page'] = '1';
+
+                          print(queryParameters);
+                          getCourseList(queryParameters: queryParameters);
+                        },
+                        focusNode: _searchFocus,
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.blue, width: 2),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                        ),
+                        child: Text(
+                          'Search',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    'Reset Filters',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.blue,
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.all(10),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _rsFocus.requestFocus();
+                            _nController.clear();
+                            _lvKey.currentState?.popupValidate([]);
+                            _cKey.currentState?.popupValidate([]);
+                            _sKey.currentState?.popupValidate([]);
+                          });
+                        },
+                        focusNode: _rsFocus,
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.blue, width: 2),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                        ),
+                        child: Text(
+                          'Reset Filters',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
               Divider(
                 thickness: 2,
@@ -725,7 +833,8 @@ class _CoursesState extends State<Courses> {
                   ? CircularProgressIndicator()
                   : _errorController.text.isNotEmpty
                   ? Text(_errorController.text)
-                  : GridView.count(
+                  : readCourseList.isNotEmpty
+                  ? GridView.count(
                 physics: ScrollPhysics(), // to disable GridView's scrolling
                 shrinkWrap: true,
                 crossAxisCount: itemWidth < itemHeight ? 2 : 3,
@@ -736,14 +845,15 @@ class _CoursesState extends State<Courses> {
                   return CourseGrid(readCourseList[i].id, readCourseList[i].imageUrl, readCourseList[i].name, readCourseList[i].description,
                       lvMap.firstWhere((element) => element['level'] == readCourseList[i].level)["levelName"]!, readCourseList[i].topics.length.toString());
                 }),
-              ),
+              )
+                  : Text("No Course found."),
               NumberPaginator(
                 controller: _pagiController,
                 // by default, the paginator shows numbers as center content
                 numberPages: _maxPage,
                 initialPage: 0,
                 onPageChange: (int index) {
-                  var queryParameters = {'size': '6','page': (_pagiController.currentPage + 1).toString(),};
+                  queryParameters['page'] = (_pagiController.currentPage + 1).toString();
                   getCourseList(queryParameters: queryParameters);
                 },
               )

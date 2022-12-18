@@ -301,6 +301,17 @@ class _TutorState extends State<Tutor> {
     });
   }
 
+  final Map<String, dynamic> postBody = {
+    "filters": {
+      "date": null,
+      "nationality": {},
+      "specialties": [],
+      "tutoringTimeAvailable": [null, null]
+    },
+    "page": 1,
+    "perPage": 9
+  };
+
   @override
   void dispose() {
     stopTimer();
@@ -317,17 +328,6 @@ class _TutorState extends State<Tutor> {
     final hours = strDigits(myDuration.inHours.remainder(24));
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
-
-    Map<String, dynamic> postBody = {
-      "filters": {
-        "date": null,
-        "nationality": {},
-        "specialties": [],
-        "tutoringTimeAvailable": [null, null]
-      },
-      "page": 1,
-      "perPage": 9
-    };
 
     return GestureDetector(
       onTap: () {
@@ -1166,7 +1166,7 @@ class _TutorState extends State<Tutor> {
                                 else {
                                   postBody['filters']['specialties'] = [];
                                 }
-
+                                _pagiController.currentPage = 0;
                                 postBody['page'] = 1;
 
                                 print(postBody);
@@ -1500,7 +1500,7 @@ class _TutorState extends State<Tutor> {
                       initialPage: 0,
                       onPageChange: (int index) {
                         postBody['page'] = _pagiController.currentPage + 1;
-                        getPreTutorList();
+                        print(postBody);
                         searchTutorList(postBody: postBody);
                         //var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
                         //getPreTutorList(queryParameters: queryParameters);

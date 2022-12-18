@@ -27,7 +27,7 @@ import 'package:provider/provider.dart';
 // }
 
 Future main() async {
-  //WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   await Settings.init(cacheProvider: SharePreferenceCache());
 
