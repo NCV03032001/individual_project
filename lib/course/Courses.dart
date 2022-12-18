@@ -1,9 +1,14 @@
-import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:individual_project/model/CourseList.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:number_paginator/number_paginator.dart';
 
 class Courses extends StatefulWidget {
   const Courses({Key? key}) : super(key: key);
@@ -14,24 +19,58 @@ class Courses extends StatefulWidget {
 
 class _CoursesState extends State<Courses> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
+
+  final FocusNode _screenFocus = FocusNode();
+  bool _isLoading = false;
+
+  int _maxPage = 1;
+  final NumberPaginatorController _pagiController = NumberPaginatorController();
+
+  TextEditingController _errorController = TextEditingController();
 
   final TextEditingController _nController = TextEditingController();
   final FocusNode _nFocus = FocusNode();
 
   final _lvKey = GlobalKey<DropdownSearchState<String>>();
   final List<String> lvItems = [
-    'Level 1',
-    'Level 2',
-    'Level 3',
+    'Any Level',
+    'Beginner',
+    'Upper-Beginner',
+    'Pre-Intermediate',
+    'Intermediate',
+    'Upper-Intermediate',
+    'Pre-Advanced',
+    'Advanced',
+    'Very Advanced',
+  ];
+  final List<Map<String, String>> lvMap = [
+    {"level": "0", "levelName": "Any Level",},
+    {"level": "1", "levelName": "Beginner",},
+    {"level": "2", "levelName": "Upper-Beginner",},
+    {"level": "3", "levelName": "Pre-Intermediate",},
+    {"level": "4", "levelName": "Intermediate",},
+    {"level": "5", "levelName": "Upper-Intermediate",},
+    {"level": "6", "levelName": "Pre-Advanced",},
+    {"level": "7", "levelName": "Advanced",},
+    {"level": "8", "levelName": "Very Advanced",},
   ];
   final FocusNode _lvFocus = FocusNode();
 
   final _cKey = GlobalKey<DropdownSearchState<String>>();
   final List<String> cItems = [
-    'Category 1',
-    'Category 2',
-    'Category 3',
+    'For Study Aboard',
+    'English for Traveling',
+    'English for Beginners',
+    'Business English',
+    'Conversational English',
+    'English for kids',
+    'STARTERS',
+    'MOVERS',
+    'FLYERS',
+    'PET',
+    'IELTS',
+    'TOEFL',
+    'TOEIC',
   ];
   final FocusNode _cFocus = FocusNode();
 
@@ -45,9 +84,60 @@ class _CoursesState extends State<Courses> {
   final FocusNode _rsFocus = FocusNode();
 
   @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _errorController.text = "";
+      _isLoading = true;
+    });
+
+    getCourseList();
+  }
+
+  void getCourseList({Map<String, String> queryParameters = const {'size': '6','page': '1',}}) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'course', queryParameters);
+
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _errorController.text = err;
+      });
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      //print(parsed);
+      var courseList = Provider.of<CourseList>(context, listen: false);
+      courseList.fromJson(parsed["data"]);
+      // var readCourseList = context.read<CourseList>();
+      //
+      // readCourseList.rows.forEach((element) {
+      //   print(element.name);
+      // });
+
+      setState(() {
+        _errorController.text = "";
+      });
+    }
+    //print(response.body);
+    setState(() {
+      _isLoading = false;
+      _maxPage = context.read<CourseList>().count~/6;
+      if (_maxPage < 1) _maxPage = 1;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var readCourseList = context.read<CourseList>().rows;
     var size = MediaQuery.of(context).size;
-    /*24 is for notification bar on Android*/
+
     final double itemHeight = (size.height - kToolbarHeight - 24) / 2;
     final double itemWidth = size.width / 2;
 
@@ -159,9 +249,7 @@ class _CoursesState extends State<Courses> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),
@@ -377,211 +465,68 @@ class _CoursesState extends State<Courses> {
         ],
         //automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(bottom: 20),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Discover Courses',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(width: 60, height: 60, child: SvgPicture.asset('assets/images/Courses.svg'),),
-                SizedBox(width: 10,),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                    padding: EdgeInsets.only(left: 10),
-                    alignment: Alignment.centerLeft,
-                    decoration: BoxDecoration(
-                        border: Border(
-                          left: BorderSide(color: Colors.grey, width: 5),
-                        )
-                    ),
-                    child: Text('LiveTutor has built the most quality, methodical and scientific courses in the fields of life for those who are in need of improving their knowledge of the fields.',
-                      style: TextStyle(fontSize: 15,),
-                    ),
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            FocusScope.of(context).requestFocus(_screenFocus);
+          });
+        },
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(bottom: 20),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Discover Courses',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 5),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Find desired courses:',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 10),
-              child: TextFormField(
-                keyboardType: TextInputType.text,
-                focusNode: _nFocus,
-                controller: _nController,
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 0),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 1, color: Colors.grey),
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 1, color: Colors.blue),
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                  ),
-                  hintText: 'Enter course name',
-                  suffixIcon: Icon(Icons.search_outlined),
-                ),
-                onTap: () {
-                  setState(() {
-                    _nFocus.requestFocus();
-                  });
-                },
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 10),
-              child: Focus(
-                  focusNode: _lvFocus,
-                  child: Listener(
-                    onPointerDown: (_) {
-                      FocusScope.of(context).requestFocus(_lvFocus);
-                    },
-                    child: DropdownSearch<String>.multiSelection(
-                      key: _lvKey,
-                      items: lvItems,
-                      popupProps: PopupPropsMultiSelection.menu(
-                        showSelectedItems: true,
-                        showSearchBox: true,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(width: 60, height: 60, child: SvgPicture.asset('assets/images/Courses.svg'),),
+                  SizedBox(width: 10,),
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                      padding: EdgeInsets.only(left: 10),
+                      alignment: Alignment.centerLeft,
+                      decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(color: Colors.grey, width: 5),
+                          )
                       ),
-                      clearButtonProps: ClearButtonProps(
-                        isVisible: true,
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.zero,
+                      child: Text('LiveTutor has built the most quality, methodical and scientific courses in the fields of life for those who are in need of improving their knowledge of the fields.',
+                        style: TextStyle(fontSize: 15,),
                       ),
-                      dropdownButtonProps: DropdownButtonProps(
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.only(right: 12),
-                      ),
-                      dropdownDecoratorProps: DropDownDecoratorProps(
-                        dropdownSearchDecoration: InputDecoration(
-                          contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(width: 1, color: Colors.blue),
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
-                          ),
-                          hintText: 'Select level',
-                        ),
-                      ),
-                      onChanged: (val) {
-                        setState(() {
-                          _lvFocus.requestFocus();
-                        });
-                      },
                     ),
-                  )
+                  ),
+                ],
               ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 10),
-              child: Focus(
-                  focusNode: _cFocus,
-                  child: Listener(
-                    onPointerDown: (_) {
-                      FocusScope.of(context).requestFocus(_cFocus);
-                    },
-                    child: DropdownSearch<String>.multiSelection(
-                      key: _cKey,
-                      items: cItems,
-                      popupProps: PopupPropsMultiSelection.menu(
-                        showSelectedItems: true,
-                        showSearchBox: true,
-                      ),
-                      clearButtonProps: ClearButtonProps(
-                        isVisible: true,
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.zero,
-                      ),
-                      dropdownButtonProps: DropdownButtonProps(
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.only(right: 12),
-                      ),
-                      dropdownDecoratorProps: DropDownDecoratorProps(
-                        dropdownSearchDecoration: InputDecoration(
-                          contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(width: 1, color: Colors.blue),
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
-                          ),
-                          hintText: 'Select category',
-                        ),
-                      ),
-                      onChanged: (val) {
-                        setState(() {
-                          _cFocus.requestFocus();
-                        });
-                      },
-                    ),
-                  )
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 5),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Sort filter:',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+              Container(
+                margin: EdgeInsets.only(bottom: 5),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Find desired courses:',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 10),
-              child: Focus(
-                focusNode: _sFocus,
-                child: Listener(
-                  onPointerDown: (_) {
-                    FocusScope.of(context).requestFocus(_sFocus);
-                  },
-                  child: DropdownSearch<String>(
-                items: sItems,
-                key: _sKey,
-                clearButtonProps: ClearButtonProps(
-                  isVisible: true,
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.zero,
-                ),
-                dropdownButtonProps: DropdownButtonProps(
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.only(right: 12),
-                ),
-                popupProps: PopupProps.menu(
-                  showSelectedItems: true,
-                ),
-                dropdownDecoratorProps: DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                child: TextFormField(
+                  keyboardType: TextInputType.text,
+                  focusNode: _nFocus,
+                  controller: _nController,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 0),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(width: 1, color: Colors.grey),
                       borderRadius: BorderRadius.all(Radius.circular(50)),
@@ -590,61 +535,226 @@ class _CoursesState extends State<Courses> {
                       borderSide: BorderSide(width: 1, color: Colors.blue),
                       borderRadius: BorderRadius.all(Radius.circular(50)),
                     ),
-                    hintText: 'Sort by Level',
+                    hintText: 'Enter course name',
+                    suffixIcon: Icon(Icons.search_outlined),
                   ),
+                  onTap: () {
+                    setState(() {
+                      _nFocus.requestFocus();
+                    });
+                  },
                 ),
               ),
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                child: Focus(
+                    focusNode: _lvFocus,
+                    child: Listener(
+                      onPointerDown: (_) {
+                        FocusScope.of(context).requestFocus(_lvFocus);
+                      },
+                      child: DropdownSearch<String>.multiSelection(
+                        key: _lvKey,
+                        items: lvItems,
+                        popupProps: PopupPropsMultiSelection.menu(
+                          showSelectedItems: true,
+                          showSearchBox: true,
+                        ),
+                        clearButtonProps: ClearButtonProps(
+                          isVisible: true,
+                          alignment: Alignment.centerRight,
+                          padding: EdgeInsets.zero,
+                        ),
+                        dropdownButtonProps: DropdownButtonProps(
+                          alignment: Alignment.centerRight,
+                          padding: EdgeInsets.only(right: 12),
+                        ),
+                        dropdownDecoratorProps: DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                            contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.grey),
+                              borderRadius: BorderRadius.all(Radius.circular(50)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.blue),
+                              borderRadius: BorderRadius.all(Radius.circular(50)),
+                            ),
+                            hintText: 'Select level',
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setState(() {
+                            _lvFocus.requestFocus();
+                          });
+                        },
+                      ),
+                    )
                 ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-              child: OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _rsFocus.requestFocus();
-                    _nController.clear();
-                    _lvKey.currentState?.popupValidate([]);
-                    _cKey.currentState?.popupValidate([]);
-                    _sKey.currentState?.popupValidate([]);
-                  });
-                },
-                focusNode: _rsFocus,
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.blue, width: 2),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                  ),
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                child: Focus(
+                    focusNode: _cFocus,
+                    child: Listener(
+                      onPointerDown: (_) {
+                        FocusScope.of(context).requestFocus(_cFocus);
+                      },
+                      child: DropdownSearch<String>.multiSelection(
+                        key: _cKey,
+                        items: cItems,
+                        popupProps: PopupPropsMultiSelection.menu(
+                          showSelectedItems: true,
+                          showSearchBox: true,
+                        ),
+                        clearButtonProps: ClearButtonProps(
+                          isVisible: true,
+                          alignment: Alignment.centerRight,
+                          padding: EdgeInsets.zero,
+                        ),
+                        dropdownButtonProps: DropdownButtonProps(
+                          alignment: Alignment.centerRight,
+                          padding: EdgeInsets.only(right: 12),
+                        ),
+                        dropdownDecoratorProps: DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                            contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.grey),
+                              borderRadius: BorderRadius.all(Radius.circular(50)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(width: 1, color: Colors.blue),
+                              borderRadius: BorderRadius.all(Radius.circular(50)),
+                            ),
+                            hintText: 'Select category',
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setState(() {
+                            _cFocus.requestFocus();
+                          });
+                        },
+                      ),
+                    )
                 ),
+              ),
+              Container(
+                margin: EdgeInsets.only(bottom: 5),
+                alignment: Alignment.centerLeft,
                 child: Text(
-                  'Reset Filters',
+                  'Sort filter:',
                   style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.blue,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            ),
-            Divider(
-              thickness: 2,
-            ),
-            GridView.count(
-              physics: ScrollPhysics(), // to disable GridView's scrolling
-              shrinkWrap: true,
-              crossAxisCount: itemWidth < itemHeight ? 2 : 3,
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
-              childAspectRatio: itemWidth < itemHeight ? (itemWidth / itemHeight) : (itemHeight / itemWidth + 0.3),
-              children: <Widget>[
-                CourseGrid('assets/images/CourseExample1.png', 'Life in the Internet Age', 'Let\'s discuss how technology is changing the way we live', 'Intermediate', '9'),
-                CourseGrid('assets/images/CourseExample2.png', 'Caring for Our Planet', 'Let\'s discuss our relationship as humans with our planet, Earth', 'Intermediate', '7'),
-                CourseGrid('assets/images/CourseExample3.png', 'Healthy Mind, Healthy Body', 'Let\'s discuss the many aspects of living a long, happy life', 'Intermediate', '6'),
-                CourseGrid('assets/images/CourseExample4.png', 'Movies and Television', 'Let\'s discuss our preferences and habits surrounding movies and television shows', 'Beginner', '10'),
-              ],
-            ),
-          ],
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                child: Focus(
+                  focusNode: _sFocus,
+                  child: Listener(
+                    onPointerDown: (_) {
+                      FocusScope.of(context).requestFocus(_sFocus);
+                    },
+                    child: DropdownSearch<String>(
+                      items: sItems,
+                      key: _sKey,
+                      clearButtonProps: ClearButtonProps(
+                        isVisible: true,
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.zero,
+                      ),
+                      dropdownButtonProps: DropdownButtonProps(
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.only(right: 12),
+                      ),
+                      popupProps: PopupProps.menu(
+                        showSelectedItems: true,
+                      ),
+                      dropdownDecoratorProps: DropDownDecoratorProps(
+                        dropdownSearchDecoration: InputDecoration(
+                          contentPadding: EdgeInsets.fromLTRB(20, 15, 0, 0),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1, color: Colors.grey),
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(width: 1, color: Colors.blue),
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                          ),
+                          hintText: 'Sort by Level',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _rsFocus.requestFocus();
+                      _nController.clear();
+                      _lvKey.currentState?.popupValidate([]);
+                      _cKey.currentState?.popupValidate([]);
+                      _sKey.currentState?.popupValidate([]);
+
+                      _isLoading= true;
+                    });
+                    getCourseList();
+                  },
+                  focusNode: _rsFocus,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.blue, width: 2),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                    ),
+                  ),
+                  child: Text(
+                    'Reset Filters',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ),
+              Divider(
+                thickness: 2,
+              ),
+              _isLoading == true
+                  ? CircularProgressIndicator()
+                  : _errorController.text.isNotEmpty
+                  ? Text(_errorController.text)
+                  : GridView.count(
+                physics: ScrollPhysics(), // to disable GridView's scrolling
+                shrinkWrap: true,
+                crossAxisCount: itemWidth < itemHeight ? 2 : 3,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+                childAspectRatio: itemWidth < itemHeight ? (itemWidth / itemHeight) : (itemHeight / itemWidth + 0.3),
+                children: List.generate(readCourseList.length, (i) {
+                  return CourseGrid(readCourseList[i].id, readCourseList[i].imageUrl, readCourseList[i].name, readCourseList[i].description,
+                      lvMap.firstWhere((element) => element['level'] == readCourseList[i].level)["levelName"]!, readCourseList[i].topics.length.toString());
+                }),
+              ),
+              NumberPaginator(
+                controller: _pagiController,
+                // by default, the paginator shows numbers as center content
+                numberPages: _maxPage,
+                initialPage: 0,
+                onPageChange: (int index) {
+                  var queryParameters = {'size': '6','page': (_pagiController.currentPage + 1).toString(),};
+                  getCourseList(queryParameters: queryParameters);
+                },
+              )
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -657,17 +767,17 @@ class _CoursesState extends State<Courses> {
     );
   }
 
-  Widget CourseGrid(String imgAsset, String name, String description, String level, String lessonNum){
+  Widget CourseGrid(String id, String imgAsset, String name, String description, String level, String lessonNum){
     return Card(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       child: InkWell(
         splashColor: Colors.blue.withAlpha(30),
-        onTap: () => Navigator.pushNamed(context, '/course_detail'),
+        onTap: () => Navigator.pushNamed(context, '/course_detail', arguments: id),
         child: Column(
           children: [
-            Image.asset(imgAsset),
+            Image.network(imgAsset),
             Container(
               padding: EdgeInsets.all(15),
               child: Column(

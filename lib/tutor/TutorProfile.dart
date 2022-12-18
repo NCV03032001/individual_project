@@ -1,17 +1,24 @@
-import 'dart:io';
+import 'dart:convert';
 
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:individual_project/model/Tutor.dart';
+import 'package:individual_project/model/UserProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:booking_calendar/booking_calendar.dart';
-//import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+
+import '../model/TutorProvider.dart';
 
 class TutorProfile extends StatefulWidget {
-  const TutorProfile({Key? key}) : super(key: key);
+  final String id;
+  const TutorProfile({Key? key, required this.id}) : super(key: key);
 
   @override
   State<TutorProfile> createState() => _TutorProfileState();
@@ -19,11 +26,28 @@ class TutorProfile extends StatefulWidget {
 
 class _TutorProfileState extends State<TutorProfile> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  PickedFile? _imageFile;
+  bool _isLoading = false;
+  Tutor thisTutor = Tutor(
+      name: "", isPublicRecord: false, courses: [],
+      userId: "", video: "", bio: "", education: "", experience: "", profession: "",
+      targetStudent: "", interests: "", languages: "", specialties: "", toShow: false);
+
+  TextEditingController _errorController = TextEditingController();
+  String _videoErr = "";
 
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
-
-  bool FhasRvw = true;
+  List<Map<String, String>> specList = [
+    {'inJson': 'business-english', 'toShow': 'English for Business'},
+    {'inJson': 'conversational-english', 'toShow': 'Conversational'},
+    {'inJson': 'english-for-kids', 'toShow': 'English for kids'},
+    {'inJson': 'starters', 'toShow': 'STARTERS'},
+    {'inJson': 'movers', 'toShow': 'MOVERS'},
+    {'inJson': 'flyers', 'toShow': 'FLYERS'},
+    {'inJson': 'ket', 'toShow': 'PET'},
+    {'inJson': 'ielts', 'toShow': 'IELTS'},
+    {'inJson': 'toefl', 'toShow': 'TOEFL'},
+    {'inJson': 'toeic', 'toShow': 'TOEIC'},
+  ];
 
   bool isFav = false;
 
@@ -33,12 +57,59 @@ class _TutorProfileState extends State<TutorProfile> {
   @override
   void initState() {
     super.initState();
-    initPlayer();
     mockBookingService = BookingService(
         serviceName: 'Mock Service',
         serviceDuration: 30,
         bookingEnd: DateTime(now.year, now.month, now.day, 23, 59),
         bookingStart: DateTime(now.year, now.month, now.day, 7, 0),);
+    setState(() {
+      _isLoading = true;
+      _errorController.text = "";
+    });
+    getATutor();
+  }
+
+  void getATutor() async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/${widget.id}');
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _errorController.text = err;
+      });
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      setState(() {
+        thisTutor = Tutor.fromDetailJson(parsed);
+        _errorController.text = "";
+      });
+    }
+
+    _videoPlayerController = VideoPlayerController.network(thisTutor.video)..addListener(() {
+      if (_videoPlayerController.value.hasError) {
+        setState(() {
+          _videoErr = _videoPlayerController.value.errorDescription!;
+          _isLoading = false;
+        });
+      }
+    });
+    await _videoPlayerController.initialize();
+
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -46,15 +117,6 @@ class _TutorProfileState extends State<TutorProfile> {
     _videoPlayerController.dispose();
     _chewieController?.dispose();
     super.dispose();
-  }
-  
-  void initPlayer() async {
-    _videoPlayerController = VideoPlayerController.network('https://api.app.lettutor.com/video/4d54d3d7-d2a9-42e5-97a2-5ed38af5789avideo1627913015871.mp4');
-    await _videoPlayerController.initialize();
-
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController,
-    );
   }
 
   List<String> FTutorTags = ['English for Business', 'Conversational', 'English for kids', 'IELTS', 'TOEIC'];
@@ -125,6 +187,7 @@ class _TutorProfileState extends State<TutorProfile> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
@@ -233,9 +296,7 @@ class _TutorProfileState extends State<TutorProfile> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: _imageFile == null
-                            ? Image.asset('assets/images/avatars/testavt.webp').image
-                            : FileImage(File(_imageFile!.path)),
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),
@@ -453,160 +514,214 @@ class _TutorProfileState extends State<TutorProfile> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 120,
-                  width: 100,
-                  child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: SizedBox(
-                    child: Column(
-                      children: [
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          padding: EdgeInsets.only(left: 10),
-                          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                          child: Text(
-                            'Keegan',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+        child: _isLoading == true
+        ? Center(
+          child: CircularProgressIndicator(),
+        )
+        : _errorController.text.isEmpty
+        ? Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 120,
+                width: 100,
+                child: thisTutor.avatar != null
+                ? ImageProfile(Image.network(thisTutor.avatar!).image)
+                : ImageProfile(Image.network("").image),
+              ),
+              SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                child: SizedBox(
+                  child: Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        padding: EdgeInsets.only(left: 10),
+                        margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                        child: Text(
+                          thisTutor.name,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(left: 10),
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: thisTutor.country != null
+                            ? Country.tryParse(thisTutor.country!) != null
+                            ? Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Text(Country.tryParse(thisTutor.country!)!.flagEmoji),
                             ),
-                          ),
+                            SizedBox(width: 10),
+                            Text(Country.tryParse(thisTutor.country!)!.name),
+                          ],
+                        )
+                            : Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Image.asset('assets/images/icons/close.png'),
+                            ),
+                            SizedBox(width: 10),
+                            Text("Invalid country"),
+                          ],
+                        )
+                            : Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Image.asset('assets/images/icons/close.png'),
+                            ),
+                            SizedBox(width: 10),
+                            Text("Not set country"),
+                          ],
                         ),
-                        Container(
-                          padding: EdgeInsets.only(left: 10),
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: SvgPicture.asset('assets/images/frFlag.svg'),
-                              ),
-                              SizedBox(width: 10),
-                              Text('France'),
-                            ],
-                          ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(left: 10),
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          children: [
+                            thisTutor.rating != null
+                                ? Row(
+                                children: []..addAll(List.generate(thisTutor.rating!.toInt(), (index) {
+                                  return Tooltip(
+                                    message: tooltipMsg[index],
+                                    child: Icon(Icons.star, color: Colors.yellow,),
+                                  );
+                                }))
+                                  ..addAll(List.generate((5-thisTutor.rating!.toInt()), (index) {
+                                    return Tooltip(
+                                      message: tooltipMsg[4-index],
+                                      child: Icon(Icons.star, color: Colors.grey,),
+                                    );
+                                  }).reversed)..add(
+                                    thisTutor.totalFeedback != null
+                                    ? Text("(${thisTutor.totalFeedback})", style: TextStyle(fontStyle: FontStyle.italic),)
+                                    : Container(),
+                                  )
+                            )
+                                : Text('No reviews yet', style:  TextStyle(
+                              fontStyle: FontStyle.italic,
+                            ),),
+                          ],
                         ),
-                        Container(
-                          padding: EdgeInsets.only(left: 10),
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: Row(
-                            children: [
-                              FhasRvw
-                                  ? Row(
-                              children: [Row(
-                                children:
-                                tooltipMsg.map((value) => Tooltip(
-                                  message: value,
-                                  child: Icon(Icons.star, color: Colors.yellow,),
-                                )).toList(),
-                              ), Text('(58)', style: TextStyle(fontStyle: FontStyle.italic),)])
-                                  : Text('No reviews yet', style:  TextStyle(
-                                fontStyle: FontStyle.italic,
-                              ),),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            Container(
-              alignment: Alignment.topLeft,
-              margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-              child: ReadMoreText(
-                'I am passionate about running and fitness, I often compete in trail/mountain running events and I love pushing myself. I am training to one day take part in ultra-endurance events. I also enjoy watching rugby on the weekends, reading and watching podcasts on Youtube. My most memorable life experience would be living in and traveling around Southeast Asia.',
-                style: TextStyle(
-                  fontSize: 15,
-                ),
-                trimLines: 2,
-                trimMode: TrimMode.Line,
-                trimCollapsedText: 'More',
-                trimExpandedText: 'Less',
               ),
+            ],
+          ),
+          Container(
+            alignment: Alignment.topLeft,
+            margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+            child: ReadMoreText(
+              thisTutor.bio,
+              style: TextStyle(
+                fontSize: 15,
+              ),
+              trimLines: 2,
+              trimMode: TrimMode.Line,
+              trimCollapsedText: 'More',
+              trimExpandedText: 'Less',
             ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => setState(() {
-                        isFav = !isFav;
-                      }),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: InkWell(
+                      onTap: ()  async {
+                        setState(() {
+                          thisTutor.isFavorite = !thisTutor.isFavorite!;
+                        });
+                        var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(thisTutor.userId, context.read<UserProvider>().thisTokens.access.token);
+                        if (doFavRes != "Success") {
+                          setState(() {
+                            _errorController.text = doFavRes;
+                          });
+                        }
+                        else {
+                          setState(() {
+                            _errorController.text = "";
+                          });
+                        }
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(
                             width: 30,
                             height: 30,
-                            child: isFav
-                              ? Image.asset('assets/images/icons/Heart.png', color: Colors.red, width: 35, height: 35,)
-                              : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
+                            child: thisTutor.isFavorite == true
+                                ? Image.asset('assets/images/icons/Heart.png', color: Colors.red, width: 35, height: 35,)
+                                : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
                           ),
                           SizedBox(height: 10,),
                           Text('Favorite', style: TextStyle(
-                            color: isFav ? Colors.red : Colors.blue
+                              color: isFav ? Colors.red : Colors.blue
                           ),),
                         ],
                       )
-                    ),
                   ),
-                  Expanded(
-                    child: InkWell(
-                        onTap: null,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: Icon(Icons.info_outline, color: Colors.blue, size: 35,),
-                            ),
-                            SizedBox(height: 10,),
-                            Text('Report', style: TextStyle(
-                                color: Colors.blue,
-                            ),),
-                          ],
-                        )
-                    ),
+                ),
+                Expanded(
+                  child: InkWell(
+                      onTap: null,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: Icon(Icons.info_outline, color: Colors.blue, size: 35,),
+                          ),
+                          SizedBox(height: 10,),
+                          Text('Report', style: TextStyle(
+                            color: Colors.blue,
+                          ),),
+                        ],
+                      )
                   ),
-                  Expanded(
-                    child: InkWell(
-                        onTap: null,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: Icon(Icons.star_border_purple500_sharp, color: Colors.blue, size: 35,),
-                            ),
-                            SizedBox(height: 10,),
-                            Text('Reviews', style: TextStyle(
-                              color: Colors.blue,
-                            ),),
-                          ],
-                        )
-                    ),
+                ),
+                Expanded(
+                  child: InkWell(
+                      onTap: null,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: Icon(Icons.star_border_purple500_sharp, color: Colors.blue, size: 35,),
+                          ),
+                          SizedBox(height: 10,),
+                          Text('Reviews', style: TextStyle(
+                            color: Colors.blue,
+                          ),),
+                        ],
+                      )
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            SizedBox(height: 200,
+          ),
+          SizedBox(height: 200,
             child: _chewieController != null
                 ? Container(
               child: Chewie(
@@ -614,193 +729,212 @@ class _TutorProfileState extends State<TutorProfile> {
               ),
             )
                 : Center(
-              child: CircularProgressIndicator(),
+              child: Text(_videoErr),
             ),),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 20, 0, 15),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Languages',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 20, 0, 15),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Languages',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              alignment: Alignment.centerLeft,
-              child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 1,
-                    color: Colors.grey,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.blue,
-                ),
-                child: Text('English'),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 20, 0, 15),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Specialties',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20),
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              height: 50,
-              width: double.infinity,
-              child: SingleChildScrollView(
-                child: Wrap(
-                  runSpacing: 5,
-                  spacing: 5,
-                  crossAxisAlignment: WrapCrossAlignment.start,
-                  verticalDirection: VerticalDirection.down,
-                  children: FTutorTags.map((value) => Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.blue,
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 20),
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            height: 50,
+            width: double.infinity,
+            child: SingleChildScrollView(
+              child: Wrap(
+                runSpacing: 5,
+                spacing: 5,
+                crossAxisAlignment: WrapCrossAlignment.start,
+                verticalDirection: VerticalDirection.down,
+                children: thisTutor.languages.split(',').map((value) => Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 1,
+                      color: Colors.grey,
                     ),
-                    child: Text(value),
-                  )).toList(),
-                ),
-              ),
-            ),
-            courseList.isNotEmpty
-            ? Container(
-              margin: EdgeInsets.only(bottom: 10),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Suggested courses',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-            : Container(),
-            Column(
-              children: courseList.map((value) => Container(
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 17,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: value.courseName + ': ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      TextSpan(
-                        text: "Link",
-                        style: TextStyle(
-                            fontSize: 17,
-                            color: Colors.blue
-                          ),
-                        recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, '/course_detail'),//_launchUrl(value.courseLink), //sửa sau
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.blue,
                   ),
-                ),
-              )).toList(),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Interests',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                  child: LocaleNames.of(context)!.nameOf(value) != null
+                      ? Text(LocaleNames.of(context)!.nameOf(value)!)
+                      : Text(value.toUpperCase()),
+                )).toList(),
               ),
             ),
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              margin: EdgeInsets.only(bottom: 20),
-              child: Text('I loved the weather, the scenery and the laid-back lifestyle of the locals.',
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 15),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Specialties',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 20),
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            height: 50,
+            width: double.infinity,
+            child: SingleChildScrollView(
+              child: Wrap(
+                runSpacing: 5,
+                spacing: 5,
+                crossAxisAlignment: WrapCrossAlignment.start,
+                verticalDirection: VerticalDirection.down,
+                children: thisTutor.specialties.split(',').map((value) => Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 1,
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.blue,
+                  ),
+                  child: specList.indexWhere((e) => e['inJson'] == value) != -1
+                      ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                      : Text(value.toUpperCase()),
+                )).toList(),
+              ),
+            ),
+          ),
+          thisTutor.courses.isNotEmpty
+              ? Container(
+            margin: EdgeInsets.only(bottom: 10),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Suggested courses',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
+              : Container(),
+          thisTutor.courses.isNotEmpty
+          ? Column(
+            children: thisTutor.courses.map((value) => Container(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 17,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: value.name + ': ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "Link",
+                      style: TextStyle(
+                          fontSize: 17,
+                          color: Colors.blue
+                      ),
+                      recognizer: TapGestureRecognizer()..onTap = () => Navigator.pushNamed(context, '/course_detail', arguments: value.id),//_launchUrl(value.courseLink), //sửa sau
+                    ),
+                  ],
+                ),
+              ),
+            )).toList(),
+          )
+          : Container(),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Interests',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            margin: EdgeInsets.only(bottom: 20),
+            alignment: Alignment.centerLeft,
+            child: Text(thisTutor.interests,
               style: TextStyle(
                 fontSize: 15,
               ),),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 15),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Teaching experience',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 15),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Teaching experience',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              margin: EdgeInsets.only(bottom: 20),
-              child: Text('I have more than 10 years of teaching english experience.',
-                style: TextStyle(
-                  fontSize: 15,
-                ),),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 15),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Schedule',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+          ),
+          Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            margin: EdgeInsets.only(bottom: 20),
+            alignment: Alignment.centerLeft,
+            child: Text(thisTutor.experience,
+              style: TextStyle(
+                fontSize: 15,
+              ),),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 15),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Schedule',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              alignment: Alignment.centerLeft,
-              child: Text('Choose start time of classes to book.\nEach class lasts 25 minutes.',
-                style: TextStyle(
-                  fontSize: 15,
-                ),),
+          ),
+          Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            alignment: Alignment.centerLeft,
+            child: Text('Choose start time of classes to book.\nEach class lasts 25 minutes.',
+              style: TextStyle(
+                fontSize: 15,
+              ),),
+          ),
+          Container(
+            width: double.infinity,
+            height: 800,
+            child: BookingCalendar(
+              bookingService: mockBookingService,
+              convertStreamResultToDateTimeRanges: convertStreamResultMock,
+              getBookingStream: getBookingStreamMock,
+              uploadBooking: uploadBookingMock,
+              pauseSlots: generatePauseSlots(),
+              pauseSlotText: 'Not have Class',
+              hideBreakTime: false,
+              loadingWidget: SizedBox(height: 50, width: 50, child: Text('Fetching data...'),),
+              uploadingWidget: SizedBox(height: 50, width: 50, child: CircularProgressIndicator(),),
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              //disabledDays: const [1, 2, 3, 4, 5],
             ),
-            Container(
-              width: double.infinity,
-              height: 800,
-              child: BookingCalendar(
-                bookingService: mockBookingService,
-                convertStreamResultToDateTimeRanges: convertStreamResultMock,
-                getBookingStream: getBookingStreamMock,
-                uploadBooking: uploadBookingMock,
-                pauseSlots: generatePauseSlots(),
-                pauseSlotText: 'Not have Class',
-                hideBreakTime: false,
-                loadingWidget: SizedBox(height: 50, width: 50, child: Text('Fetching data...'),),
-                uploadingWidget: SizedBox(height: 50, width: 50, child: CircularProgressIndicator(),),
-                startingDayOfWeek: StartingDayOfWeek.monday,
-                //disabledDays: const [1, 2, 3, 4, 5],
-              ),
-            ),
-          ],
+          ),
+        ],
+      )
+        : Center(
+          child: Text(_errorController.text),
         ),
-
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -818,7 +952,6 @@ class _TutorProfileState extends State<TutorProfile> {
       backgroundImage: input,
     );
   }
-  /*Future<void> _launchUrl(String link) async {Uri _url = Uri.parse(link); if (!await launchUrl(_url)) {throw 'Could not launch $_url';}}*/
 }
 
 class courseItem {

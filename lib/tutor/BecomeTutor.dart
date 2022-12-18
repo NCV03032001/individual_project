@@ -8,8 +8,16 @@ class BecomeTutor extends StatefulWidget {
 }
 
 class _BecomeTutorState extends State<BecomeTutor> {
+  FocusNode _screenFocus = new FocusNode();
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          FocusScope.of(context).requestFocus(_screenFocus);
+        });
+      },
+    );
   }
 }
