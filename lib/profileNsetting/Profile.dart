@@ -8,9 +8,12 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:individual_project/model/UserProvider.dart';
 import 'package:individual_project/model/User.dart';
 import 'package:http/http.dart' as http;
+import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
+import '../model/Tutor.dart';
 import '../model/data/LearnTopicData.dart';
 import '../model/data/TestPreparationData.dart';
 
@@ -30,6 +33,53 @@ class _ProfileState extends State<Profile> {
 
   PickedFile? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  final FocusNode _dialogFocus = FocusNode();
+  bool _isFbLoading = false;
+  List<FeedbackItem> fbList = [];
+  TextEditingController _fbError = TextEditingController();
+  int _maxFbPage = 1;
+  void getFeedBack({Map<String, String> query = const {'perPage': '12', 'page': '1'}}) async {
+    UserProvider thisUserProvider = context.read<UserProvider>();
+    var url = Uri.https('sandbox.api.lettutor.com', 'feedback/v2/${thisUserProvider.thisUser.id}', query);
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _fbError.text = err;
+      });
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      setState(() {
+        //print(parsed);
+        _maxFbPage = parsed['data']['count'];
+        //print(_maxFbPage);
+        fbList = List.from(parsed['data']['rows']).map((e) => FeedbackItem.fromJson(e)).toList();
+        fbList.forEach((element) {
+          print(element.content);
+        });
+      });
+    }
+
+    setState(() {
+      _isFbLoading = false;
+      if (_maxFbPage~/12 < _maxFbPage/12) {
+        _maxFbPage = _maxFbPage~/12 + 1;
+      }
+      else {
+        _maxFbPage = _maxFbPage~/12;
+      }
+
+      if (_maxFbPage < 1) _maxFbPage = 1;
+    });
+  }
 
   final TextEditingController _nameController = TextEditingController();
 
@@ -539,7 +589,152 @@ class _ProfileState extends State<Profile> {
                                 maxLines: 2,
                               ),
                               TextButton(
-                                onPressed: null,
+                                onPressed: () async {
+                                  setState(() {
+                                    _isFbLoading = true;
+                                  });
+                                  Future<void> fetchFb() async{return getFeedBack();}
+                                  await fetchFb();
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        double width = MediaQuery.of(context).size.width;
+                                        double height = MediaQuery.of(context).size.height;
+                                        final NumberPaginatorController pagiController = NumberPaginatorController();
+                                        Map<String, String> query = {'perPage': '12','page': '1'};
+                                        return StatefulBuilder(
+                                            builder: (context, setState) {
+                                              setState(() {});
+                                              return AlertDialog(
+                                                title: Text('Others review'),
+                                                content: GestureDetector(
+                                                  onTap: () {
+                                                    FocusScope.of(context).requestFocus(_dialogFocus);
+                                                  },
+                                                  child: SizedBox(
+                                                    width: width - 30,
+                                                    height: height/2,
+                                                    child: _isFbLoading == true
+                                                        ? Center(
+                                                      child: SizedBox(width: 80, height: 80, child: CircularProgressIndicator(),),
+                                                    )
+                                                        : _fbError.text.isNotEmpty
+                                                        ? Text(_fbError.text)
+                                                        : fbList.isNotEmpty
+                                                        ? ListView(
+                                                      children: fbList.map((e) {
+                                                        return SizedBox(
+                                                          height: 100,
+                                                          child: Row(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              SizedBox(
+                                                                  width: 50,
+                                                                  height: 50,
+                                                                  child: CircleAvatar(
+                                                                    radius: 80.0,
+                                                                    backgroundImage: e.avatar != null ? Image.network(e.avatar!).image : Image.network("").image,
+                                                                  )
+                                                              ),
+                                                              SizedBox(
+                                                                width: 10,
+                                                              ),
+                                                              Expanded(
+                                                                child: SizedBox(
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Row(
+                                                                        children: [
+                                                                          Text(
+                                                                            e.name,
+                                                                            maxLines: 1,
+                                                                            overflow: TextOverflow.ellipsis ,
+                                                                            style: TextStyle(
+                                                                              fontSize: 15,
+                                                                              fontWeight: FontWeight.w300,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(width: 15,),
+                                                                          Text(
+                                                                            timeago.format(DateTime.parse(e.createdAt)),
+                                                                            style: TextStyle(
+                                                                              fontWeight: FontWeight.w400,
+                                                                              fontSize: 15,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      Container(
+                                                                        margin: EdgeInsets.only(bottom: 10),
+                                                                        child: Row(
+                                                                          children: [
+                                                                            e.rating != null
+                                                                                ? Row(
+                                                                                children: []..addAll(List.generate(e.rating!.toInt(), (index) {
+                                                                                  return Icon(Icons.star, color: Colors.yellow, size: 15,);
+                                                                                }))
+                                                                                  ..addAll(List.generate((5-e.rating!.toInt()), (index) {
+                                                                                    return Icon(Icons.star, color: Colors.grey, size: 15,);
+                                                                                  }))
+                                                                            )
+                                                                                : Text('No reviews yet', style:  TextStyle(
+                                                                              fontStyle: FontStyle.italic,
+                                                                            ),),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      SizedBox(
+                                                                        height: 30,
+                                                                        child: SingleChildScrollView(
+                                                                          child: Text(e.content),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                    )
+                                                        : Center(
+                                                      child: Text("No Review found."),
+                                                    ),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  NumberPaginator(
+                                                    controller: pagiController,
+                                                    // by default, the paginator shows numbers as center content
+                                                    config: NumberPaginatorUIConfig(
+                                                      mode: ContentDisplayMode.dropdown,
+                                                    ),
+                                                    numberPages: _maxFbPage,
+                                                    initialPage: 0,
+                                                    onPageChange: (int index) async {
+                                                      setState((){
+                                                        _isFbLoading = true;
+                                                      });
+                                                      print(pagiController.currentPage + 1);
+                                                      query['page'] = (pagiController.currentPage + 1).toString();
+                                                      Future<void> fetchFb() async {
+                                                        return getFeedBack(query: query);
+                                                      }
+                                                      await fetchFb();
+                                                      setState(() {
+                                                        print("In Dialog load: $_isFbLoading");
+                                                      });
+                                                    },
+                                                  )
+                                                ],
+                                              );
+                                            }
+                                        );
+                                      }
+                                  );
+                                },
                                 child: Text(
                                   'Others review you',
                                   style: TextStyle(

@@ -146,7 +146,14 @@ class _CoursesState extends State<Courses> {
     //print(response.body);
     setState(() {
       _isLoading = false;
-      _maxPage = context.read<CourseList>().count~/6;
+      var maxCount = context.read<CourseList>().count;
+      if (maxCount~/6 < maxCount/6) {
+        _maxPage = maxCount~/6 + 1;
+      }
+      else {
+        _maxPage = maxCount~/6;
+      }
+
       if (_maxPage < 1) _maxPage = 1;
     });
   }

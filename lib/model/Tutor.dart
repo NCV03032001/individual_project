@@ -367,6 +367,56 @@ class Tutor {
   }
 }
 
+class FeedbackItem {
+  FeedbackItem({
+    required this.id,
+    required this.firstId,
+    required this.secondId,
+    required this.rating,
+    required this.content,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.name,
+    required this.avatar,
+
+  });
+  late final String id;
+  late final String firstId;
+  late final String secondId;
+  late final int? rating;
+  late final String content;
+  late final String createdAt;
+  late final String updatedAt;
+  late final String name;
+  late final String? avatar;
+
+  FeedbackItem.fromJson(Map<String, dynamic> json){
+    id = json['id'];
+    firstId = json['firstId'];
+    secondId = json['secondId'];
+    rating = json['rating'];
+    content = json['content'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    name = json['firstInfo']['name'];
+    avatar = json['firstInfo']['avatar'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final _data = <String, dynamic>{};
+    _data['id'] = id;
+    _data['firstId'] = firstId;
+    _data['secondId'] = secondId;
+    _data['rating'] = rating;
+    _data['content'] = content;
+    _data['createdAt'] = createdAt;
+    _data['updatedAt'] = updatedAt;
+    _data['firstInfo']['name'] = name;
+    _data['firstInfo']['avatar'] = avatar;
+    return _data;
+  }
+}
+
 class TempCourse{
   TempCourse({
     required this.id,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:individual_project/model/Tutor.dart';
 import 'package:individual_project/model/UserProvider.dart';
+import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:chewie/chewie.dart';
@@ -13,12 +14,14 @@ import 'package:video_player/video_player.dart';
 import 'package:booking_calendar/booking_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../model/TutorProvider.dart';
 
 class TutorProfile extends StatefulWidget {
-  final String id;
-  const TutorProfile({Key? key, required this.id}) : super(key: key);
+  final ProfileArg theArg;
+
+  const TutorProfile({Key? key, required this.theArg}) : super(key: key);
 
   @override
   State<TutorProfile> createState() => _TutorProfileState();
@@ -27,10 +30,17 @@ class TutorProfile extends StatefulWidget {
 class _TutorProfileState extends State<TutorProfile> {
   String _firstSelected ='assets/images/usaFlag.svg';
   bool _isLoading = false;
+
   Tutor thisTutor = Tutor(
       name: "", isPublicRecord: false, courses: [],
       userId: "", video: "", bio: "", education: "", experience: "", profession: "",
       targetStudent: "", interests: "", languages: "", specialties: "", toShow: false);
+
+  final FocusNode _dialogFocus = FocusNode();
+  bool _isFbLoading = false;
+  List<FeedbackItem> fbList = [];
+  TextEditingController _fbError = TextEditingController();
+  int _maxFbPage = 1;
 
   TextEditingController _errorController = TextEditingController();
   String _videoErr = "";
@@ -48,8 +58,6 @@ class _TutorProfileState extends State<TutorProfile> {
     {'inJson': 'toefl', 'toShow': 'TOEFL'},
     {'inJson': 'toeic', 'toShow': 'TOEIC'},
   ];
-
-  bool isFav = false;
 
   late VideoPlayerController _videoPlayerController;
   ChewieController? _chewieController;
@@ -70,7 +78,7 @@ class _TutorProfileState extends State<TutorProfile> {
   }
 
   void getATutor() async {
-    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/${widget.id}');
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/${widget.theArg.id}');
     var response = await http.get(url,
       headers: {
         "Content-Type": "application/json",
@@ -111,6 +119,81 @@ class _TutorProfileState extends State<TutorProfile> {
       _isLoading = false;
     });
   }
+  void searchTutorList({Map<String, dynamic> postBody = const {
+    "filters": {
+      "date": null,
+      "nationality": {},
+      "specialties": [],
+      "tutoringTimeAvailable": [null, null]
+    },
+    "page": "1",
+    "perPage": 9,
+    "search": "",
+  }, }
+      ) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/search');
+    var response = await http.post(url,
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+        },
+        body: jsonEncode(postBody)
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      print(err);
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      var tutorProv = Provider.of<TutorProvider>(context, listen: false);
+      tutorProv.fromSearchJson(parsed);
+
+      setState(() {
+        _errorController.text = "";
+      });
+    }
+  }
+  void getFeedBack({Map<String, String> query = const {'perPage': '12', 'page': '1'}}) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'feedback/v2/${widget.theArg.id}', query);
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _fbError.text = err;
+      });
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      setState(() {
+        //print(parsed);
+        _maxFbPage = parsed['data']['count'];
+        //print(_maxFbPage);
+        fbList = List.from(parsed['data']['rows']).map((e) => FeedbackItem.fromJson(e)).toList();
+        fbList.forEach((element) {
+          print(element.content);
+        });
+      });
+    }
+
+    setState(() {
+      _isFbLoading = false;
+      if (_maxFbPage~/12 < _maxFbPage/12) {
+        _maxFbPage = _maxFbPage~/12 + 1;
+      }
+      else {
+        _maxFbPage = _maxFbPage~/12;
+      }
+
+      if (_maxFbPage < 1) _maxFbPage = 1;
+    });
+  }
 
   @override
   void dispose() {
@@ -118,13 +201,6 @@ class _TutorProfileState extends State<TutorProfile> {
     _chewieController?.dispose();
     super.dispose();
   }
-
-  List<String> FTutorTags = ['English for Business', 'Conversational', 'English for kids', 'IELTS', 'TOEIC'];
-
-  List<courseItem> courseList = [
-    courseItem(courseName: 'Basic Conversation Topics', courseLink: 'https://sandbox.app.lettutor.com/courses/46972669-1755-4f27-8a87-dc4dd2630492'),
-    courseItem(courseName: 'Life in the Internet Age', courseLink: 'https://sandbox.app.lettutor.com/courses/964bed84-6450-49ee-92d5-e8c565864bd9'),
-  ];
 
   final now = DateTime.now();
   late BookingService mockBookingService;
@@ -187,7 +263,6 @@ class _TutorProfileState extends State<TutorProfile> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
@@ -650,17 +725,39 @@ class _TutorProfileState extends State<TutorProfile> {
                         setState(() {
                           thisTutor.isFavorite = !thisTutor.isFavorite!;
                         });
-                        var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(thisTutor.userId, context.read<UserProvider>().thisTokens.access.token);
-                        if (doFavRes != "Success") {
+                        var url = Uri.https('sandbox.api.lettutor.com', 'user/manageFavoriteTutor');
+                        var response = await http.post(url,
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': 'Bearer ${context.read<UserProvider>().thisTokens.access.token}',
+                            },
+                            body: jsonEncode({'tutorId': thisTutor.userId})
+                        );
+
+                        if (response.statusCode != 200) {
+                          final Map parsed = json.decode(response.body);
+                          final String err = parsed["message"];
                           setState(() {
-                            _errorController.text = doFavRes;
+                            _errorController.text = err;
                           });
                         }
                         else {
+                          searchTutorList(postBody: widget.theArg.postBody);
                           setState(() {
                             _errorController.text = "";
                           });
                         }
+                        // var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(thisTutor.userId, context.read<UserProvider>().thisTokens.access.token);
+                        // if (doFavRes != "Success") {
+                        //   setState(() {
+                        //     _errorController.text = doFavRes;
+                        //   });
+                        // }
+                        // else {
+                        //   setState(() {
+                        //     _errorController.text = "";
+                        //   });
+                        // }
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -674,7 +771,7 @@ class _TutorProfileState extends State<TutorProfile> {
                           ),
                           SizedBox(height: 10,),
                           Text('Favorite', style: TextStyle(
-                              color: isFav ? Colors.red : Colors.blue
+                              color: thisTutor.isFavorite == true ? Colors.red : Colors.blue
                           ),),
                         ],
                       )
@@ -701,7 +798,152 @@ class _TutorProfileState extends State<TutorProfile> {
                 ),
                 Expanded(
                   child: InkWell(
-                      onTap: null,
+                      onTap: () async {
+                        setState(() {
+                          _isFbLoading = true;
+                        });
+                        Future<void> fetchFb() async{return getFeedBack();}
+                        await fetchFb();
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              double width = MediaQuery.of(context).size.width;
+                              double height = MediaQuery.of(context).size.height;
+                              final NumberPaginatorController pagiController = NumberPaginatorController();
+                              Map<String, String> query = {'perPage': '12','page': '1'};
+                                return StatefulBuilder(
+                                  builder: (context, setState) {
+                                    setState(() {});
+                                    return AlertDialog(
+                                      title: Text('Others review'),
+                                      content: GestureDetector(
+                                        onTap: () {
+                                          FocusScope.of(context).requestFocus(_dialogFocus);
+                                        },
+                                        child: SizedBox(
+                                          width: width - 30,
+                                          height: height/2,
+                                          child: _isFbLoading == true
+                                          ? Center(
+                                            child: SizedBox(width: 80, height: 80, child: CircularProgressIndicator(),),
+                                          )
+                                          : _fbError.text.isNotEmpty
+                                          ? Text(_fbError.text)
+                                          : fbList.isNotEmpty
+                                          ? ListView(
+                                            children: fbList.map((e) {
+                                              return SizedBox(
+                                                height: 100,
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 50,
+                                                      height: 50,
+                                                      child: CircleAvatar(
+                                                        radius: 80.0,
+                                                        backgroundImage: e.avatar != null ? Image.network(e.avatar!).image : Image.network("").image,
+                                                      )
+                                                    ),
+                                                    SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    Expanded(
+                                                      child: SizedBox(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  e.name,
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis ,
+                                                                  style: TextStyle(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w300,
+                                                                  ),
+                                                                ),
+                                                                SizedBox(width: 15,),
+                                                                Text(
+                                                                  timeago.format(DateTime.parse(e.createdAt)),
+                                                                  style: TextStyle(
+                                                                    fontWeight: FontWeight.w400,
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Container(
+                                                              margin: EdgeInsets.only(bottom: 10),
+                                                              child: Row(
+                                                                children: [
+                                                                  e.rating != null
+                                                                      ? Row(
+                                                                      children: []..addAll(List.generate(e.rating!.toInt(), (index) {
+                                                                        return Icon(Icons.star, color: Colors.yellow, size: 15,);
+                                                                      }))
+                                                                        ..addAll(List.generate((5-e.rating!.toInt()), (index) {
+                                                                          return Icon(Icons.star, color: Colors.grey, size: 15,);
+                                                                        }))
+                                                                  )
+                                                                      : Text('No reviews yet', style:  TextStyle(
+                                                                    fontStyle: FontStyle.italic,
+                                                                  ),),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              height: 30,
+                                                              child: SingleChildScrollView(
+                                                                child: Text(e.content),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          )
+                                          : Center(
+                                            child: Text("No Review found."),
+                                          ),
+                                        ),
+                                      ),
+                                      actions: [
+                                        NumberPaginator(
+                                          controller: pagiController,
+                                          // by default, the paginator shows numbers as center content
+                                          config: NumberPaginatorUIConfig(
+                                            mode: ContentDisplayMode.dropdown,
+                                          ),
+                                          numberPages: _maxFbPage,
+                                          initialPage: 0,
+                                          onPageChange: (int index) async {
+                                            setState((){
+                                              _isFbLoading = true;
+                                            });
+                                            print(pagiController.currentPage + 1);
+                                            query['page'] = (pagiController.currentPage + 1).toString();
+                                            Future<void> fetchFb() async {
+                                              return getFeedBack(query: query);
+                                            }
+                                            await fetchFb();
+                                            setState(() {
+                                              print("In Dialog load: $_isFbLoading");
+                                            });
+                                          },
+                                        )
+                                      ],
+                                    );
+                                  }
+                              );
+                            }
+                        );
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -913,7 +1155,7 @@ class _TutorProfileState extends State<TutorProfile> {
                 fontSize: 15,
               ),),
           ),
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 800,
             child: BookingCalendar(
@@ -962,4 +1204,11 @@ class courseItem {
     required this.courseName,
     required this.courseLink,
   });
+}
+
+class ProfileArg {
+  final String id;
+  final Map<String, dynamic> postBody;
+
+  ProfileArg(this.id, this.postBody);
 }

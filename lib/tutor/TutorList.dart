@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:individual_project/model/TutorProvider.dart';
 import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/tutor/TutorProfile.dart';
 import 'package:provider/provider.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 import 'package:http/http.dart' as http;
@@ -215,27 +217,29 @@ class _TutorState extends State<Tutor> {
     if (response.statusCode != 200) {
       final Map parsed = json.decode(response.body);
       final String err = parsed["message"];
-      print(err);
+      setState(() {
+        _errorController.text = err;
+      });
     }
     else {
       final Map parsed = json.decode(response.body);
       //print(parsed);
       var tutorProv = Provider.of<TutorProvider>(context, listen: false);
       tutorProv.fromSearchJson(parsed);
-      var readTutorProv = context.read<TutorProvider>();
-
-      print(readTutorProv.theList.length);
-      // for (var aTutor in readTutorProv.theList) {
-      //   print(aTutor.isFavorite);
-      // }
-
       setState(() {
         _errorController.text = "";
       });
     }
     setState(() {
       _isLoading = false;
-      _maxPage = context.read<TutorProvider>().count~/9;
+      var maxCount = context.read<TutorProvider>().count;
+      if (maxCount~/9 < maxCount/9) {
+        _maxPage = maxCount~/9 + 1;
+      }
+      else {
+        _maxPage = maxCount~/9;
+      }
+
       if (_maxPage < 1) _maxPage = 1;
     });
   }
@@ -1277,8 +1281,8 @@ class _TutorState extends State<Tutor> {
                                           height: 120,
                                           width: 100,
                                           child: readTutorProv.theList[i].avatar != null
-                                              ? ImageProfile(Image.network(readTutorProv.theList[i].avatar!).image, readTutorProv.theList[i].isOnline!, readTutorProv.theList[i].userId)
-                                              : ImageProfile(Image.network("").image, readTutorProv.theList[i].isOnline!, readTutorProv.theList[i].userId),
+                                              ? ImageProfile(Image.network(readTutorProv.theList[i].avatar!).image, readTutorProv.theList[i].isOnline!, ProfileArg(readTutorProv.theList[i].userId, postBody))
+                                              : ImageProfile(Image.network("").image, readTutorProv.theList[i].isOnline!, ProfileArg(readTutorProv.theList[i].userId, postBody)),
                                         ),
                                         SizedBox(
                                           width: 10,
@@ -1288,7 +1292,7 @@ class _TutorState extends State<Tutor> {
                                             child: Column(
                                               children: [
                                                 GestureDetector(
-                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.theList[i].userId),
+                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(readTutorProv.theList[i].userId, postBody)),
                                                   child: Container(
                                                     alignment: Alignment.centerLeft,
                                                     padding: EdgeInsets.only(left: 10),
@@ -1458,7 +1462,7 @@ class _TutorState extends State<Tutor> {
                                       width: double.infinity,
                                       alignment: Alignment.centerRight,
                                       child: ElevatedButton.icon(
-                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.theList[i].userId),
+                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(readTutorProv.theList[i].userId, postBody)),
                                         style: OutlinedButton.styleFrom(
                                           padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
                                           backgroundColor: Colors.white,
@@ -1523,11 +1527,11 @@ class _TutorState extends State<Tutor> {
     );
   }
 
-  Widget ImageProfile(ImageProvider input, bool online, String id) {
+  Widget ImageProfile(ImageProvider input, bool online, ProfileArg arg) {
     return Stack(
       children: [
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/tutor_profile' , arguments: id),
+          onTap: () => Navigator.pushNamed(context, '/tutor_profile' , arguments: arg),
           child: CircleAvatar(
             radius: 80.0,
             backgroundImage: input,

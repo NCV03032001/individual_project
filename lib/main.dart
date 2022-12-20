@@ -62,11 +62,11 @@ class MyApp extends StatelessWidget {
 
         onGenerateRoute: (settings) {
           if (settings.name == '/tutor_profile') {
-            final args = settings.arguments as String;
+            final args = settings.arguments as ProfileArg;
             return MaterialPageRoute(
               builder: (context) {
                 return TutorProfile(
-                  id: args,
+                  theArg: args,
                 );
               },
             );

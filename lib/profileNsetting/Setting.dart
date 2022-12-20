@@ -490,6 +490,8 @@ class _SettingState extends State<Setting> {
           builder: (BuildContext context) {
             return StatefulBuilder(
                 builder: (context, setState) {
+                  double width = MediaQuery.of(context).size.width;
+                  double height = MediaQuery.of(context).size.height;
                   return AlertDialog(
                     title: Text('Change Password'),
                     content: GestureDetector(
@@ -497,8 +499,8 @@ class _SettingState extends State<Setting> {
                         FocusScope.of(context).requestFocus(_dialogFocus);
                       },
                       child: SizedBox(
-                        width: 280,
-                        height: 300,
+                        width: width - 30,
+                        height: height/2,
                         child: SingleChildScrollView(
                           child: Form(
                             key: _cpwKey,
