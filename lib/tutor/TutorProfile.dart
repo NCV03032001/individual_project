@@ -722,9 +722,6 @@ class _TutorProfileState extends State<TutorProfile> {
                 Expanded(
                   child: InkWell(
                       onTap: ()  async {
-                        setState(() {
-                          thisTutor.isFavorite = !thisTutor.isFavorite!;
-                        });
                         var url = Uri.https('sandbox.api.lettutor.com', 'user/manageFavoriteTutor');
                         var response = await http.post(url,
                             headers: {
@@ -745,6 +742,7 @@ class _TutorProfileState extends State<TutorProfile> {
                           searchTutorList(postBody: widget.theArg.postBody);
                           setState(() {
                             _errorController.text = "";
+                            thisTutor.isFavorite = !thisTutor.isFavorite!;
                           });
                         }
                         // var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(thisTutor.userId, context.read<UserProvider>().thisTokens.access.token);

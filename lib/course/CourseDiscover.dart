@@ -1,29 +1,35 @@
-import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:individual_project/model/CourseList.dart';
 import 'package:individual_project/model/UserProvider.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+//import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
+//import 'package:flutter_downloader/flutter_downloader.dart';
 
-class CourseDetail extends StatefulWidget {
-  final String id;
-  const CourseDetail({Key? key, required this.id}) : super(key: key);
+class CourseDiscover extends StatefulWidget {
+  final CourseClass thisCourse;
+  final int index;
+  const CourseDiscover({Key? key, required this.thisCourse, required this.index}) : super(key: key);
 
   @override
-  State<CourseDetail> createState() => _CourseDetailState();
+  State<CourseDiscover> createState() => _CourseDiscoverState();
 }
 
-class _CourseDetailState extends State<CourseDetail> {
+class _CourseDiscoverState extends State<CourseDiscover> {
   String _firstSelected ='assets/images/usaFlag.svg';
-  CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
-      reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
-      createdAt: "", updatedAt: "", topics: [], categories: [], users: []);
+  // CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
+  //     reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
+  //     createdAt: "", updatedAt: "", topics: [], categories: [], users: []);
 
   bool _isLoading = false;
-  TextEditingController _errorController = TextEditingController();
+  //final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
 
   final List<Map<String, String>> lvMap = [
     {"level": "0", "levelName": "Any Level",},
@@ -37,50 +43,45 @@ class _CourseDetailState extends State<CourseDetail> {
     {"level": "8", "levelName": "Very Advanced",},
   ];
 
+  String _dropdownValue = "";
+  String _downloadLink = "";
+  PdfViewerController _pdfViewerController = PdfViewerController();
+
   void initState() {
     super.initState();
-    setState(() {
+    _dropdownValue = widget.thisCourse.topics[widget.index].nameFile;
+    _downloadLink = _dropdownValue;
+    /*setState(() {
       _isLoading = true;
       _errorController.text = "";
-    });
-    getACourse();
-  }
-
-  void getACourse() async {
-    var url = Uri.https('sandbox.api.lettutor.com', 'course/${widget.id}');
-    var response = await http.get(url,
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
-      },
-    );
-
-    if (response.statusCode != 200) {
-      final Map parsed = json.decode(response.body);
-      final String err = parsed["message"];
-      setState(() {
-        _errorController.text = err;
-      });
-    }
-    else {
-      final Map parsed = json.decode(response.body);
-      setState(() {
-        thisCourse = CourseClass.fromJson(parsed['data']);
-        _errorController.text = "";
-      });
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
+    });*/
   }
 
   @override
   Widget build(BuildContext context) {
+    CourseClass thisCourse = widget.thisCourse;
     var size = MediaQuery.of(context).size;
-    /*24 is for notification bar on Android*/
-    final double itemHeight = (size.height - kToolbarHeight - 24) / 2;
-    final double itemWidth = size.width / 2;
+    /*Widget tempWid = Container(
+      decoration: BoxDecoration(
+          border: Border.all(
+            width: 2,
+            color: Colors.grey,
+          )
+      ),
+      width: size.width,
+      height: size.height,
+      child: SfPdfViewer.network(
+        _dropdownValue,
+        controller: _pdfViewerController,
+        //key: _pdfViewerKey,
+        onDocumentLoaded: (e) {
+          setState(() {
+            print("Loaded PDF");
+            _isLoading = false;
+          });
+        },
+      ),
+    );*/
 
     return Scaffold(
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
@@ -408,11 +409,7 @@ class _CourseDetailState extends State<CourseDetail> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
-        child: _isLoading == true
-          ? Center(child: CircularProgressIndicator())
-          : _errorController.text.isNotEmpty
-          ? Center(child: Text(_errorController.text))
-          : Column(
+        child: Column(
           children: [
             Card(
               shape: const RoundedRectangleBorder(
@@ -445,24 +442,44 @@ class _CourseDetailState extends State<CourseDetail> {
                           ), maxLines: 3,),
                         ),
                         Container(
-                          margin: EdgeInsets.only(bottom: 20),
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                              backgroundColor: Colors.blue,
-                              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                          margin: EdgeInsets.only(bottom: 15),
+                          alignment: Alignment.centerLeft,
+                          child: Text("List Topics", style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                              overflow: TextOverflow.ellipsis
+                          ), maxLines: 2,),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                          child: DropdownButton(
+                            isExpanded: true,
+                            items: List.generate(thisCourse.topics.length ,(i) =>
+                                DropdownMenuItem<String>(
+                                  child: Text(
+                                    "${i+1}.  ${thisCourse.topics[i].name}",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                  value: thisCourse.topics[i].nameFile,
+                                ),
                             ),
-                            child: Text(
-                              'Discover',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/course_discover', arguments: DiscoverArg(0, thisCourse));
-                            }, //sửa sau
+                            value: _dropdownValue,
+                            onChanged: (val) {
+                              if (val is String) {
+                                setState(() {
+                                  _isLoading = true;
+                                  _dropdownValue = val;
+                                });
+                                // _pdfViewerKey.currentState!.setState(() {
+                                //   _pdfViewerController.firstPage();
+                                //   _pdfViewerController.zoomLevel = 1;
+                                //   _pdfViewerController.notifyListeners();
+                                // });
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -471,222 +488,143 @@ class _CourseDetailState extends State<CourseDetail> {
                 ],
               ),
             ),
-            SizedBox(height: 20,),
-            Row(
+            _isLoading == true
+                ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 20,
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Overview', style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                  ),),
-                ),
-                Expanded(child: Divider(thickness: 2,)),
-              ],
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-              child: Text.rich(
-                  TextSpan(
-                      children: <InlineSpan>[
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Image.asset('assets/images/icons/Question.png', color: Colors.red, width: 20, height: 20,),
-                        ),
-                        TextSpan(text: ' Why take this course', style: TextStyle(
-                          fontSize: 17,
-                        )),
-                      ]
-                  )
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-              margin: EdgeInsets.only(bottom: 15),
-              child: Text(thisCourse.reason),
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-              child: Text.rich(
-                  TextSpan(
-                      children: <InlineSpan>[
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Image.asset('assets/images/icons/Question.png', color: Colors.red, width: 20, height: 20,),
-                        ),
-                        TextSpan(text: ' What will you be able to do', style: TextStyle(
-                          fontSize: 17,
-                        )),
-                      ]
-                  )
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-              margin: EdgeInsets.only(bottom: 15),
-              child: Text(thisCourse.purpose),
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 20,
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Experience Level', style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                  ),),
-                ),
-                Expanded(child: Divider(thickness: 2,)),
-              ],
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-              child: Text.rich(
-                  TextSpan(
-                      children: <InlineSpan>[
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Icon(Icons.people_alt_sharp, color: Colors.deepPurple, size: 20,),
-                        ),
-                        TextSpan(text: " " + lvMap[lvMap.indexWhere((element) => element['level'] == thisCourse.level)]["levelName"]!, style: TextStyle(
-                          fontSize: 17,
-                        )),
-                      ]
-                  )
-              ),
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 20,
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Course Length', style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                  ),),
-                ),
-                Expanded(child: Divider(thickness: 2,)),
-              ],
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-              child: Text.rich(
-                  TextSpan(
-                      children: <InlineSpan>[
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Icon(Icons.book, color: Colors.deepPurple, size: 20,),
-                        ),
-                        TextSpan(text: ' ' + thisCourse.topics.length.toString() + ' topics', style: TextStyle(
-                          fontSize: 17,
-                        )),
-                      ]
-                  )
-              ),
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 20,
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text('List Topics', style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                  ),),
-                ),
-                Expanded(child: Divider(thickness: 2,)),
-              ],
-            ),
-            GridView.count(
-              physics: ScrollPhysics(), // to disable GridView's scrolling
-              shrinkWrap: true,
-              crossAxisCount: itemWidth < itemHeight ? 2 : 3,
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
-              childAspectRatio: itemWidth < itemHeight ? (itemHeight / itemWidth - 0.4) : (itemWidth / itemHeight - 0.4),
-              children: List.generate(thisCourse.topics.length, (i) {
-                return TopicGrid(i+1, thisCourse.topics[i].name);
-              }),
-            ),
-            thisCourse.users.isNotEmpty
-            ? Row(
-              children: [
-                Container(
-                  width: 20,
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text('Suggested Tutors', style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 25,
-                  ),),
-                ),
-                Expanded(child: Divider(thickness: 2,)),
+                Text('Changing PDF...'),
+                SizedBox(width: 10,),
+                CircularProgressIndicator(),
               ],
             )
-            : Container(),
-            thisCourse.users.isNotEmpty
-            ? Column(
-              children: thisCourse.users.map((e) {
-                return Container(
-                  alignment: Alignment.centerLeft,
-                  margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-                  child: RichText(
-                    text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 17,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: e.name,
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          TextSpan(
-                            text: " More info",
-                            style: TextStyle(
-                                color: Colors.blue
-                            ),
-                            recognizer: TapGestureRecognizer()..onTap = () {
-                              Navigator.pushNamed(context, '/tutor_profile', arguments:  e.id);
-                            }, //sửa sau
-                          ),
-                        ]
-                    ),
+                : Container(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.zoom_out,
+                    color: Theme.of(context).primaryColor,
                   ),
-                );
-              }).toList(),
-            )
-            : Container(),
+                  onPressed: () {
+                    _pdfViewerController.zoomLevel = 1;
+                  },
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.zoom_in,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: () {
+                    _pdfViewerController.zoomLevel = 2;
+                  },
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.download_outlined,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  //onPressed: null,
+                  onPressed: () async {
+                    Map<Permission, PermissionStatus> statuses = await [
+                      Permission.storage,
+                      //add more permission to request here.
+                    ].request();
+
+                    if(statuses[Permission.storage]!.isGranted){
+                      var dir = Directory('/storage/emulated/0/Download');
+                      if(dir != null){
+                        String savename = "${thisCourse.topics[thisCourse.topics.indexWhere((element) => element.nameFile == _dropdownValue)].name}.pdf";
+                        String savePath = "${dir.path}/$savename";
+                        print(savePath);
+                        //output:  /storage/emulated/0/Download/banner.png
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: Text('Confirm Download'),
+                            content: Text('Are you sure to download file:\n\t\t\t\t$savename\nto: ${savePath.replaceAll("/$savename", "")}?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'Cancel'),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context, 'OK');
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          )
+                        ).then((value) async {
+                          try {
+                          await Dio().download(
+                              _dropdownValue,
+                              savePath,
+                              /*onReceiveProgress: (received, total) {
+                                if (total != -1) {
+                                  print((received / total * 100).toStringAsFixed(0) + "%");
+                                  //you can build progressbar feature too
+                                }
+                              }*/
+                            );
+                          print("File is saved to download folder.");
+                          context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('File is saved to download folder.', style: TextStyle(color: Colors.green),),
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                        } on DioError catch (e) {
+                          print(e.message);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.message, style: TextStyle(color: Colors.red),),
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                        });
+
+                      }
+                    }else{
+                      print("No permission to read and write.");
+                    }
+                  },
+                  /*onPressed: () async {
+                    final taskId = await FlutterDownloader.enqueue(
+                      url: _dropdownValue,
+                      headers: {}, // optional: header send with url (auth token etc)
+                      savedDir: '/storage/emulated/0/Download/',
+                      showNotification: true, // show download progress in status bar (for Android)
+                      openFileFromNotification: true, // click on notification to open downloaded file (for Android)
+                    );
+                  },*/
+                ),
+              ],
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  border: Border.all(
+                    width: 2,
+                    color: Colors.grey,
+                  )
+              ),
+              width: size.width,
+              height: size.height,
+              child: SfPdfViewer.network(
+                _dropdownValue,
+                controller: _pdfViewerController,
+                onDocumentLoaded: (e) {
+                  setState(() {
+                    print("Loaded PDF");
+                    _isLoading = false;
+                    _downloadLink = _dropdownValue;
+                  });
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -699,40 +637,4 @@ class _CourseDetailState extends State<CourseDetail> {
       ),
     );
   }
-
-  Widget TopicGrid(int index, String name, ){
-    return Card(
-      child: InkWell(
-          splashColor: Colors.blue.withAlpha(30),
-          onTap: () {
-            Navigator.pushNamed(context, '/course_discover', arguments: DiscoverArg(index-1, thisCourse));
-          },
-          child: Container(
-            padding: EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(index.toString() + '.'),
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
-                  alignment: Alignment.centerLeft,
-                  child: Text(name, style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      overflow: TextOverflow.ellipsis
-                  ), maxLines: 2,),
-                ),
-              ],
-            ),
-          )
-      ),
-    );
-  }
-}
-
-class DiscoverArg {
-  final CourseClass thisCourse;
-  final int index;
-
-  DiscoverArg(this.index, this.thisCourse);
 }

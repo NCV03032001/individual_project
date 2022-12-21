@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+//import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:individual_project/course/CourseDiscover.dart';
 import 'package:individual_project/model/CourseList.dart';
 import 'package:individual_project/model/TutorProvider.dart';
 import 'package:individual_project/model/UserProvider.dart';
@@ -30,6 +32,10 @@ Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Settings.init(cacheProvider: SharePreferenceCache());
+  /*await FlutterDownloader.initialize(
+      debug: true, // optional: set to false to disable printing logs to console (default: true)
+      ignoreSsl: true // option: set to false to disable working with http links (default: false)
+  );*/
 
   runApp(const MyApp());
 }
@@ -81,6 +87,18 @@ class MyApp extends StatelessWidget {
               },
             );
           }
+          if (settings.name == '/course_discover') {
+            final args = settings.arguments as DiscoverArg;
+            return MaterialPageRoute(
+              builder: (context) {
+                return CourseDiscover(
+                  thisCourse: args.thisCourse,
+                  index: args.index,
+                );
+              },
+            );
+          }
+
           assert(false, 'Need to implement ${settings.name}');
           return null;
         },
@@ -88,7 +106,6 @@ class MyApp extends StatelessWidget {
         routes:  {
           '/login': (context) => Login(),
           '/tutor': (context) => Tutor(),
-          //'/tutor_profile': (context) => TutorProfile(),
           '/profile': (context) => Profile(),
           '/signup': (context) => Signup(),
           '/setting': (context) =>  Setting(),
@@ -97,7 +114,6 @@ class MyApp extends StatelessWidget {
           '/history' : (context) => History(),
           '/schedule' : (context) => Schedule(),
           '/courses' : (context) => Courses(),
-          //'/course_detail' : (context) => CourseDetail(),
           '/become_tutor' : (context) => BecomeTutor(),
           '/video_cfr' : (context) => VideoCall(),
         },
