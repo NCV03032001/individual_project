@@ -36,13 +36,18 @@ class _TutorProfileState extends State<TutorProfile> {
       userId: "", video: "", bio: "", education: "", experience: "", profession: "",
       targetStudent: "", interests: "", languages: "", specialties: "", toShow: false);
 
+  final TextEditingController _rpController = TextEditingController();
+  bool firstVal = false;
+  bool secondVal = false;
+  bool thirdVal = false;
+
   final FocusNode _dialogFocus = FocusNode();
   bool _isFbLoading = false;
   List<FeedbackItem> fbList = [];
-  TextEditingController _fbError = TextEditingController();
+  final TextEditingController _fbError = TextEditingController();
   int _maxFbPage = 1;
 
-  TextEditingController _errorController = TextEditingController();
+  final TextEditingController _errorController = TextEditingController();
   String _videoErr = "";
 
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
@@ -152,6 +157,36 @@ class _TutorProfileState extends State<TutorProfile> {
       setState(() {
         _errorController.text = "";
       });
+    }
+  }
+  void sendReport(String id, String content) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'report', );
+    var response = await http.post(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+      body: jsonEncode({"tutorId": id, "content": content})
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err, style: TextStyle(color: Colors.red),),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err, style: TextStyle(color: Colors.green),),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
   void getFeedBack({Map<String, String> query = const {'perPage': '12', 'page': '1'}}) async {
@@ -777,7 +812,233 @@ class _TutorProfileState extends State<TutorProfile> {
                 ),
                 Expanded(
                   child: InkWell(
-                      onTap: null,
+                      onTap: () {
+                        _rpController.text = "";
+                        firstVal = false;
+                        secondVal = false;
+                        thirdVal = false;
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => StatefulBuilder(
+                            builder: (context, setState) {
+                              double width = MediaQuery.of(context).size.width;
+                              double height = MediaQuery.of(context).size.height;
+                              return Focus(
+                                focusNode: _dialogFocus,
+                                child: AlertDialog(
+                                  title: Text('Report ${thisTutor.name}'),
+                                  content: GestureDetector(
+                                    onTap: () {
+                                      _dialogFocus.requestFocus();
+                                    },
+                                    child: Container(
+                                      constraints: BoxConstraints(
+                                        maxHeight: height/2,
+                                      ),
+                                      width: width - 30,
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                                margin: EdgeInsets.only(bottom: 10),
+                                                alignment: Alignment.centerLeft,
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.info, color: Colors.blue,),
+                                                    SizedBox(width: 10,),
+                                                    Expanded(child: Text(
+                                                      'Help us understand what\'s happening',
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),),
+                                                  ],
+                                                )
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Checkbox(
+                                                  value: firstVal,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      firstVal = !firstVal;
+                                                      if(firstVal == true) {
+                                                        _rpController.text = "This tutor is annoying me\n" + _rpController.text;
+                                                      }
+                                                      else {
+                                                        _rpController.text = _rpController.text.replaceAll("This tutor is annoying me\n", "")
+                                                            .replaceAll("This tutor is annoying me", "");
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                                Expanded(child: Text("This tutor is annoying me")),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Checkbox(
+                                                  value: secondVal,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      secondVal = !secondVal;
+                                                      if(secondVal == true) {
+                                                        _rpController.text = "This profile is pretending be someone or is fake\n" + _rpController.text;
+                                                      }
+                                                      else {
+                                                        _rpController.text = _rpController.text.replaceAll("This profile is pretending be someone or is fake\n", "")
+                                                            .replaceAll("This profile is pretending be someone or is fake", "");
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                                Expanded(child: Text("This profile is pretending be someone or is fake")),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Checkbox(
+                                                  value: thirdVal,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      thirdVal = !thirdVal;
+                                                      if(thirdVal == true) {
+                                                        _rpController.text = "Inappropriate profile photo\n" + _rpController.text;
+                                                      }
+                                                      else {
+                                                        _rpController.text = _rpController.text.replaceAll("Inappropriate profile photo\n", "")
+                                                            .replaceAll("Inappropriate profile photo", "");
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                                Expanded(child: Text("Inappropriate profile photo")),
+                                              ],
+                                            ),
+                                            Container(
+                                              margin: EdgeInsets.only(bottom: 10),
+                                              /*child: TextFormField(
+                                                  keyboardType: TextInputType.visiblePassword,
+                                                  controller: _rpController,
+                                                  autovalidateMode: AutovalidateMode.always,
+                                                  obscureText: true,
+                                                  decoration: InputDecoration(
+                                                    contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                                    enabledBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(width: 1, color: Colors.grey),
+                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(width: 1, color: Colors.blue),
+                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                    ),
+                                                    errorBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(width: 1, color: Colors.red),
+                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                    ),
+                                                    focusedErrorBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(width: 1, color: Colors.orange),
+                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                    ),
+                                                    errorStyle: TextStyle(
+                                                      fontSize: 10,
+                                                    ),
+                                                  ),
+                                                  validator: (val) {
+                                                    if(val == null || val.isEmpty){
+                                                      return "Please type your problem!";
+                                                    }
+                                                    return null;
+                                                  }
+                                              ),*/
+                                              child: TextFormField(
+                                                keyboardType: TextInputType.multiline,
+                                                controller: _rpController,
+                                                minLines: 3,
+                                                maxLines: 8,
+                                                decoration: InputDecoration(
+                                                  contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 1, color: Colors.grey),
+                                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 1, color: Colors.blue),
+                                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                  ),
+                                                  hintText: "Please let us know details about your problem",
+                                                  isCollapsed: true,
+                                                ),
+                                                onChanged: (val) {
+                                                  if (val.contains('This tutor is annoying me')) {
+                                                    setState(() {
+                                                      firstVal = true;
+                                                    });
+                                                  }
+                                                  if (val.contains('This profile is pretending be someone or is fake')) {
+                                                    setState(() {
+                                                      secondVal = true;
+                                                    });
+                                                  }
+                                                  if (val.contains('Inappropriate profile photo')) {
+                                                    setState(() {
+                                                      thirdVal = true;
+                                                    });
+                                                  }
+                                                  setState(() {});
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  actions: [
+                                    OutlinedButton(
+                                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                        backgroundColor: Colors.white,
+                                        side: BorderSide(color: Colors.blue, width: 2),
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Cancel',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () => _rpController.text.isNotEmpty ? Navigator.pop(context, 'OK') : null,
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                        backgroundColor: _rpController.text.isNotEmpty ? Colors.blue : Colors.grey,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Submit',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          ),
+                        ).then((value) {
+                          if(value == "OK") {
+                            sendReport(thisTutor.userId, _rpController.text);
+                          }
+                        });
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [

@@ -544,51 +544,78 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                             title: Text('Confirm Download'),
                             content: Text('Are you sure to download file:\n\t\t\t\t$savename\nto: ${savePath.replaceAll("/$savename", "")}?'),
                             actions: [
-                              TextButton(
+                              OutlinedButton(
                                 onPressed: () => Navigator.pop(context, 'Cancel'),
-                                child: const Text('Cancel'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                  backgroundColor: Colors.white,
+                                  side: BorderSide(color: Colors.blue, width: 2),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                  ),
+                                ),
                               ),
-                              TextButton(
+                              OutlinedButton(
                                 onPressed: () {
                                   Navigator.pop(context, 'OK');
                                 },
-                                child: const Text('OK'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                  backgroundColor: Colors.green,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Download',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ],
                           )
                         ).then((value) async {
-                          try {
-                          await Dio().download(
-                              _dropdownValue,
-                              savePath,
-                              /*onReceiveProgress: (received, total) {
+                          if(value == 'OK') {
+                            try {
+                              await Dio().download(
+                                _dropdownValue,
+                                savePath,
+                                /*onReceiveProgress: (received, total) {
                                 if (total != -1) {
                                   print((received / total * 100).toStringAsFixed(0) + "%");
                                   //you can build progressbar feature too
                                 }
                               }*/
-                            );
-                          print("File is saved to download folder.");
-                          context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('File is saved to download folder.', style: TextStyle(color: Colors.green),),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        } on DioError catch (e) {
-                          print(e.message);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(e.message, style: TextStyle(color: Colors.red),),
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        }
+                              );
+                              print("File is saved to download folder.");
+                              context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('File is saved to download folder.', style: TextStyle(color: Colors.green),),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            } on DioError catch (e) {
+                              print(e.message);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.message, style: TextStyle(color: Colors.red),),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          }
                         });
-
                       }
-                    }else{
+                    }
+                    else{
                       print("No permission to read and write.");
                     }
                   },
