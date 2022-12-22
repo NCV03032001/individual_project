@@ -534,7 +534,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     if(statuses[Permission.storage]!.isGranted){
                       var dir = Directory('/storage/emulated/0/Download');
                       if(dir != null){
-                        String savename = "${thisCourse.topics[thisCourse.topics.indexWhere((element) => element.nameFile == _dropdownValue)].name}.pdf";
+                        String savename = "${thisCourse.topics[thisCourse.topics.indexWhere((element) => element.nameFile == _downloadLink)].name}.pdf";
                         String savePath = "${dir.path}/$savename";
                         print(savePath);
                         //output:  /storage/emulated/0/Download/banner.png
