@@ -1160,7 +1160,7 @@ class _TutorState extends State<Tutor> {
                                   postBody['filters']['tutoringTimeAvailable'] = [null, null];
                                 }
 
-                                if (specList.indexWhere((element) => element['toShow'] == tags[isSelectedTag.indexWhere((element) => element == true)]) > 0) {
+                                if (specList.indexWhere((element) => element['toShow'] == tags[isSelectedTag.indexWhere((element) => element == true)]) >= 0) {
                                   String? tempSpec = specList[specList.indexWhere((
                                       element) => element['toShow'] ==
                                       tags[isSelectedTag.indexWhere((
