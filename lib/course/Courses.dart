@@ -763,14 +763,16 @@ class _CoursesState extends State<Courses> {
 
                           String? tempSort = _sKey.currentState?.getSelectedItem;
                           if (tempSort != null) {
+                            queryParameters['order[]'] = 'level';
                             if (tempSort == 'Level ascending') {
-                              queryParameters['orderBy[]'] = "DESC";
+                              queryParameters['orderBy[]'] = "ASC";
                             }
                             else if (tempSort == 'Level decreasing') {
-                              queryParameters['orderBy[]'] = "ASC";
+                              queryParameters['orderBy[]'] = "DESC";
                             }
                           }
                           else {
+                            queryParameters.remove('order[]');
                             queryParameters.remove('orderBy[]');
                           }
 
