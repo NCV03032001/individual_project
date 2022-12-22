@@ -585,7 +585,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                           if(value == 'OK') {
                             try {
                               await Dio().download(
-                                _dropdownValue,
+                                _downloadLink,
                                 savePath,
                                 /*onReceiveProgress: (received, total) {
                                 if (total != -1) {
