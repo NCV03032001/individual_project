@@ -6,14 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:individual_project/model/Tutor.dart';
 import 'package:individual_project/model/UserProvider.dart';
+import 'package:intl/intl.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
-import 'package:booking_calendar/booking_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../model/TutorProvider.dart';
@@ -67,19 +68,19 @@ class _TutorProfileState extends State<TutorProfile> {
   late VideoPlayerController _videoPlayerController;
   ChewieController? _chewieController;
 
+  final CalendarController _calendarController = CalendarController();
+
   @override
   void initState() {
     super.initState();
-    mockBookingService = BookingService(
-        serviceName: 'Mock Service',
-        serviceDuration: 30,
-        bookingEnd: DateTime(now.year, now.month, now.day, 23, 59),
-        bookingStart: DateTime(now.year, now.month, now.day, 7, 0),);
+    _calendarController.selectedDate = now;
     setState(() {
       _isLoading = true;
       _errorController.text = "";
     });
     getATutor();
+    query['startTimestamp'] = getDate(now).millisecondsSinceEpoch.toString();
+    query['endTimestamp'] = (getDate(now.add(Duration(days: DateTime.daysPerWeek))).millisecondsSinceEpoch - 1).toString();
   }
 
   void getATutor() async {
@@ -111,6 +112,7 @@ class _TutorProfileState extends State<TutorProfile> {
         setState(() {
           _videoErr = _videoPlayerController.value.errorDescription!;
           _isLoading = false;
+          return;
         });
       }
     });
@@ -124,6 +126,259 @@ class _TutorProfileState extends State<TutorProfile> {
       _isLoading = false;
     });
   }
+
+  final Map<String, dynamic> query = {
+    //"tutorId" : thisTutor.id,
+    //"startTimestamp": getDate(now).millisecondsSinceEpoch,
+    //"endTimestamp": 9
+  };
+
+  final now = DateTime.now();
+  List<TutorSchedule> scheList = [];
+  TextEditingController _noteController = TextEditingController();
+
+  DateTime getDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  void getTimeSheet(/*{int start = -1, int end = -1}*/) async {
+    query['tutorId'] = thisTutor.userId;
+    /*if (start == -1) {}
+    else query['startTimestamp'] = start.toString();
+    if (end == -1) {}
+    else query['endTimestamp'] = end.toString();*/
+    print(query);
+    var url = Uri.https('sandbox.api.lettutor.com', 'schedule', query);
+    var response = await http.get(url);
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      print(err);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error getting Tutor\'s Schedule: $err', style: TextStyle(color: Colors.red),),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      //print(parsed);
+      setState(() {
+        scheList = List.from(parsed['scheduleOfTutor']).map((e) => TutorSchedule.fromJson(e['scheduleDetails'][0])).toList();
+        // schdList.forEach((element) {
+        //   print(element.isBooked);
+        // });
+      });
+    }
+  }
+
+  Appointment makeAppoint(TutorSchedule aSch) {
+    if (aSch.isBooked && aSch.bookingInfo.isNotEmpty) {
+      String tempId = aSch.bookingInfo.firstWhere((element) => !element.isDeleted).userId;
+      String thisUserId = context.read<UserProvider>().thisUser.id;
+      if (tempId == thisUserId) {
+        return Appointment(
+          startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
+          endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
+          subject: 'Booked',
+          id: aSch.id,
+        );
+      }
+      else {
+        return Appointment(
+          startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
+          endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
+          subject: 'Reserved',
+          id: aSch.id,
+        );
+      }
+    }
+    return Appointment(
+      startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
+      endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
+      subject: 'Book',
+      id: aSch.id,
+    );
+  }
+
+  _AppointmentDataSource _getCalendarDataSource() {
+    List<Appointment> appointments = <Appointment>[];
+    for (var element in scheList) {
+      appointments.add(makeAppoint(element));
+    }
+    /*appointments.add(Appointment(
+      startTime: DateTime.now().subtract(Duration(hours: 3)),
+      endTime: DateTime.now().subtract(Duration(hours: 2, minutes: 30)),
+      subject: 'Reserved',
+      id: "The id 1",
+    ));
+    appointments.add(Appointment(
+      startTime: DateTime.now().subtract(Duration(hours: 2)),
+      endTime: DateTime.now().subtract(Duration(hours: 1, minutes: 30)),
+      subject: 'Booked',
+      id: "The id 2",
+    ));
+    appointments.add(Appointment(
+      startTime: DateTime.now().subtract(Duration(hours: 1)),
+      endTime: DateTime.now().subtract(Duration(minutes: 30)),
+      subject: 'Book',
+      id: "The id 3",
+    ));
+    appointments.add(Appointment(
+      startTime: DateTime.now().add(Duration(days: 1)),
+      endTime: DateTime.now().add(Duration(days: 1, minutes: 30)),
+      subject: 'Book',
+      id: "The id 4",
+    ));
+    appointments.add(Appointment(
+      startTime: DateTime.now().add(Duration(days: 1, hours: 1)),
+      endTime: DateTime.now().add(Duration(days: 1, hours: 1, minutes: 30)),
+      subject: 'Reserved',
+      id: "The id 5",
+    ));
+    appointments.add(Appointment(
+      startTime: DateTime.now().add(Duration(days: 1, hours: 2)),
+      endTime: DateTime.now().add(Duration(days: 1, hours: 2, minutes: 30)),
+      subject: 'Booked',
+      id: "The id 6",
+    ));
+*/
+    return _AppointmentDataSource(appointments);
+  }
+
+  void bookClass(String id, String note) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'booking');
+    var response = await http.post(url,
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+        },
+        body: jsonEncode({"scheduleDetailIds": [id], "note": note})
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      print(err);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          double width = MediaQuery.of(context).size.width;
+          double height = MediaQuery.of(context).size.height;
+          return AlertDialog(
+            title: Text('Boogking details'),
+            content: Container(
+              constraints: BoxConstraints(
+                maxHeight: height/2,
+              ),
+              width: width - 30,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 100,
+                      child: Image.asset('assets/images/icons/close.png'),
+                    ),
+                    Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        alignment: Alignment.center,
+                        child: Text('Booking falied', style: TextStyle(
+                          fontSize: 20,
+                        ),)
+                    ),
+                    Text(err, style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                    ),),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: Colors.blue, width: 2),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                child: Text(
+                  'Done',
+                  style: TextStyle(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+      );
+    }
+    else {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            double width = MediaQuery.of(context).size.width;
+            double height = MediaQuery.of(context).size.height;
+            return AlertDialog(
+              title: Text('Boogking details'),
+              content: Container(
+                constraints: BoxConstraints(
+                  maxHeight: height/2,
+                ),
+                width: width - 30,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 70,
+                        height: 100,
+                        child: Icon(Icons.check_circle, color: Colors.green, size: 70,),
+                      ),
+                      Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          alignment: Alignment.center,
+                          child: Text('Booking success', style: TextStyle(
+                            fontSize: 20,
+                          ),)
+                      ),
+                      Text('Check your Schedule to see class detail', style: TextStyle(
+                        fontWeight: FontWeight.w300,
+                      ),),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(context, 'OK'),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.blue, width: 2),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+      );
+
+      getTimeSheet();
+    }
+  }
+
   void searchTutorList({Map<String, dynamic> postBody = const {
     "filters": {
       "date": null,
@@ -211,9 +466,9 @@ class _TutorProfileState extends State<TutorProfile> {
         _maxFbPage = parsed['data']['count'];
         //print(_maxFbPage);
         fbList = List.from(parsed['data']['rows']).map((e) => FeedbackItem.fromJson(e)).toList();
-        fbList.forEach((element) {
-          print(element.content);
-        });
+        // fbList.forEach((element) {
+        //   print(element.content);
+        // });
       });
     }
 
@@ -235,65 +490,6 @@ class _TutorProfileState extends State<TutorProfile> {
     _videoPlayerController.dispose();
     _chewieController?.dispose();
     super.dispose();
-  }
-
-  final now = DateTime.now();
-  late BookingService mockBookingService;
-
-  Stream<dynamic>? getBookingStreamMock({required DateTime end, required DateTime start}) {
-    return Stream.value([]);
-  }
-
-  Future<dynamic> uploadBookingMock({ required BookingService newBooking}) async {
-    await Future.delayed(const Duration(seconds: 1));
-    converted.add(DateTimeRange(
-        start: newBooking.bookingStart, end: newBooking.bookingEnd));
-    print('${newBooking.toJson()} has been uploaded');
-  }
-
-  List<DateTimeRange> converted = [];
-
-  List<DateTimeRange> convertStreamResultMock({dynamic streamResult}) {
-    ///here you can parse the streamresult and convert to [List<DateTimeRange>]
-    DateTime firstCall = DateTime(now.year, now.month, now.day, 8);
-    DateTime secondCall = DateTime(now.year, now.month, now.day, 10, 30);
-    DateTime thirdCall = DateTime(now.year, now.month, now.day, 14, 30);
-    DateTime fourthCall = DateTime(now.year, now.month, now.day, 16, 00);
-    DateTime fifthCall = DateTime(now.year, now.month, now.day, 20, 30);
-    DateTime sixthCall = DateTime(now.year, now.month, now.day, 22, 00);
-    converted.add(DateTimeRange(start: firstCall, end: firstCall.add(Duration(minutes: 25))));
-    //converted.add(DateTimeRange(start: secondCall, end: secondCall.add(Duration(minutes: 25))));
-    converted.add(DateTimeRange(start: thirdCall, end: thirdCall.add(Duration(minutes: 25))));
-    //converted.add(DateTimeRange(start: fourthCall, end: fourthCall.add(Duration(minutes: 25))));
-    converted.add(DateTimeRange(start: fifthCall, end: fifthCall.add(Duration(minutes: 25))));
-    converted.add(DateTimeRange(start: sixthCall, end: sixthCall.add(Duration(minutes: 25))));
-    return converted;
-  }
-
-  List<DateTimeRange> generatePauseSlots() {
-    return [
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 0, 0),
-          end: DateTime(now.year, now.month, now.day, 8, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 8, 30),
-          end: DateTime(now.year, now.month, now.day, 10, 30)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 11, 0),
-          end: DateTime(now.year, now.month, now.day, 14, 30)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 15, 0),
-          end: DateTime(now.year, now.month, now.day, 16, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 16, 30),
-          end: DateTime(now.year, now.month, now.day, 20, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 21, 00),
-          end: DateTime(now.year, now.month, now.day, 22, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 22, 30),
-          end: DateTime(now.year, now.month, now.day, 23, 59)),
-    ];
   }
 
   @override
@@ -917,40 +1113,6 @@ class _TutorProfileState extends State<TutorProfile> {
                                             ),
                                             Container(
                                               margin: EdgeInsets.only(bottom: 10),
-                                              /*child: TextFormField(
-                                                  keyboardType: TextInputType.visiblePassword,
-                                                  controller: _rpController,
-                                                  autovalidateMode: AutovalidateMode.always,
-                                                  obscureText: true,
-                                                  decoration: InputDecoration(
-                                                    contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                                                    enabledBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 1, color: Colors.grey),
-                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                    ),
-                                                    focusedBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 1, color: Colors.blue),
-                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                    ),
-                                                    errorBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 1, color: Colors.red),
-                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                    ),
-                                                    focusedErrorBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 1, color: Colors.orange),
-                                                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                                                    ),
-                                                    errorStyle: TextStyle(
-                                                      fontSize: 10,
-                                                    ),
-                                                  ),
-                                                  validator: (val) {
-                                                    if(val == null || val.isEmpty){
-                                                      return "Please type your problem!";
-                                                    }
-                                                    return null;
-                                                  }
-                                              ),*/
                                               child: TextFormField(
                                                 keyboardType: TextInputType.multiline,
                                                 controller: _rpController,
@@ -1409,27 +1571,216 @@ class _TutorProfileState extends State<TutorProfile> {
           Container(
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
             alignment: Alignment.centerLeft,
-            child: Text('Choose start time of classes to book.\nEach class lasts 25 minutes.',
+            child: const Text('Each class lasts 25 minutes.\nPlease wait for loading after each navigation.',
               style: TextStyle(
                 fontSize: 15,
               ),),
           ),
-          SizedBox(
-            width: double.infinity,
-            height: 800,
-            child: BookingCalendar(
-              bookingService: mockBookingService,
-              convertStreamResultToDateTimeRanges: convertStreamResultMock,
-              getBookingStream: getBookingStreamMock,
-              uploadBooking: uploadBookingMock,
-              pauseSlots: generatePauseSlots(),
-              pauseSlotText: 'Not have Class',
-              hideBreakTime: false,
-              loadingWidget: SizedBox(height: 50, width: 50, child: Text('Fetching data...'),),
-              uploadingWidget: SizedBox(height: 50, width: 50, child: CircularProgressIndicator(),),
-              startingDayOfWeek: StartingDayOfWeek.monday,
-              //disabledDays: const [1, 2, 3, 4, 5],
+          SfCalendar(
+            view: CalendarView.week,
+            controller: _calendarController,
+            minDate: DateTime.now(),
+            initialDisplayDate: DateTime.now(),
+            initialSelectedDate: DateTime.now(),
+            showNavigationArrow: true,
+            showDatePickerButton: true,
+            showCurrentTimeIndicator: false,
+            dataSource: _getCalendarDataSource(),
+            cellEndPadding: 0,
+            firstDayOfWeek: now.weekday,
+            timeSlotViewSettings: TimeSlotViewSettings(
+              timeInterval: Duration(minutes: 30),
+              timeFormat: "HH:mm",
             ),
+            appointmentBuilder: (BuildContext context, CalendarAppointmentDetails details) {
+              final Appointment meeting = details.appointments.first;
+              if (meeting.subject == "Reserved") {
+                return Container(
+                  color: Theme.of(context).backgroundColor,
+                  child: Center(
+                    child: Text(
+                        "Reserved",
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 9,
+                        ),
+                    ),
+                  )
+                );
+              }
+              if (meeting.subject == "Booked") {
+                return Container(
+                    color: Theme.of(context).backgroundColor,
+                    child: Center(
+                      child: Text(
+                        "Booked",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 9,
+                        ),
+                      ),
+                    )
+                );
+              }
+              if (meeting.startTime.compareTo(now) <= 0) {
+                return OutlinedButton(
+                  onPressed: null,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.grey, width: 2),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  ),
+                  child: Text(
+                    'Book',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 9,
+                    ),
+                  ),
+                );
+              }
+              return OutlinedButton(
+                onPressed: () {
+                  _noteController.clear();
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        double width = MediaQuery.of(context).size.width;
+                        double height = MediaQuery.of(context).size.height;
+                        return Focus(
+                          focusNode: _dialogFocus,
+                          child: AlertDialog(
+                            title: Text("Booking details"),
+                            content: GestureDetector(
+                              onTap: () {
+                                _dialogFocus.requestFocus();
+                              },
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxHeight: height/2,
+                                ),
+                                width: width - 30,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 10),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text('Booking Time')
+                                      ),
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 10),
+                                          alignment: Alignment.center,
+                                          child: Text('${DateFormat('HH:mm').format(meeting.startTime)}-${DateFormat('HH:mm E, dd MMMM yyyy').format(meeting.endTime)}')
+                                      ),
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 10),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text('Notes')
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(bottom: 10),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.multiline,
+                                          controller: _noteController,
+                                          minLines: 3,
+                                          maxLines: 8,
+                                          decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(width: 1, color: Colors.grey),
+                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(width: 1, color: Colors.blue),
+                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                            ),
+                                            isCollapsed: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              OutlinedButton(
+                                onPressed: () => Navigator.pop(context, 'Cancel'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                  backgroundColor: Colors.white,
+                                  side: BorderSide(color: Colors.blue, width: 2),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                              OutlinedButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                  backgroundColor: Colors.blue,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Book',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                  ).then((value) {
+                    if(value == "OK") {
+                      bookClass(meeting.id.toString(), _noteController.text);
+                    }
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: Colors.blue, width: 2),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                child: Text(
+                  'Book',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 9,
+                  ),
+                ),
+              );
+            },
+            onViewChanged: (ViewChangedDetails details) {
+              List<DateTime> dates = details.visibleDates;
+              var tempStart = dates[0].millisecondsSinceEpoch;
+              var tempEnd = dates[dates.length-1].add(Duration(days: 1)).millisecondsSinceEpoch-1;
+              print(tempStart);
+              print(tempEnd);
+              query['startTimestamp'] = tempStart.toString();
+              query['endTimestamp'] = tempEnd.toString();
+              getTimeSheet();
+            },
+          ),
+          SizedBox(
+            height: 50,
           ),
         ],
       )
@@ -1439,6 +1790,7 @@ class _TutorProfileState extends State<TutorProfile> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          getTimeSheet();
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
@@ -1470,4 +1822,10 @@ class ProfileArg {
   final Map<String, dynamic> postBody;
 
   ProfileArg(this.id, this.postBody);
+}
+
+class _AppointmentDataSource extends CalendarDataSource {
+  _AppointmentDataSource(List<Appointment> source){
+    appointments = source;
+  }
 }

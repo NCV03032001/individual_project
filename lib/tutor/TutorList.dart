@@ -81,7 +81,7 @@ class _TutorState extends State<Tutor> {
   }
   void resetTimer() {
     stopTimer();
-    setState(() => myDuration = Duration(days: 5));
+    //setState(() => myDuration = Duration(days: 5));
   }
   void setCountDown() {
     final reduceSecondsBy = 1;
@@ -268,13 +268,33 @@ class _TutorState extends State<Tutor> {
     }
     else {
       final Map parsed = json.decode(response.body);
-      if (parsed["data"].length == 1) {
+      var nextL = parsed["data"].length;
+
+      if (nextL != 0) {
         int timeNow = DateTime.now().millisecondsSinceEpoch;
-        int startTime = parsed['data'][0]['scheduleDetailInfo']['startPeriodTimestamp'];
-        int endTime = parsed['data'][0]['scheduleDetailInfo']['endPeriodTimestamp'];
+        List<Map<String, dynamic>> nextList = List.generate(nextL, (index) {
+          return {
+            'start': parsed['data'][index]['scheduleDetailInfo']['startPeriodTimestamp'],
+            'end': parsed['data'][index]['scheduleDetailInfo']['endPeriodTimestamp'],
+          };
+        });
+        nextList.sort((a, b) => a['start'].compareTo(b['start']));
+        print(nextList);
+        int startTime = nextList[0]['start'];
+        int endTime = nextList[0]['end'];
+        if (startTime < timeNow) {
+          for (var i = 1; i < nextL; i++) {
+            startTime = nextList[i]['start'];
+            if (startTime >= timeNow) {
+              endTime = nextList[i]['end'];
+              break;
+            }
+          }
+        }
         setState(() {
           dateFormat = "${DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
           myDuration = Duration(milliseconds: startTime - timeNow);
+          //print(startTime - timeNow);
           _hasUpcoming = true;
         });
         startTimer();
@@ -323,6 +343,12 @@ class _TutorState extends State<Tutor> {
     super.dispose();
   }
 
+  /*@override
+  void reassemble() {
+    stopTimer();
+    super.reassemble();
+  }*/
+
   @override
   Widget build(BuildContext context) {
     var readTutorProv = context.read<TutorProvider>();
@@ -330,7 +356,7 @@ class _TutorState extends State<Tutor> {
     double height = MediaQuery.of(context).size.height;
     
     String strDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = strDigits(myDuration.inHours.remainder(24));
+    final hours = strDigits(myDuration.inHours.remainder(999999));
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
 

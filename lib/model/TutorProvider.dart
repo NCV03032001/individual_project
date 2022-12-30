@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:individual_project/model/Tutor.dart';
-import 'package:http/http.dart' as http;
 
 
 class TutorProvider with ChangeNotifier, Diagnosticable {
