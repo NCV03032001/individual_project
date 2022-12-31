@@ -1,5 +1,5 @@
-class HistoryClass {
-  HistoryClass({
+class SnHClass {
+  SnHClass({
     required this.id,
     required this.userId,
     required this.scheduleDetailId,
@@ -28,7 +28,7 @@ class HistoryClass {
   late final bool showRecordUrl;
   late final List<Feedbacks> feedbacks;
 
-  HistoryClass.fromJson(Map<String, dynamic> json){
+  SnHClass.fromJson(Map<String, dynamic> json){
     id = json['id'];
     userId = json['userId'];
     scheduleDetailId = json['scheduleDetailId'];

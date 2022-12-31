@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
-import 'package:individual_project/model/History/HistoryClass.dart';
+import 'package:individual_project/model/ScheduleNHistory/SnHClass.dart';
 
-class HistoryProvider with ChangeNotifier, Diagnosticable {
+class ScheduleProvider with ChangeNotifier, Diagnosticable {
   late int count;
-  late List<HistoryClass> rows = [];
+  late List<SnHClass> rows = [];
 
   void fromJson(Map<String, dynamic> json){
     count = json['count'];
-    rows = List.from(json['rows']).map((e)=>HistoryClass.fromJson(e)).toList();
+    rows = List.from(json['rows']).map((e)=>SnHClass.fromJson(e)).toList();
   }
 
   Map<String, dynamic> toJson() {

@@ -141,11 +141,6 @@ class _TutorProfileState extends State<TutorProfile> {
 
   void getTimeSheet(/*{int start = -1, int end = -1}*/) async {
     query['tutorId'] = thisTutor.userId;
-    /*if (start == -1) {}
-    else query['startTimestamp'] = start.toString();
-    if (end == -1) {}
-    else query['endTimestamp'] = end.toString();*/
-    print(query);
     var url = Uri.https('sandbox.api.lettutor.com', 'schedule', query);
     var response = await http.get(url);
     if (response.statusCode != 200) {
@@ -161,12 +156,8 @@ class _TutorProfileState extends State<TutorProfile> {
     }
     else {
       final Map<String, dynamic> parsed = json.decode(response.body);
-      //print(parsed);
       setState(() {
         scheList = List.from(parsed['scheduleOfTutor']).map((e) => TutorSchedule.fromJson(e['scheduleDetails'][0])).toList();
-        // schdList.forEach((element) {
-        //   print(element.isBooked);
-        // });
       });
     }
   }
@@ -1313,13 +1304,13 @@ class _TutorProfileState extends State<TutorProfile> {
                                             setState((){
                                               _isFbLoading = true;
                                             });
-                                            print(pagiController.currentPage + 1);
                                             query['page'] = (pagiController.currentPage + 1).toString();
                                             Future<void> fetchFb() async {
                                               return getFeedBack(query: query);
                                             }
                                             await fetchFb();
                                             setState(() {
+                                              //print(DateFormat('HH:mm EEEE, dd, MMM, yy').format(DateTime.parse(fbList.first.createdAt)));
                                               print("In Dialog load: $_isFbLoading");
                                             });
                                           },

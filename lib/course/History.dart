@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:individual_project/model/History/HistoryProvider.dart';
+import 'package:individual_project/model/ScheduleNHistory/HistoryProvider.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:individual_project/tutor/TutorProfile.dart';
 import 'package:intl/intl.dart';
@@ -193,7 +193,7 @@ class _HistoryState extends State<History> {
 
   @override
   Widget build(BuildContext context) {
-    var readCourseList = context.read<HistoryProvider>().rows;
+    var readHistoryList = context.read<HistoryProvider>().rows;
     var size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -571,13 +571,13 @@ class _HistoryState extends State<History> {
             ? CircularProgressIndicator()
             : _errorController.text.isNotEmpty
             ? Text(_errorController.text)
-            : readCourseList.isEmpty
+            : readHistoryList.isEmpty
             ? Text("No History Found")
             : Container(
               margin: EdgeInsets.fromLTRB(0,20, 0, 15),
               height: size.height/1.75,
               child: ListView(
-                children: readCourseList.map((e) {
+                children: readHistoryList.map((e) {
                   var startStamp = e.scheduleDetailInfo.startPeriodTimestamp;
                   var endStamp = e.scheduleDetailInfo.endPeriodTimestamp;
                   var startDateTime = DateTime.fromMillisecondsSinceEpoch(startStamp);
@@ -943,9 +943,11 @@ class _HistoryState extends State<History> {
                                               ),
                                             );
                                           }
-                                        ).then((value) {
+                                        ).then((value) async {
                                           if(value == "OK") {
-                                            sendFeedback(tutorInfo.id, rating, contentController.text, e.id);
+                                            Future<void> edit() async{return sendFeedback(tutorInfo.id, rating, contentController.text, e.id);};
+                                            await edit();
+
                                             getHistoryList(queryParameters);
                                           }
                                         });
@@ -1304,9 +1306,11 @@ class _HistoryState extends State<History> {
                                                         ),
                                                       );
                                                     }
-                                                ).then((value) {
+                                                ).then((value) async {
                                                   if(value == "OK") {
-                                                    editFeedback(fb.id, rating, contentController.text);
+                                                    Future<void> edit() async{editFeedback(fb.id, rating, contentController.text);}
+                                                    await edit();
+
                                                     getHistoryList(queryParameters);
                                                   }
                                                 });
@@ -1501,23 +1505,6 @@ class _HistoryState extends State<History> {
                           }).toList(),
                         ),
                         SizedBox(height: 15,),
-                        /*Container(
-                          alignment: Alignment.centerRight,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.all(15),
-                              backgroundColor: Colors.blue,
-                            ),
-                            child: Text(
-                              'Go to meeting',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () => Navigator.pushNamed(context, '/video_cfr'), //sửa sau
-                          ),
-                        ),*/
                       ],
                     ),
                   );
@@ -1538,7 +1525,7 @@ class _HistoryState extends State<History> {
       ),
       /*floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add your onPressed code here!
+
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),

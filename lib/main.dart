@@ -4,7 +4,8 @@ import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/course/CourseDiscover.dart';
 import 'package:individual_project/model/Course/CourseList.dart';
-import 'package:individual_project/model/History/HistoryProvider.dart';
+import 'package:individual_project/model/ScheduleNHistory/ScheduleProvider.dart';
+import 'package:individual_project/model/ScheduleNHistory/HistoryProvider.dart';
 import 'package:individual_project/model/Tutor/TutorProvider.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 
@@ -25,18 +26,10 @@ import 'package:individual_project/videoconference/VideoCall.dart';
 import 'package:provider/provider.dart';
 
 
-// void main() async {
-//   runApp(const MyApp());
-// }
-
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Settings.init(cacheProvider: SharePreferenceCache());
-  /*await FlutterDownloader.initialize(
-      debug: true, // optional: set to false to disable printing logs to console (default: true)
-      ignoreSsl: true // option: set to false to disable working with http links (default: false)
-  );*/
 
   runApp(const MyApp());
 }
@@ -59,6 +52,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => TutorProvider()),
         ChangeNotifierProvider(create: (context) => CourseList()),
         ChangeNotifierProvider(create: (context) => HistoryProvider()),
+        ChangeNotifierProvider(create: (context) => ScheduleProvider()),
       ],
       child: MaterialApp(
         localizationsDelegates: [
