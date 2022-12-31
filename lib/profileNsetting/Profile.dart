@@ -5,15 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/model/UserProvider.dart';
-import 'package:individual_project/model/User.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
+import 'package:individual_project/model/User/User.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../model/Tutor.dart';
+import '../model/Tutor/Tutor.dart';
 import '../model/data/LearnTopicData.dart';
 import '../model/data/TestPreparationData.dart';
 
@@ -1394,13 +1394,13 @@ class _ProfileState extends State<Profile> {
             ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           onPressed: () {
             // Add your onPressed code here!
           },
           backgroundColor: Colors.grey,
           child: const Icon(Icons.message_outlined),
-        ),
+        ),*/
       ),
     );
   }

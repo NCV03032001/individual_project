@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -452,13 +452,13 @@ class _SettingState extends State<Setting> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/
     );
   }
 

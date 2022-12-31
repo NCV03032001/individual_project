@@ -4,8 +4,8 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:individual_project/model/Tutor.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Tutor/Tutor.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:intl/intl.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +17,7 @@ import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../model/TutorProvider.dart';
+import '../model/Tutor/TutorProvider.dart';
 
 class TutorProfile extends StatefulWidget {
   final ProfileArg theArg;
@@ -205,43 +205,6 @@ class _TutorProfileState extends State<TutorProfile> {
     for (var element in scheList) {
       appointments.add(makeAppoint(element));
     }
-    /*appointments.add(Appointment(
-      startTime: DateTime.now().subtract(Duration(hours: 3)),
-      endTime: DateTime.now().subtract(Duration(hours: 2, minutes: 30)),
-      subject: 'Reserved',
-      id: "The id 1",
-    ));
-    appointments.add(Appointment(
-      startTime: DateTime.now().subtract(Duration(hours: 2)),
-      endTime: DateTime.now().subtract(Duration(hours: 1, minutes: 30)),
-      subject: 'Booked',
-      id: "The id 2",
-    ));
-    appointments.add(Appointment(
-      startTime: DateTime.now().subtract(Duration(hours: 1)),
-      endTime: DateTime.now().subtract(Duration(minutes: 30)),
-      subject: 'Book',
-      id: "The id 3",
-    ));
-    appointments.add(Appointment(
-      startTime: DateTime.now().add(Duration(days: 1)),
-      endTime: DateTime.now().add(Duration(days: 1, minutes: 30)),
-      subject: 'Book',
-      id: "The id 4",
-    ));
-    appointments.add(Appointment(
-      startTime: DateTime.now().add(Duration(days: 1, hours: 1)),
-      endTime: DateTime.now().add(Duration(days: 1, hours: 1, minutes: 30)),
-      subject: 'Reserved',
-      id: "The id 5",
-    ));
-    appointments.add(Appointment(
-      startTime: DateTime.now().add(Duration(days: 1, hours: 2)),
-      endTime: DateTime.now().add(Duration(days: 1, hours: 2, minutes: 30)),
-      subject: 'Booked',
-      id: "The id 6",
-    ));
-*/
     return _AppointmentDataSource(appointments);
   }
 
@@ -494,6 +457,8 @@ class _TutorProfileState extends State<TutorProfile> {
 
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic>? tempBody = widget.theArg.postBody;
+
     return Scaffold(
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
@@ -970,7 +935,8 @@ class _TutorProfileState extends State<TutorProfile> {
                           });
                         }
                         else {
-                          searchTutorList(postBody: widget.theArg.postBody);
+                          if (tempBody != null) searchTutorList(postBody: tempBody!);
+                          else searchTutorList();
                           setState(() {
                             _errorController.text = "";
                             thisTutor.isFavorite = !thisTutor.isFavorite!;
@@ -1788,14 +1754,14 @@ class _TutorProfileState extends State<TutorProfile> {
           child: Text(_errorController.text),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
           getTimeSheet();
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/
     );
   }
 
@@ -1819,7 +1785,7 @@ class courseItem {
 
 class ProfileArg {
   final String id;
-  final Map<String, dynamic> postBody;
+  final Map<String, dynamic>? postBody;
 
   ProfileArg(this.id, this.postBody);
 }

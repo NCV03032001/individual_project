@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 
-import '../model/User.dart';
+import '../model/User/User.dart';
 
 class Schedule extends StatefulWidget {
   const Schedule({Key? key}) : super(key: key);
@@ -897,13 +897,13 @@ class _ScheduleState extends State<Schedule> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/
     );
   }
   Widget ImageProfile(ImageProvider input) {

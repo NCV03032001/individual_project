@@ -6,8 +6,8 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/model/TutorProvider.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Tutor/TutorProvider.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:individual_project/tutor/TutorProfile.dart';
 import 'package:provider/provider.dart';
 import 'package:time_range_picker/time_range_picker.dart';
@@ -356,7 +356,7 @@ class _TutorState extends State<Tutor> {
     double height = MediaQuery.of(context).size.height;
     
     String strDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = strDigits(myDuration.inHours.remainder(999999));
+    final hours = strDigits(myDuration.inHours);
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
 
@@ -1377,28 +1377,25 @@ class _TutorState extends State<Tutor> {
                                                 Container(
                                                   padding: EdgeInsets.only(left: 10),
                                                   margin: EdgeInsets.only(bottom: 10),
-                                                  child: Row(
-                                                    children: [
-                                                      readTutorProv.theList[i].rating != null
-                                                          ? Row(
-                                                          children: []..addAll(List.generate(readTutorProv.theList[i].rating!.toInt(), (index) {
-                                                            return Tooltip(
-                                                              message: tooltipMsg[index],
-                                                              child: Icon(Icons.star, color: Colors.yellow,),
-                                                            );
-                                                          }))
-                                                            ..addAll(List.generate((5-readTutorProv.theList[i].rating!.toInt()), (index) {
-                                                              return Tooltip(
-                                                                message: tooltipMsg[4-index],
-                                                                child: Icon(Icons.star, color: Colors.grey,),
-                                                              );
-                                                            }).reversed)
-                                                      )
-                                                          : Text('No reviews yet', style:  TextStyle(
-                                                        fontStyle: FontStyle.italic,
-                                                      ),),
-                                                    ],
-                                                  ),
+                                                  alignment: Alignment.centerLeft,
+                                                  child: readTutorProv.theList[i].rating != null
+                                                      ? Row(
+                                                      children: []..addAll(List.generate(readTutorProv.theList[i].rating!.toInt(), (index) {
+                                                        return Tooltip(
+                                                          message: tooltipMsg[index],
+                                                          child: Icon(Icons.star, color: Colors.yellow,),
+                                                        );
+                                                      }))
+                                                        ..addAll(List.generate((5-readTutorProv.theList[i].rating!.toInt()), (index) {
+                                                          return Tooltip(
+                                                            message: tooltipMsg[4-index],
+                                                            child: Icon(Icons.star, color: Colors.grey,),
+                                                          );
+                                                        }).reversed)
+                                                  )
+                                                      : Text('No reviews yet', style:  TextStyle(
+                                                    fontStyle: FontStyle.italic,
+                                                  ),),
                                                 ),
                                               ],
                                             ),
@@ -1429,19 +1426,6 @@ class _TutorState extends State<Tutor> {
                                               });
                                             }
                                           },
-                                          /*onPressed: () async {
-                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.theList[i].userId, context.read<UserProvider>().thisTokens.access.token);
-                                            if (doFavRes != "Success") {
-                                              setState(() {
-                                                _errorController.text = doFavRes;
-                                              });
-                                            }
-                                            else {
-                                              setState(() {
-                                                _errorController.text = "";
-                                              });
-                                            }
-                                          },*/
                                           icon: readTutorProv.theList[i].isFavorite!
                                               ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
                                               : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
@@ -1543,13 +1527,13 @@ class _TutorState extends State<Tutor> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           onPressed: () {
             // Add your onPressed code here!
           },
           backgroundColor: Colors.grey,
           child: const Icon(Icons.message_outlined),
-        ),
+        ),*/
       ),
     );
   }

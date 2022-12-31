@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:individual_project/model/Tutor.dart';
-
+import 'package:individual_project/model/Tutor/Tutor.dart';
 
 class TutorProvider with ChangeNotifier, Diagnosticable {
   late int count;

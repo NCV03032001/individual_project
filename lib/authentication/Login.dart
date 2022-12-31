@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:email_validator/email_validator.dart';
-import 'package:individual_project/model/Tokens.dart';
-import 'package:individual_project/model/User.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/User/Tokens.dart';
+import 'package:individual_project/model/User/User.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {

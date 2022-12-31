@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/model/CourseList.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Course/CourseList.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
@@ -87,7 +87,6 @@ class _CoursesState extends State<Courses> {
   final FocusNode _rsFocus = FocusNode();
   final FocusNode _searchFocus = FocusNode();
 
-
   @override
   void initState() {
     super.initState();
@@ -112,9 +111,6 @@ class _CoursesState extends State<Courses> {
     if (response.statusCode == 200) {
       final Map parsed = json.decode(response.body);
       cFetch = List.from(parsed['rows']).map((e)=>Categories.fromJson(e)).toList();
-      cFetch.forEach((element) {
-        print(element.title);
-      });
     }
   }
 
@@ -870,13 +866,13 @@ class _CoursesState extends State<Courses> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/
     );
   }
 

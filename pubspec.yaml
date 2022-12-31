@@ -53,6 +53,8 @@ dependencies:
   dio: ^4.0.6
   permission_handler: ^10.2.0
   path_provider: ^2.0.11
+  url_launcher: ^6.1.7
+  flutter_rating_bar: ^4.0.1
   #downloads_path_provider_28: ^0.1.2
   #flutter_downloader: ^1.9.1
 

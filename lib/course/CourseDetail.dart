@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:individual_project/model/CourseList.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Course/CourseList.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -690,13 +690,13 @@ class _CourseDetailState extends State<CourseDetail> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*/*floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/*/
     );
   }
 

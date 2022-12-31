@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/course/CourseDiscover.dart';
-import 'package:individual_project/model/CourseList.dart';
-import 'package:individual_project/model/TutorProvider.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Course/CourseList.dart';
+import 'package:individual_project/model/History/HistoryProvider.dart';
+import 'package:individual_project/model/Tutor/TutorProvider.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 
 import 'package:individual_project/profileNsetting/Profile.dart';
 import 'package:individual_project/authentication/Signup.dart';
@@ -57,6 +58,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TutorProvider()),
         ChangeNotifierProvider(create: (context) => CourseList()),
+        ChangeNotifierProvider(create: (context) => HistoryProvider()),
       ],
       child: MaterialApp(
         localizationsDelegates: [
