@@ -394,7 +394,7 @@ class FeedbackItem {
     id = json['id'];
     firstId = json['firstId'];
     secondId = json['secondId'];
-    rating = json['rating'];
+    rating = json['rating'].toInt();
     content = json['content'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];

@@ -67,7 +67,7 @@ class LocaleString extends Translations{
       'normal': 'bình thường',
       'good': 'tốt',
       'wonderful': 'tuyệt vời',
-      'No reviews yet': 'Chưa có đánh giá',
+      'No review yet': 'Chưa có đánh giá',
       'Book': 'Đặt lịch',
       'No Tutor found.': 'Không tìm thấy gia sư.',
       'Foreign Tutor': 'Gia Sư Nước Ngoài',

@@ -878,7 +878,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                     : Container(),
                                   )
                             )
-                                : Text('No reviews yet', style:  TextStyle(
+                                : Text('No review yet'.tr, style:  TextStyle(
                               fontStyle: FontStyle.italic,
                             ),),
                           ],
@@ -1268,7 +1268,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                                                           return Icon(Icons.star, color: Colors.grey, size: 15,);
                                                                         }))
                                                                   )
-                                                                      : Text('No reviews yet'.tr, style:  TextStyle(
+                                                                      : Text('No review yet'.tr, style:  TextStyle(
                                                                     fontStyle: FontStyle.italic,
                                                                   ),),
                                                                 ],
@@ -1334,7 +1334,7 @@ class _TutorProfileState extends State<TutorProfile> {
                             child: Icon(Icons.star_border_purple500_sharp, color: Colors.blue, size: 35,),
                           ),
                           SizedBox(height: 10,),
-                          Text('Reviews', style: TextStyle(
+                          Text('Reviews'.tr, style: TextStyle(
                             color: Colors.blue,
                           ),),
                         ],
