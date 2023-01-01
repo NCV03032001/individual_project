@@ -48,13 +48,15 @@ dependencies:
   number_paginator: ^0.2.3
   flutter_localized_locales: ^2.0.3
   timeago: ^3.3.0
-  syncfusion_flutter_pdfviewer: ^20.4.38
-  syncfusion_flutter_calendar: ^20.4.38
+  syncfusion_flutter_pdfviewer: ^20.4.41
+  syncfusion_flutter_calendar: ^20.4.41
   dio: ^4.0.6
   permission_handler: ^10.2.0
   path_provider: ^2.0.11
   url_launcher: ^6.1.7
   flutter_rating_bar: ^4.0.1
+  jitsi_meet_wrapper: ^0.0.5
+  #jitsi_meet: ^4.0.0
   #downloads_path_provider_28: ^0.1.2
   #flutter_downloader: ^1.9.1
 

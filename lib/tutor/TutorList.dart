@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:country_picker/country_picker.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:individual_project/model/Tutor/TutorProvider.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:individual_project/tutor/TutorProfile.dart';
@@ -14,6 +13,7 @@ import 'package:time_range_picker/time_range_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
 import 'package:intl/intl.dart';
+import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
 
 class Tutor extends StatefulWidget {
   const Tutor({Key? key}) : super(key: key);
@@ -27,6 +27,7 @@ class _TutorState extends State<Tutor> {
   bool _isLoading = false;
   bool _upcomingLoading = false;
   bool _hasUpcoming = false;
+  int _countMode = 1;
   int totalLearn = 0;
 
   int _maxPage = 1;
@@ -40,6 +41,9 @@ class _TutorState extends State<Tutor> {
 
   Timer? countdownTimer;
   Duration myDuration = Duration(days: 1);
+  String? userId = "";
+  String? tutorId = "";
+
 
   @override
   void initState() {
@@ -55,45 +59,44 @@ class _TutorState extends State<Tutor> {
       _hasUpcoming = false;
       totalLearn = 0;
     });
-    // Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
-    //   access: Access(
-    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzExMTUyMTYsImV4cCI6MTY3MTIwMTYxNiwidHlwZSI6ImFjY2VzcyJ9._HCnjzYOgzilLAmEhehvEAcgtkBIh9dgYnNUvKkAqBk",
-    //     expires: "2022-12-08T05:35:46.286Z"
-    //   ),
-    //   refresh: Refresh(
-    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzAzOTEzNDYsImV4cCI6MTY3Mjk4MzM0NiwidHlwZSI6InJlZnJlc2gifQ.5DiiDFVhCFUnlHFosgDn7EvWUwWBGy5kcADSR9opstE",
-    //     expires: "2023-01-06T05:35:46.286Z"
-    //   )
-    // );
-    //startTimer();
-    //searchTutorList();
     getUpcomingLesson();
-    //getPreTutorList();
     searchTutorList();
   }
   /// Timer related methods ///
-  void startTimer() {
+  void startTimer(int mode, Duration endDur) {
     countdownTimer =
-        Timer.periodic(Duration(seconds: 1), (_) => setCountDown());
+        Timer.periodic(Duration(seconds: 1), (_) => setCountDown(mode, endDur));
   }
   void stopTimer() {
     setState(() => countdownTimer!.cancel());
   }
   void resetTimer() {
     stopTimer();
-    //setState(() => myDuration = Duration(days: 5));
+    getUpcomingLesson();
   }
-  void setCountDown() {
-    final reduceSecondsBy = 1;
-    setState(() {
-      final seconds = myDuration.inSeconds - reduceSecondsBy;
-      if (seconds < 0) {
-        countdownTimer!.cancel();
-        getUpcomingLesson();
-      } else {
-        myDuration = Duration(seconds: seconds);
-      }
-    });
+  void setCountDown(int mode, Duration endDur) {
+    const reduceSecondsBy = 1;
+    final endGap = endDur.inSeconds;
+    if (mode == -1) {
+      setState(() {
+        final seconds = myDuration.inSeconds + reduceSecondsBy;
+        if (seconds >= endGap) {
+          resetTimer();
+        } else {
+          myDuration = Duration(seconds: seconds);
+        }
+      });
+    }
+    else {
+      setState(() {
+        final seconds = myDuration.inSeconds - reduceSecondsBy;
+        if (seconds < 0) {
+          resetTimer();
+        } else {
+          myDuration = Duration(seconds: seconds);
+        }
+      });
+    }
   }
 
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
@@ -161,39 +164,6 @@ class _TutorState extends State<Tutor> {
 
   final FocusNode _searchFocus = FocusNode();
   final FocusNode _rsFocus = FocusNode();
-
-  void getPreTutorList({Map<String, String> queryParameters = const {'perPage': '99999999','page': '1',}}) async {
-    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/more', queryParameters);
-    var response = await http.get(url,
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
-      },
-    );
-
-    if (response.statusCode != 200) {
-      final Map parsed = json.decode(response.body);
-      final String err = parsed["message"];
-      setState(() {
-        _errorController.text = err;
-      });
-    }
-    else {
-      final Map parsed = json.decode(response.body);
-
-      var tutorProv = Provider.of<TutorProvider>(context, listen: false);
-      tutorProv.fromJson(parsed);
-      var readTutorProv = context.read<TutorProvider>();
-
-      print(readTutorProv.total.length);
-
-      print(readTutorProv.favList.length);
-
-      setState(() {
-        _errorController.text = "";
-      });
-    }
-  }
 
   void searchTutorList({Map<String, dynamic> postBody = const {
     "filters": {
@@ -276,28 +246,46 @@ class _TutorState extends State<Tutor> {
           return {
             'start': parsed['data'][index]['scheduleDetailInfo']['startPeriodTimestamp'],
             'end': parsed['data'][index]['scheduleDetailInfo']['endPeriodTimestamp'],
+            'userId': parsed['data'][index]['userId'],
+            'tutorId': parsed['data'][index]['scheduleDetailInfo']['scheduleInfo']['tutorId']
           };
         });
         nextList.sort((a, b) => a['start'].compareTo(b['start']));
-        print(nextList);
+        //print(nextList);
         int startTime = nextList[0]['start'];
         int endTime = nextList[0]['end'];
-        if (startTime < timeNow) {
+        userId = nextList[0]['userId'];
+        tutorId = nextList[0]['tutorId'];
+
+        if (endTime < timeNow) {
           for (var i = 1; i < nextL; i++) {
             startTime = nextList[i]['start'];
-            if (startTime >= timeNow) {
-              endTime = nextList[i]['end'];
+            endTime = nextList[i]['end'];
+            userId = nextList[i]['userId'];
+            tutorId = nextList[i]['tutorId'];
+            if (endTime >= timeNow) {
               break;
             }
           }
         }
+
+        setState(() {
+          _hasUpcoming = false;
+          return;
+        });
+
         setState(() {
           dateFormat = "${DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
           myDuration = Duration(milliseconds: startTime - timeNow);
-          //print(startTime - timeNow);
+          if (myDuration.isNegative) {
+            myDuration = -myDuration;
+            _countMode = -1;
+          }
           _hasUpcoming = true;
         });
-        startTimer();
+
+        var endDur = Duration(milliseconds: endTime - timeNow);
+        startTimer(_countMode, endDur);
       }
       else {
         setState(() {
@@ -342,12 +330,6 @@ class _TutorState extends State<Tutor> {
     stopTimer();
     super.dispose();
   }
-
-  /*@override
-  void reassemble() {
-    stopTimer();
-    super.reassemble();
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -767,16 +749,44 @@ class _TutorState extends State<Tutor> {
                         ),
                         Container(
                           margin: EdgeInsets.only(bottom: 10),
-                          child: Text(
+                          child: _countMode > 0
+                            ? Text(
                             '  (starts in $hours:$minutes:$seconds)',
                             style: TextStyle(
                               color: Colors.yellow,
                               fontSize: 15,
                             ),
+                          )
+                          : Text(
+                            '  (class time $hours:$minutes:$seconds)',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                         OutlinedButton(
-                          onPressed: null,
+                          onPressed: () async{
+                            var userInfo = context.read<UserProvider>().thisUser;
+
+                            var options = JitsiMeetingOptions(
+                              roomNameOrUrl: "${userId}-${tutorId}",
+                              serverUrl: "https://meet.lettutor.com",
+                              isAudioMuted: true,
+                              isVideoMuted: true,
+                              userDisplayName: "${userInfo.name}",
+                              userEmail: "${userInfo.email}",
+                            );
+
+                            await JitsiMeetWrapper.joinMeeting(
+                              options: options,
+                              listener: JitsiMeetingListener(
+                                onConferenceWillJoin: (url) => print("onConferenceWillJoin: url: $url"),
+                                onConferenceJoined: (url) => print("onConferenceJoined: url: $url"),
+                                onConferenceTerminated: (url, error) => print("onConferenceTerminated: url: $url, error: $error"),
+                              ),
+                            );
+                          },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white,
                             padding: EdgeInsets.all(15),
@@ -1515,7 +1525,6 @@ class _TutorState extends State<Tutor> {
                       initialPage: 0,
                       onPageChange: (int index) {
                         postBody['page'] = _pagiController.currentPage + 1;
-                        print(postBody);
                         searchTutorList(postBody: postBody);
                         //var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
                         //getPreTutorList(queryParameters: queryParameters);
@@ -1529,7 +1538,7 @@ class _TutorState extends State<Tutor> {
         ),
         /*floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Add your onPressed code here!
+
           },
           backgroundColor: Colors.grey,
           child: const Icon(Icons.message_outlined),

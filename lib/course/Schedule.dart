@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:individual_project/model/ScheduleNHistory/ScheduleProvider.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:intl/intl.dart';
+import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -649,6 +650,8 @@ class _ScheduleState extends State<Schedule> {
                   var startTimeCompare = startDateTime.difference(now).compareTo(Duration(hours: 2));
                   var endTimeCompare = endDateTime.compareTo(now);
 
+                  var userInfo = context.read<UserProvider>().thisUser;
+
                   return Container(
                     width: double.infinity,
                     margin: EdgeInsets.only(bottom: 10),
@@ -1168,7 +1171,26 @@ class _ScheduleState extends State<Schedule> {
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: startTimeCompare <= 0 ?null : null, //sửa sau
+                            onPressed: startTimeCompare <= 0 ? () async{
+                              var options = JitsiMeetingOptions(
+                                roomNameOrUrl: "${e.userId}-${tutorInfo.id}",
+                                serverUrl: "https://meet.lettutor.com",
+                                isAudioMuted: true,
+                                isVideoMuted: true,
+                                userDisplayName: "${userInfo.name}",
+                                userEmail: "${userInfo.email}",
+                              );
+
+                              await JitsiMeetWrapper.joinMeeting(
+                                options: options,
+                                listener: JitsiMeetingListener(
+                                  onConferenceWillJoin: (url) => print("onConferenceWillJoin: url: $url"),
+                                  onConferenceJoined: (url) => print("onConferenceJoined: url: $url"),
+                                  onConferenceTerminated: (url, error) => print("onConferenceTerminated: url: $url, error: $error"),
+                                ),
+                              );
+                            }
+                            : null, //sửa sau
                           ),
                         ),
                       ],
