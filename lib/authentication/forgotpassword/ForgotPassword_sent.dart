@@ -1,7 +1,6 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:email_validator/email_validator.dart';
+import 'package:get/get.dart';
 
 class ForgotPassword_sent extends StatefulWidget {
   const ForgotPassword_sent({Key? key}) : super(key: key);
@@ -11,7 +10,7 @@ class ForgotPassword_sent extends StatefulWidget {
 }
 
 class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +82,13 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish')
+                      Text('Engilish'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    print("Eng"),
+                    Get.updateLocale(Locale('en', 'US')),
+                  },
                 ),
                 PopupMenuItem(
                   value: 'assets/images/vnFlag.svg',
@@ -97,9 +100,13 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                         child: SvgPicture.asset('assets/images/vnFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Vietnamese')
+                      Text('Vietnamese'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    print("Vi"),
+                    Get.updateLocale(Locale('vi', 'VN')),
+                  }, //
                 ),
               ],
               onSelected: (String value) {
@@ -129,7 +136,7 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                   Container(
                       margin: EdgeInsets.only(bottom: 20),
                       child: Text(
-                        'Reset Password',
+                        'Reset Password'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -139,7 +146,7 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                   Container(
                       margin: EdgeInsets.only(bottom: 20),
                       child: Text(
-                        'Please enter your email address to search for your account.',
+                        'Check your inbox for a link to reset your password.'.tr,
                         style: TextStyle(
                           fontSize: 15,
                         ),

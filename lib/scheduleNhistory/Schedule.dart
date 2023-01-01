@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -20,7 +21,7 @@ class Schedule extends StatefulWidget {
 }
 
 class _ScheduleState extends State<Schedule> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   @override
   void initState() {
@@ -118,7 +119,7 @@ class _ScheduleState extends State<Schedule> {
       final Map parsed = json.decode(response.body);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Edit success", style: TextStyle(color: Colors.green),),
+          content: Text("Edit success".tr, style: TextStyle(color: Colors.green),),
           duration: Duration(seconds: 3),
         ),
       );
@@ -168,6 +169,8 @@ class _ScheduleState extends State<Schedule> {
 
   final _editRequestKey = GlobalKey<FormState>();
 
+  Locale? appLocal = Get.locale;
+
   @override
   Widget build(BuildContext context) {
     var readScheduleList = context.read<ScheduleProvider>().rows;
@@ -177,11 +180,7 @@ class _ScheduleState extends State<Schedule> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  "/tutor",
-                      (route) => route.isCurrent && route.settings.name == "/tutor"
-                      ? false
-                      : true);
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -232,9 +231,16 @@ class _ScheduleState extends State<Schedule> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Eng"),
+                  Get.updateLocale(Locale('en', 'US')),
+                  setState(() {
+                    appLocal = Get.locale;
+                  }),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -246,9 +252,16 @@ class _ScheduleState extends State<Schedule> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Vi"),
+                  Get.updateLocale(Locale('vi', 'VN')),
+                  setState(() {
+                    appLocal = Get.locale;
+                  }),
+                }, //
               ),
             ],
             onSelected: (String value) {
@@ -290,7 +303,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -298,25 +311,25 @@ class _ScheduleState extends State<Schedule> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -328,7 +341,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -347,7 +360,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -366,7 +379,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -385,7 +398,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -393,25 +406,25 @@ class _ScheduleState extends State<Schedule> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -423,7 +436,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -442,7 +455,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -461,7 +474,7 @@ class _ScheduleState extends State<Schedule> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -509,7 +522,7 @@ class _ScheduleState extends State<Schedule> {
               margin: EdgeInsets.only(bottom: 20),
               alignment: Alignment.centerLeft,
               child: Text(
-                'Schedule',
+                'Schedule'.tr,
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -534,107 +547,22 @@ class _ScheduleState extends State<Schedule> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Here is a list of the sessions you have booked',
+                        Text('Here is a list of the sessions you have booked'.tr,
                           style: TextStyle(fontSize: 15,),
                         ),
-                        Text('You can track when the meeting starts, join the meeting with one click or can cancel the meeting before 2 hours', style: TextStyle(fontSize: 15),),
+                        Text('You can track when the meeting starts, join the meeting with one click or can cancel the meeting before 2 hours'.tr, style: TextStyle(fontSize: 15),),
                       ],
                     ),
                   ),
                 ),
               ],
             ),
-            /*Container(
-              margin: EdgeInsets.fromLTRB(0, 15, 0, 10),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Lastest book',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 15),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 40,
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 1),
-                          color: Color.fromRGBO(192, 192, 192, 1),
-                        ),
-                        child: Text('Name'),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 1)
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 80,
-                        height: 40,
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 1),
-                          color: Color.fromRGBO(192, 192, 192, 1),
-                        ),
-                        child: Text('Page'),
-                      ),
-                      Container(
-                        width: 60,
-                        height: 40,
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey, width: 1)
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 40,
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 1),
-                          color: Color.fromRGBO(192, 192, 192, 1),
-                        ),
-                        child: Text('Description'),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 1)
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              thickness: 2,
-            ),*/
             _isLoading == true
             ? CircularProgressIndicator()
             : _errorController.text.isNotEmpty
             ? Text(_errorController.text)
             : readScheduleList.isEmpty
-            ? Text("No Schedule Found")
+            ? Text("No Schedule Found.".tr)
             :Container(
               margin: EdgeInsets.fromLTRB(0,20, 0, 15),
               height: size.height/1.75,
@@ -667,81 +595,84 @@ class _ScheduleState extends State<Schedule> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(DateFormat('E, dd, MMM, yy').format(startDateTime), style: TextStyle(
+                                  Text(DateFormat('E, dd, MMM, yy', appLocal?.languageCode).format(startDateTime), style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                   ),),
-                                  Text('1 lesson'),
+                                  Text('1 ${'lesson'.tr}'),
                                 ],
                               ),
                             ),
                             Expanded(
                               flex: 3,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    height: 60,
-                                    width: 60,
-                                    child: tutorInfo.avatar != null
-                                        ? ImageProfile(Image.network(tutorInfo.avatar!).image)
-                                        : ImageProfile(Image.network("").image),
-                                  ),
-                                  SizedBox(width: 10,),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          alignment: Alignment.centerLeft,
-                                          margin: EdgeInsets.only(bottom: 5),
-                                          child: Text(
-                                            tutorInfo.name,
-                                            style: TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                color: Theme.of(context).backgroundColor,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      height: 60,
+                                      width: 60,
+                                      child: tutorInfo.avatar != null
+                                          ? ImageProfile(Image.network(tutorInfo.avatar!).image)
+                                          : ImageProfile(Image.network("").image),
+                                    ),
+                                    SizedBox(width: 10,),
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            alignment: Alignment.centerLeft,
+                                            margin: EdgeInsets.only(bottom: 5),
+                                            child: Text(
+                                              tutorInfo.name,
+                                              style: TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis ,
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis ,
                                           ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(bottom: 5),
-                                          child: e.scheduleDetailInfo.scheduleInfo.tutorInfo.country != null
-                                              ? Country.tryParse(tutorInfo.country!) != null
-                                              ? Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Text(Country.tryParse(tutorInfo.country!)!.flagEmoji),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(Country.tryParse(tutorInfo.country!)!.name),
-                                            ],
-                                          )
-                                              : Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Image.asset('assets/images/icons/close.png'),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text("Invalid country"),
-                                            ],
-                                          )
-                                              : Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Image.asset('assets/images/icons/close.png'),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text("Not set country"),
-                                            ],
+                                          Container(
+                                            margin: EdgeInsets.only(bottom: 5),
+                                            child: e.scheduleDetailInfo.scheduleInfo.tutorInfo.country != null
+                                                ? Country.tryParse(tutorInfo.country!) != null
+                                                ? Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 15,
+                                                  height: 15,
+                                                  child: Text(Country.tryParse(tutorInfo.country!)!.flagEmoji),
+                                                ),
+                                                SizedBox(width: 5),
+                                                Text(Country.tryParse(tutorInfo.country!)!.name),
+                                              ],
+                                            )
+                                                : Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 15,
+                                                  height: 15,
+                                                  child: Image.asset('assets/images/icons/close.png'),
+                                                ),
+                                                SizedBox(width: 5),
+                                                Text("Invalid country"),
+                                              ],
+                                            )
+                                                : Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 15,
+                                                  height: 15,
+                                                  child: Image.asset('assets/images/icons/close.png'),
+                                                ),
+                                                SizedBox(width: 5),
+                                                Text("Not set country"),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        /*GestureDetector(
+                                          /*GestureDetector(
                                           onTap: null,
                                           child: Row(
                                             children: [
@@ -753,10 +684,11 @@ class _ScheduleState extends State<Schedule> {
                                             ],
                                           ),
                                         ),*/
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -773,7 +705,7 @@ class _ScheduleState extends State<Schedule> {
                                 margin: EdgeInsets.only(bottom: 15),
                                 child: Row(
                                   children: [
-                                    Text('Lesson Time: ${DateFormat('HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}', style: TextStyle(
+                                    Text('${'Lesson Time:'.tr} ${DateFormat('HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}', style: TextStyle(
                                         fontSize: 17
                                     ),),
                                     startTimeCompare > 0
@@ -795,7 +727,7 @@ class _ScheduleState extends State<Schedule> {
                                                         return Focus(
                                                           focusNode: _dialogFocus,
                                                           child: AlertDialog(
-                                                            title: Text('Cancel Schedule'),
+                                                            title: Text('Cancel Schedule'.tr),
                                                             content: GestureDetector(
                                                               onTap: () {
                                                                 _dialogFocus.requestFocus();
@@ -827,7 +759,7 @@ class _ScheduleState extends State<Schedule> {
                                                                       Container(
                                                                           margin: EdgeInsets.only(bottom: 10),
                                                                           child: Text(
-                                                                            '${DateFormat('E, dd MMM yy, HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                            '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                             style: TextStyle(
                                                                               fontWeight: FontWeight.bold,
                                                                             ),
@@ -838,13 +770,13 @@ class _ScheduleState extends State<Schedule> {
                                                                         margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                                                                         child: RichText(
                                                                           text: TextSpan(
-                                                                              text: "*",
+                                                                              text: "* ",
                                                                               style: TextStyle(
                                                                                 color: Colors.red,
                                                                               ),
                                                                               children: [
                                                                                 TextSpan(
-                                                                                  text: ' What was the reason you cancel this booking?',
+                                                                                  text: 'What was the reason you cancel this booking?'.tr,
                                                                                   style: TextStyle(
                                                                                     fontWeight: FontWeight.bold,
                                                                                     color: Theme.of(context).primaryColor,
@@ -892,7 +824,7 @@ class _ScheduleState extends State<Schedule> {
                                                                               borderSide: BorderSide(width: 1, color: Colors.blue),
                                                                               borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                             ),
-                                                                            hintText: "Additional Notes",
+                                                                            hintText: "Additional Notes".tr,
                                                                             isCollapsed: true,
                                                                           ),
                                                                         ),
@@ -914,7 +846,7 @@ class _ScheduleState extends State<Schedule> {
                                                                   ),
                                                                 ),
                                                                 child: Text(
-                                                                  'Later',
+                                                                  'Later'.tr,
                                                                   style: TextStyle(
                                                                     color: Colors.blue,
                                                                   ),
@@ -930,7 +862,7 @@ class _ScheduleState extends State<Schedule> {
                                                                   ),
                                                                 ),
                                                                 child: Text(
-                                                                  'Submit',
+                                                                  'Submit Cancel'.tr,
                                                                   style: TextStyle(
                                                                     color: Colors.white,
                                                                   ),
@@ -961,7 +893,7 @@ class _ScheduleState extends State<Schedule> {
                                           ),
                                           icon: Icon(Icons.cancel_outlined, color: Colors.red, size: 15,),
                                           label: Text(
-                                            'Cancel',
+                                            'Cancel'.tr,
                                             style: TextStyle(
                                               color: Colors.red,
                                             ),
@@ -979,7 +911,7 @@ class _ScheduleState extends State<Schedule> {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.start,
                                       children: [
-                                        Text('Request for lesson'),
+                                        Text('Request for lesson'.tr),
                                         Expanded(child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
@@ -996,7 +928,7 @@ class _ScheduleState extends State<Schedule> {
                                                       return Focus(
                                                         focusNode: _dialogFocus,
                                                         child: AlertDialog(
-                                                          title: Text('Special Request'),
+                                                          title: Text('Special Request'.tr),
                                                           content: GestureDetector(
                                                             onTap: () {
                                                               _dialogFocus.requestFocus();
@@ -1016,13 +948,13 @@ class _ScheduleState extends State<Schedule> {
                                                                         margin: EdgeInsets.only(bottom: 10),
                                                                         child: RichText(
                                                                           text: TextSpan(
-                                                                              text: "*",
+                                                                              text: "* ",
                                                                               style: TextStyle(
                                                                                 color: Colors.red,
                                                                               ),
                                                                               children: [
                                                                                 TextSpan(
-                                                                                  text: ' Note',
+                                                                                  text: 'Note'.tr,
                                                                                   style: TextStyle(
                                                                                     fontWeight: FontWeight.bold,
                                                                                     color: Theme.of(context).primaryColor,
@@ -1059,14 +991,14 @@ class _ScheduleState extends State<Schedule> {
                                                                               borderSide: BorderSide(width: 1, color: Colors.orange),
                                                                               borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                             ),
-                                                                            hintText: "Wish topic (optional)",
+                                                                            hintText: "Wish topic (optional)".tr,
                                                                             isCollapsed: true,
                                                                             errorStyle: TextStyle(fontSize: 15),
                                                                           ),
                                                                           autovalidateMode: AutovalidateMode.always,
                                                                           validator: (val) {
                                                                             if(val == null || val.isEmpty){
-                                                                              return "Notes cannot be empty!";
+                                                                              return "Notes cannot be empty!".tr;
                                                                             }
                                                                             return null;
                                                                           }
@@ -1096,7 +1028,7 @@ class _ScheduleState extends State<Schedule> {
                                                                 ),
                                                               ),
                                                               child: Text(
-                                                                'Cancel',
+                                                                'Cancel'.tr,
                                                                 style: TextStyle(
                                                                   color: Colors.blue,
                                                                 ),
@@ -1116,7 +1048,7 @@ class _ScheduleState extends State<Schedule> {
                                                                 ),
                                                               ),
                                                               child: Text(
-                                                                'Submit',
+                                                                'Save'.tr,
                                                                 style: TextStyle(
                                                                   color: Colors.white,
                                                                 ),
@@ -1133,7 +1065,7 @@ class _ScheduleState extends State<Schedule> {
                                                   }
                                                 });
                                               },
-                                              child: Text('Edit request', style: TextStyle(color: Colors.blue),),
+                                              child: Text('Edit request'.tr, style: TextStyle(color: Colors.blue),),
                                             ),
                                           ],
                                         )),
@@ -1150,7 +1082,7 @@ class _ScheduleState extends State<Schedule> {
                                         color: Theme.of(context).backgroundColor,
                                         child: e.studentRequest != null
                                         ? Text(e.studentRequest!)
-                                        : Text('Currently there are no requests for this class. Please write down any requests for the teacher.', style: TextStyle(fontWeight: FontWeight.w300),),
+                                        : Text('Currently there are no requests for this class. Please write down any requests for the teacher.'.tr, style: TextStyle(fontWeight: FontWeight.w300),),
                                     ),
                                   ]
                               ),
@@ -1165,7 +1097,7 @@ class _ScheduleState extends State<Schedule> {
                               backgroundColor: startTimeCompare <= 0 && endTimeCompare >0 ?Colors.blue :Colors.grey,
                             ),
                             child: Text(
-                              'Go to meeting',
+                              'Go to meeting'.tr,
                               style: TextStyle(
                                 fontSize: 15,
                                 color: Colors.white,
@@ -1197,236 +1129,6 @@ class _ScheduleState extends State<Schedule> {
                     ),
                   );
                 }).toList(),
-                /*Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.only(bottom: 10),
-                    padding: EdgeInsets.all(15),
-                    color: Color.fromRGBO(192, 192, 192, 1),
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Mon, 24 Oct 22', style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                  ),),
-                                  Text('2 consecutive lessons'),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    height: 60,
-                                    width: 60,
-                                    child: ImageProfile(Image.asset('assets/images/avatars/Ftutoravt.png').image),
-                                  ),
-                                  SizedBox(width: 10,),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          alignment: Alignment.centerLeft,
-                                          margin: EdgeInsets.only(bottom: 5),
-                                          child: Text(
-                                            'Keegan',
-                                            style: TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(bottom: 5),
-                                          child: Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: SvgPicture.asset('assets/images/frFlag.svg'),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text('France'),
-                                            ],
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                            onTap: null,
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.message_outlined, color: Colors.blue, size: 15,),
-                                                SizedBox(width: 3,),
-                                                Text('Derect Message', style: TextStyle(
-                                                  color: Colors.blue,
-                                                ),),
-                                              ],
-                                            )
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          width: double.infinity,
-                          margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
-                          padding: EdgeInsets.all(10),
-                          color: Theme.of(context).backgroundColor,
-                          child: Column(
-                            children: [
-                              Container(
-                                  alignment: Alignment.centerLeft,
-                                  margin: EdgeInsets.only(bottom: 15),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        height: 50,
-                                        margin: EdgeInsets.only(bottom: 15),
-                                        child: Row(
-                                          children: [
-                                            Text('Lesson Time: 00:00 - 00:55', style: TextStyle(
-                                              fontSize: 17,
-                                            ),),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 50,
-                                        child: Row(
-                                          children: [
-                                            Text('Session 1: 00:00 - 00:25', style: TextStyle(
-                                              fontSize: 15
-                                            ),),
-                                            Expanded(child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.end,
-                                              children: [
-                                                Container(
-                                                  width: double.infinity,
-                                                  alignment: Alignment.centerRight,
-                                                  child: ElevatedButton.icon(
-                                                    onPressed: null,
-                                                    style: OutlinedButton.styleFrom(
-                                                      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                                      backgroundColor: Colors.white,
-                                                      side: BorderSide(color: Colors.red, width: 1),
-                                                    ),
-                                                    icon: Icon(Icons.cancel_outlined, color: Colors.red, size: 15,),
-                                                    label: Text(
-                                                      'Cancel',
-                                                      style: TextStyle(
-                                                        color: Colors.red,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            )),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 50,
-                                        child: Row(
-                                          children: [
-                                            Text('Session 2: 00:30 - 00:55', style: TextStyle(
-                                                fontSize: 15
-                                            ),),
-                                            Expanded(child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.end,
-                                              children: [
-                                                Container(
-                                                  width: double.infinity,
-                                                  alignment: Alignment.centerRight,
-                                                  child: ElevatedButton.icon(
-                                                    onPressed: null,
-                                                    style: OutlinedButton.styleFrom(
-                                                      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                                      backgroundColor: Colors.white,
-                                                      side: BorderSide(color: Colors.red, width: 1),
-                                                    ),
-                                                    icon: Icon(Icons.cancel_outlined, color: Colors.red, size: 15,),
-                                                    label: Text(
-                                                      'Cancel',
-                                                      style: TextStyle(
-                                                        color: Colors.red,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            )),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                              ),
-                              ExpansionTile(
-                                  title: Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          Text('Request for lesson'),
-                                          Expanded(child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.end,
-                                            children: [
-                                              GestureDetector(
-                                                onTap: null,
-                                                child: Text('Edit request', style: TextStyle(color: Colors.blue),),
-                                              ),
-                                            ],
-                                          )),
-                                        ],
-                                      )
-                                  ),
-                                  collapsedBackgroundColor: Color.fromRGBO(192, 192, 192, 1),
-                                  backgroundColor: Color.fromRGBO(192, 192, 192, 1),
-                                  children: [
-                                    Container(
-                                        padding: EdgeInsets.all(15),
-                                        alignment: Alignment.centerLeft,
-                                        color: Theme.of(context).backgroundColor,
-                                        child: _requests[1] != ''
-                                            ? Text(_requests[1])
-                                            : Text('Currently there are no requests for this class. Please write down any requests for the teacher.'),
-                                    ),
-                                  ]
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerRight,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.all(15),
-                              backgroundColor: Colors.blue,
-                            ),
-                            child: Text(
-                              'Go to meeting',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () => Navigator.pushNamed(context, '/video_cfr'), //sửa sau
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),*/
               ),
             ),
             NumberPaginator(

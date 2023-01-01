@@ -13,7 +13,9 @@ import 'package:time_range_picker/time_range_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class Tutor extends StatefulWidget {
   const Tutor({Key? key}) : super(key: key);
@@ -37,17 +39,20 @@ class _TutorState extends State<Tutor> {
   TextEditingController _upErrController = TextEditingController();
   String dateFormat = "";
 
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  Locale? appLocal = Get.locale;
 
   Timer? countdownTimer;
   Duration myDuration = Duration(days: 1);
   String? userId = "";
   String? tutorId = "";
-
+  int startTime = 0;
+  int endTime = 0;
 
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting();
     setState(() {
       _errorController.text = "";
       _upErrController.text = "";
@@ -106,16 +111,12 @@ class _TutorState extends State<Tutor> {
 
   List<String> selectedNation = [];
   final _ntKey = GlobalKey<DropdownSearchState<String>>();
-  final List<String> items = [
-    'Foreign Tutor',
-    'Vietnamese Tutor',
-    'Native English Tutor',
-  ];
+
   final FocusNode _ntFocus = FocusNode();
   List<Map<String, dynamic>> nationList = [
+    {"nation": "Foreign Tutor", "nationClause": {"isVietNamese": false, "isNative": false}},
     {"nation": "Vietnamese Tutor", "nationClause": {"isVietNamese": true}},
     {"nation": "Native English Tutor", "nationClause": {"isNative": true}},
-    {"nation": "Foreign Tutor", "nationClause": {"isVietNamese": false, "isNative": false}},
   ];
 
   DateTime selectedDate = DateTime.now();
@@ -252,8 +253,8 @@ class _TutorState extends State<Tutor> {
         });
         nextList.sort((a, b) => a['start'].compareTo(b['start']));
         //print(nextList);
-        int startTime = nextList[0]['start'];
-        int endTime = nextList[0]['end'];
+        startTime = nextList[0]['start'];
+        endTime = nextList[0]['end'];
         userId = nextList[0]['userId'];
         tutorId = nextList[0]['tutorId'];
 
@@ -275,7 +276,7 @@ class _TutorState extends State<Tutor> {
         });
 
         setState(() {
-          dateFormat = "${DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
+          dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', appLocal?.languageCode).format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', appLocal?.languageCode).format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
           myDuration = Duration(milliseconds: startTime - timeNow);
           if (myDuration.isNegative) {
             myDuration = -myDuration;
@@ -403,9 +404,17 @@ class _TutorState extends State<Tutor> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish')
+                      Text('Engilish'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    print("Eng"),
+                    Get.updateLocale(Locale('en', 'US')),
+                    setState(() {
+                      appLocal = Get.locale;
+                      dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', 'en').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', 'en').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
+                    }),
+                  },
                 ),
                 PopupMenuItem(
                   value: 'assets/images/vnFlag.svg',
@@ -417,9 +426,17 @@ class _TutorState extends State<Tutor> {
                         child: SvgPicture.asset('assets/images/vnFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Vietnamese')
+                      Text('Vietnamese'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    print("Vi"),
+                    Get.updateLocale(Locale('vi', 'VN')),
+                    setState(() {
+                      appLocal = Get.locale;
+                      dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', 'vi').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', 'vi').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
+                    }),
+                  }, //
                 ),
               ],
               onSelected: (String value) {
@@ -461,7 +478,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Profile',
+                        'Profile'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -469,7 +486,7 @@ class _TutorState extends State<Tutor> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                /*PopupMenuItem(
                   value: 'BuyLessons',
                   child: Row(
                     children: [
@@ -487,7 +504,7 @@ class _TutorState extends State<Tutor> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
                 PopupMenuItem(
                   value: 'Tutor',
                   child: Row(
@@ -499,7 +516,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Tutor',
+                        'Tutor'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -518,7 +535,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Schedule',
+                        'Schedule'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -537,7 +554,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'History',
+                        'History'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -556,7 +573,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Courses',
+                        'Courses'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -564,7 +581,7 @@ class _TutorState extends State<Tutor> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                /*PopupMenuItem(
                   value: 'MyCourse',
                   child: Row(
                     children: [
@@ -582,7 +599,7 @@ class _TutorState extends State<Tutor> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
                 PopupMenuItem(
                   value: 'BecomeTutor',
                   child: Row(
@@ -594,7 +611,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Become a Tutor',
+                        'Become a Tutor'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -613,7 +630,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Settings',
+                        'Settings'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -632,7 +649,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Logout',
+                        'Logout'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -697,7 +714,7 @@ class _TutorState extends State<Tutor> {
                         Container(
                           padding: EdgeInsets.only(bottom: 15),
                           child: Text(
-                            'You have no upcoming lesson',
+                            'You have no upcoming lesson'.tr,
                             style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -708,20 +725,20 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(top: 5),
                           child: totalLearn > 0
                           ? Text(
-                            'Total lesson time is ${totalLearn~/60} hours ${totalLearn%60} minutes',
+                            'Total lesson time is'.tr + ' ${totalLearn~/60} ' + 'hours'.tr + ' ${totalLearn%60} ' + 'minutes'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           )
                           : Text(
-                            'Welcome to LetTutor!',
+                            'Welcome to LetTutor!'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           ),
-                        )
+                        ),
                       ],
                     )
                     : Column(
@@ -730,7 +747,7 @@ class _TutorState extends State<Tutor> {
                         Container(
                           padding: EdgeInsets.only(bottom: 15),
                           child: Text(
-                            'Upcoming lesson',
+                            'Upcoming lesson'.tr,
                             style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -751,14 +768,14 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(bottom: 10),
                           child: _countMode > 0
                             ? Text(
-                            '  (starts in $hours:$minutes:$seconds)',
+                            '(starts in'.tr + ' $hours:$minutes:$seconds)',
                             style: TextStyle(
                               color: Colors.yellow,
                               fontSize: 15,
                             ),
                           )
                           : Text(
-                            '  (class time $hours:$minutes:$seconds)',
+                            '(class time'.tr + ' $hours:$minutes:$seconds)',
                             style: TextStyle(
                               color: Colors.green,
                               fontSize: 15,
@@ -802,7 +819,10 @@ class _TutorState extends State<Tutor> {
                                       )
                                   ),
                                   TextSpan(
-                                      text: '  Enter lesson room',
+                                    text: '  ',
+                                  ),
+                                  TextSpan(
+                                      text: 'Enter lesson room'.tr,
                                       style: TextStyle(
                                         color: Colors.blue,
                                         fontSize: 20,
@@ -816,20 +836,20 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(top: 5),
                           child: totalLearn > 0
                               ? Text(
-                            'Total lesson time is ${totalLearn~/60} hours ${totalLearn%60} minutes',
+                            'Total lesson time is'.tr + ' ${totalLearn~/60} ' + 'hours'.tr + ' ${totalLearn%60} ' + 'minutes'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           )
                               : Text(
-                            'Welcome to LetTutor!',
+                            'Welcome to LetTutor!'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
 
@@ -843,7 +863,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 20),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Find a tutor',
+                        'Find a tutor'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -854,7 +874,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Specify tutor detail:',
+                        'Specify tutor detail:'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -877,7 +897,7 @@ class _TutorState extends State<Tutor> {
                             borderSide: BorderSide(width: 1, color: Colors.blue),
                             borderRadius: BorderRadius.all(Radius.circular(50)),
                           ),
-                          hintText: 'Enter tutor name',
+                          hintText: 'Enter tutor name...'.tr,
                           suffixIcon: (_nController.text.isNotEmpty && _nFocus.hasFocus) ?
                           IconButton(onPressed: () {setState(() {
                             _nController.clear();
@@ -910,7 +930,7 @@ class _TutorState extends State<Tutor> {
                             child: DropdownSearch<String>.multiSelection(
                               selectedItems: selectedNation,
                               key: _ntKey,
-                              items: items,
+                              items: nationList.map((e) => e['nation'].toString().tr).toList(),
                               popupProps: PopupPropsMultiSelection.menu(
                                 showSelectedItems: true,
                                 showSearchBox: true,
@@ -935,7 +955,7 @@ class _TutorState extends State<Tutor> {
                                     borderSide: BorderSide(width: 1, color: Colors.blue),
                                     borderRadius: BorderRadius.all(Radius.circular(50)),
                                   ),
-                                  hintText: 'Select tutor nationnality',
+                                  hintText: 'Select tutor nationnality'.tr,
                                 ),
                               ),
                               onChanged: (val) {
@@ -951,7 +971,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Select available tutoring time:',
+                        'Select available tutoring time'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -978,7 +998,7 @@ class _TutorState extends State<Tutor> {
                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                   borderRadius: BorderRadius.all(Radius.circular(50)),
                                 ),
-                                hintText: 'Day',
+                                hintText: 'Date'.tr,
                                 suffixIcon: (_dController.text.isNotEmpty && _dFocus.hasFocus) ?
                                 IconButton(onPressed: () {setState(() {
                                   _dController.clear();
@@ -1014,7 +1034,7 @@ class _TutorState extends State<Tutor> {
                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                   borderRadius: BorderRadius.all(Radius.circular(50)),
                                 ),
-                                hintText: 'Time range',
+                                hintText: 'Time range'.tr,
                                 suffixIcon: (_tController.text.isNotEmpty && _tFocus.hasFocus) ?
                                 IconButton(onPressed: () {setState(() {
                                   _tController.clear();
@@ -1103,7 +1123,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Select specialtie:',
+                        'Select specialtie:'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -1116,7 +1136,7 @@ class _TutorState extends State<Tutor> {
                       //key: ValueKey('tag'),
                       children: List.generate(tags.length, (i) {
                         return ChoiceChip(
-                          label: Text(tags[i]),
+                          label: Text(tags[i].tr),
                           selected: isSelectedTag[i],
                           selectedColor: Colors.blue,
                           focusNode: _tgFocus,
@@ -1152,7 +1172,7 @@ class _TutorState extends State<Tutor> {
                                 Map<String, bool> nationMap = {};
                                 List<String> tempNations = _ntKey.currentState!.getSelectedItems;
                                 tempNations.forEach((element) {
-                                  var tempNL = nationList.indexWhere((e) => e['nation'] == element);
+                                  var tempNL = nationList.indexWhere((e) => e['nation'].toString().tr == element);
                                   if (nationList[tempNL]['nationClause']['isVietNamese'] != null) {
                                     if(nationMap['isVietNamese'] == null) {
                                       nationMap['isVietNamese'] = nationList[tempNL]['nationClause']['isVietNamese'];
@@ -1223,7 +1243,7 @@ class _TutorState extends State<Tutor> {
                                 ),
                               ),
                               child: Text(
-                                'Search',
+                                'Search'.tr,
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.blue,
@@ -1261,7 +1281,7 @@ class _TutorState extends State<Tutor> {
                                 ),
                               ),
                               child: Text(
-                                'Reset Filters',
+                                'Reset Filters'.tr,
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.blue,
@@ -1279,7 +1299,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Recommened Tutors',
+                        'Recommened Tutors'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -1392,18 +1412,18 @@ class _TutorState extends State<Tutor> {
                                                       ? Row(
                                                       children: []..addAll(List.generate(readTutorProv.theList[i].rating!.toInt(), (index) {
                                                         return Tooltip(
-                                                          message: tooltipMsg[index],
+                                                          message: tooltipMsg[index].tr,
                                                           child: Icon(Icons.star, color: Colors.yellow,),
                                                         );
                                                       }))
                                                         ..addAll(List.generate((5-readTutorProv.theList[i].rating!.toInt()), (index) {
                                                           return Tooltip(
-                                                            message: tooltipMsg[4-index],
+                                                            message: tooltipMsg[4-index].tr,
                                                             child: Icon(Icons.star, color: Colors.grey,),
                                                           );
                                                         }).reversed)
                                                   )
-                                                      : Text('No reviews yet', style:  TextStyle(
+                                                      : Text('No reviews yet'.tr, style:  TextStyle(
                                                     fontStyle: FontStyle.italic,
                                                   ),),
                                                 ),
@@ -1463,7 +1483,7 @@ class _TutorState extends State<Tutor> {
                                               color: Colors.blue,
                                             ),
                                             child: specList.indexWhere((e) => e['inJson'] == value) != -1
-                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!.tr)
                                                 : Text(value.toUpperCase()),
                                           )).toList(),
                                         ),
@@ -1498,7 +1518,7 @@ class _TutorState extends State<Tutor> {
                                           child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
                                         ),
                                         label: Text(
-                                          'Book',
+                                          'Book'.tr,
                                           style: TextStyle(
                                             fontSize: 20,
                                             color: Colors.blue,
@@ -1516,7 +1536,7 @@ class _TutorState extends State<Tutor> {
                           );
                         }),
                       ),
-                    ) : Text("No Tutor found.")
+                    ) : Text("No Tutor found.".tr)
                         : Text(_errorController.text),
                     NumberPaginator(
                       controller: _pagiController,

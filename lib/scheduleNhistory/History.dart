@@ -9,6 +9,7 @@ import 'package:individual_project/tutor/TutorProfile.dart';
 import 'package:intl/intl.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
@@ -23,7 +24,8 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  Locale? appLocal = Get.locale;
 
   @override
   void initState() {
@@ -200,11 +202,7 @@ class _HistoryState extends State<History> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  "/tutor",
-                      (route) => route.isCurrent && route.settings.name == "/tutor"
-                      ? false
-                      : true);
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -255,9 +253,16 @@ class _HistoryState extends State<History> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Eng"),
+                  Get.updateLocale(Locale('en', 'US')),
+                  setState(() {
+                    appLocal = Get.locale;
+                  }),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -269,9 +274,16 @@ class _HistoryState extends State<History> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Vi"),
+                  Get.updateLocale(Locale('vi', 'VN')),
+                  setState(() {
+                    appLocal = Get.locale;
+                  }),
+                }, //
               ),
             ],
             onSelected: (String value) {
@@ -313,7 +325,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -321,25 +333,25 @@ class _HistoryState extends State<History> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -351,7 +363,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -370,7 +382,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -389,7 +401,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -408,7 +420,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -416,25 +428,25 @@ class _HistoryState extends State<History> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -446,7 +458,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -465,7 +477,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -484,7 +496,7 @@ class _HistoryState extends State<History> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -532,7 +544,7 @@ class _HistoryState extends State<History> {
               margin: EdgeInsets.only(bottom: 20),
               alignment: Alignment.centerLeft,
               child: Text(
-                'History',
+                'History'.tr,
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -557,10 +569,10 @@ class _HistoryState extends State<History> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('The following is a list of lessons you have attended',
+                        Text('The following is a list of lessons you have attended'.tr,
                           style: TextStyle(fontSize: 15,),
                         ),
-                        Text('You can review the details of the lessons you have attended', style: TextStyle(fontSize: 15),),
+                        Text('You can review the details of the lessons you have attended'.tr, style: TextStyle(fontSize: 15),),
                       ],
                     ),
                   ),
@@ -572,7 +584,7 @@ class _HistoryState extends State<History> {
             : _errorController.text.isNotEmpty
             ? Text(_errorController.text)
             : readHistoryList.isEmpty
-            ? Text("No History Found")
+            ? Text("No History Found.".tr)
             : Container(
               margin: EdgeInsets.fromLTRB(0,20, 0, 15),
               height: size.height/1.75,
@@ -600,72 +612,75 @@ class _HistoryState extends State<History> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(DateFormat('E, dd, MMM, yy').format(startDateTime), style: TextStyle(
+                                  Text(DateFormat('E, dd, MMM, yy', appLocal?.languageCode).format(startDateTime), style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                   ),),
-                                  Text(timeago.format(endDateTime)),
+                                  Text(timeago.format(endDateTime, locale: appLocal?.languageCode)),
                                 ],
                               ),
                             ),
                             Expanded(
                               flex: 3,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    height: 60,
-                                    width: 60,
-                                    child: tutorInfo.avatar != null
-                                    ? ImageProfile(Image.network(tutorInfo.avatar!).image, ProfileArg(tutorInfo.id, null))
-                                    : ImageProfile(Image.network("").image, ProfileArg(tutorInfo.id, null)),
-                                  ),
-                                  SizedBox(width: 10,),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(tutorInfo.id, null)),
-                                          child: Container(
-                                            alignment: Alignment.centerLeft,
-                                            margin: EdgeInsets.only(bottom: 5),
-                                            child: Text(
-                                              tutorInfo.name,
-                                              style: TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold,
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                color: Theme.of(context).backgroundColor,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      height: 60,
+                                      width: 60,
+                                      child: tutorInfo.avatar != null
+                                          ? ImageProfile(Image.network(tutorInfo.avatar!).image, ProfileArg(tutorInfo.id, null))
+                                          : ImageProfile(Image.network("").image, ProfileArg(tutorInfo.id, null)),
+                                    ),
+                                    SizedBox(width: 10,),
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(tutorInfo.id, null)),
+                                            child: Container(
+                                              alignment: Alignment.centerLeft,
+                                              margin: EdgeInsets.only(bottom: 5),
+                                              child: Text(
+                                                tutorInfo.name,
+                                                style: TextStyle(
+                                                  fontSize: 17,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis ,
                                               ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis ,
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(bottom: 5),
-                                          child: e.scheduleDetailInfo.scheduleInfo.tutorInfo.country != null
-                                          ? Country.tryParse(tutorInfo.country!) != null
-                                          ? Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Text(Country.tryParse(tutorInfo.country!)!.flagEmoji),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(Country.tryParse(tutorInfo.country!)!.name),
-                                            ],
-                                          )
-                                          : Row(
-                                            children: [
-                                              SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Image.asset('assets/images/icons/close.png'),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text("Invalid country"),
-                                            ],
-                                          )
-                                          : Row(
+                                          Container(
+                                            margin: EdgeInsets.only(bottom: 5),
+                                            child: e.scheduleDetailInfo.scheduleInfo.tutorInfo.country != null
+                                                ? Country.tryParse(tutorInfo.country!) != null
+                                                ? Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 15,
+                                                  height: 15,
+                                                  child: Text(Country.tryParse(tutorInfo.country!)!.flagEmoji),
+                                                ),
+                                                SizedBox(width: 5),
+                                                Text(Country.tryParse(tutorInfo.country!)!.name),
+                                              ],
+                                            )
+                                                : Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 15,
+                                                  height: 15,
+                                                  child: Image.asset('assets/images/icons/close.png'),
+                                                ),
+                                                SizedBox(width: 5),
+                                                Text("Invalid country"),
+                                              ],
+                                            )
+                                                : Row(
                                               children: [
                                                 SizedBox(
                                                   width: 15,
@@ -675,9 +690,9 @@ class _HistoryState extends State<History> {
                                                 SizedBox(width: 5),
                                                 Text("Not set country"),
                                               ],
-                                              ),
-                                        ),
-                                        /*GestureDetector(
+                                            ),
+                                          ),
+                                          /*GestureDetector(
                                             onTap: null,
                                             child: Row(
                                               children: [
@@ -689,10 +704,11 @@ class _HistoryState extends State<History> {
                                               ],
                                             )
                                         )*/
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -730,7 +746,7 @@ class _HistoryState extends State<History> {
                                       child: Image.asset('assets/images/icons/Ytb.png', color: Colors.white,),
                                     ),
                                     label: Text(
-                                      'Record',
+                                      'Record'.tr,
                                       style: TextStyle(
                                         color: Colors.white,
                                       ),
@@ -744,7 +760,7 @@ class _HistoryState extends State<History> {
                         ),
                         e.studentRequest != null
                           ? ExpansionTile(
-                        title: Text('Request for lesson'),
+                        title: Text('Request for lesson'.tr),
                         collapsedBackgroundColor: Theme.of(context).backgroundColor,
                         backgroundColor: Theme.of(context).backgroundColor,
                         children: [
@@ -760,7 +776,7 @@ class _HistoryState extends State<History> {
                         height: 50,
                         color: Theme.of(context).backgroundColor,
                         alignment: Alignment.centerLeft,
-                        child: Text('No request for lesson', style: TextStyle(fontSize: 16),),
+                        child: Text('No request for lesson'.tr, style: TextStyle(fontSize: 16),),
                       ),
                         Container(
                           padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
@@ -768,12 +784,12 @@ class _HistoryState extends State<History> {
                           color: Theme.of(context).backgroundColor,
                           alignment: Alignment.centerLeft,
                           child: e.scoreByTutor != null
-                          ? Text('Mark: ${e.scoreByTutor}', style: TextStyle(fontSize: 16),)
-                          : Text('Tutor haven\'t marked yet', style: TextStyle(fontSize: 16),),
+                          ? Text('${'Mark:'.tr} ${e.scoreByTutor}', style: TextStyle(fontSize: 16),)
+                          : Text('Tutor haven\'t marked yet'.tr, style: TextStyle(fontSize: 16),),
                         ),
                         e.tutorReview != null
                           ? ExpansionTile(
-                        title: Text('Review from tutor'),
+                        title: Text('Review from tutor'.tr),
                         collapsedBackgroundColor: Theme.of(context).backgroundColor,
                         backgroundColor: Theme.of(context).backgroundColor,
                         children: [
@@ -790,7 +806,7 @@ class _HistoryState extends State<History> {
                             height: 50,
                             color: Theme.of(context).backgroundColor,
                             alignment: Alignment.centerLeft,
-                            child: Text('Tutor haven\'t reviewed yet', style: TextStyle(fontSize: 16),),
+                            child: Text('Tutor haven\'t reviewed yet'.tr, style: TextStyle(fontSize: 16),),
                           ),
                         e.feedbacks.isEmpty
                         ? Container(
@@ -815,7 +831,7 @@ class _HistoryState extends State<History> {
                                             return Focus(
                                               focusNode: _dialogFocus,
                                               child: AlertDialog(
-                                                title: Text('Rating'),
+                                                title: Text('Rating'.tr),
                                                 content: GestureDetector(
                                                   onTap: () {
                                                     _dialogFocus.requestFocus();
@@ -842,12 +858,12 @@ class _HistoryState extends State<History> {
                                                           Text(tutorInfo.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
                                                           Container(
                                                               margin: EdgeInsets.only(top: 10),
-                                                              child: Text('Lesson Time')
+                                                              child: Text('Lesson Time'.tr)
                                                           ),
                                                           Container(
                                                               margin: EdgeInsets.only(bottom: 10),
                                                               child: Text(
-                                                                '${DateFormat('E, dd MMM yy, HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                 style: TextStyle(
                                                                   fontWeight: FontWeight.bold,
                                                                 ),
@@ -857,7 +873,7 @@ class _HistoryState extends State<History> {
                                                           Container(
                                                             margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                                                             child: Text(
-                                                              'What is your rating for ${tutorInfo.name}?',
+                                                              '${'What is your rating for'.tr} ${tutorInfo.name}?',
                                                               style: TextStyle(
                                                                 fontWeight: FontWeight.bold,
                                                                 fontSize: 17,
@@ -871,7 +887,7 @@ class _HistoryState extends State<History> {
                                                             itemCount: 5,
                                                             itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
                                                             itemBuilder: (context, _) => Tooltip(
-                                                              message: tooltipMsg[_],
+                                                              message: tooltipMsg[_].tr,
                                                               child: Icon(Icons.star, color: Colors.amber,),
                                                             ),
                                                             onRatingUpdate: (r) {
@@ -895,7 +911,7 @@ class _HistoryState extends State<History> {
                                                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                                                   borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                 ),
-                                                                hintText: "Content Review",
+                                                                hintText: "Review Content",
                                                                 isCollapsed: true,
                                                               ),
                                                             ),
@@ -917,7 +933,7 @@ class _HistoryState extends State<History> {
                                                       ),
                                                     ),
                                                     child: Text(
-                                                      'Later',
+                                                      'Later'.tr,
                                                       style: TextStyle(
                                                         color: Colors.blue,
                                                       ),
@@ -933,7 +949,7 @@ class _HistoryState extends State<History> {
                                                       ),
                                                     ),
                                                     child: Text(
-                                                      'Submit',
+                                                      'Submit Rating'.tr,
                                                       style: TextStyle(
                                                         color: Colors.white,
                                                       ),
@@ -952,7 +968,7 @@ class _HistoryState extends State<History> {
                                           }
                                         });
                                       },
-                                      child: Text('Add a Rating', style: TextStyle(color: Colors.blue),),
+                                      child: Text('Add a Rating'.tr, style: TextStyle(color: Colors.blue),),
                                     ),
                                   )
                                 ),
@@ -973,7 +989,7 @@ class _HistoryState extends State<History> {
                                                     return Focus(
                                                       focusNode: _dialogFocus,
                                                       child: AlertDialog(
-                                                        title: Text('Reporting'),
+                                                        title: Text('Reporting'.tr),
                                                         content: GestureDetector(
                                                           onTap: () {
                                                             _dialogFocus.requestFocus();
@@ -1000,12 +1016,12 @@ class _HistoryState extends State<History> {
                                                                   Text(tutorInfo.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
                                                                   Container(
                                                                       margin: EdgeInsets.only(top: 10),
-                                                                      child: Text('Lesson Time')
+                                                                      child: Text('Lesson Time'.tr)
                                                                   ),
                                                                   Container(
                                                                       margin: EdgeInsets.only(bottom: 10),
                                                                       child: Text(
-                                                                        '${DateFormat('E, dd MMM yy, HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                        '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                         style: TextStyle(
                                                                           fontWeight: FontWeight.bold,
                                                                         ),
@@ -1016,13 +1032,13 @@ class _HistoryState extends State<History> {
                                                                     margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                                                                     child: RichText(
                                                                       text: TextSpan(
-                                                                          text: "*",
+                                                                          text: "* ",
                                                                           style: TextStyle(
                                                                             color: Colors.red,
                                                                           ),
                                                                           children: [
                                                                             TextSpan(
-                                                                              text: ' What was the reason you reported on the lesson?',
+                                                                              text: 'What was the reason you reported on the lesson?',
                                                                               style: TextStyle(
                                                                                 fontWeight: FontWeight.bold,
                                                                                 color: Theme.of(context).primaryColor,
@@ -1070,7 +1086,7 @@ class _HistoryState extends State<History> {
                                                                           borderSide: BorderSide(width: 1, color: Colors.blue),
                                                                           borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                         ),
-                                                                        hintText: "Additional Notes",
+                                                                        hintText: "Additional Notes".tr,
                                                                         isCollapsed: true,
                                                                       ),
                                                                     ),
@@ -1092,7 +1108,7 @@ class _HistoryState extends State<History> {
                                                               ),
                                                             ),
                                                             child: Text(
-                                                              'Later',
+                                                              'Later'.tr,
                                                               style: TextStyle(
                                                                 color: Colors.blue,
                                                               ),
@@ -1108,7 +1124,7 @@ class _HistoryState extends State<History> {
                                                               ),
                                                             ),
                                                             child: Text(
-                                                              'Submit',
+                                                              'Submit Report'.tr,
                                                               style: TextStyle(
                                                                 color: Colors.white,
                                                               ),
@@ -1129,7 +1145,7 @@ class _HistoryState extends State<History> {
                                           }
                                         });
                                       },
-                                      child: Text('Report', style: TextStyle(color: Colors.blue),),
+                                      child: Text('Report'.tr, style: TextStyle(color: Colors.blue),),
                                     ),
                                   )
                                 ),
@@ -1152,13 +1168,13 @@ class _HistoryState extends State<History> {
                                         ..add(Text('Rating: '))
                                         ..addAll(List.generate(fb.rating.toInt(), (index) {
                                           return Tooltip(
-                                            message: tooltipMsg[index],
+                                            message: tooltipMsg[index].tr,
                                             child: Icon(Icons.star, color: Colors.yellow,),
                                           );
                                         })
                                         ..addAll(List.generate((5-fb.rating.toInt()), (index) {
                                           return Tooltip(
-                                            message: tooltipMsg[4-index],
+                                            message: tooltipMsg[4-index].tr,
                                             child: Icon(Icons.star, color: Colors.grey,),
                                           );
                                         }).reversed)
@@ -1178,7 +1194,7 @@ class _HistoryState extends State<History> {
                                                       return Focus(
                                                         focusNode: _dialogFocus,
                                                         child: AlertDialog(
-                                                          title: Text('Edit Rating'),
+                                                          title: Text('Edit Rating'.tr),
                                                           content: GestureDetector(
                                                             onTap: () {
                                                               _dialogFocus.requestFocus();
@@ -1205,12 +1221,12 @@ class _HistoryState extends State<History> {
                                                                     Text(tutorInfo.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
                                                                     Container(
                                                                         margin: EdgeInsets.only(top: 10),
-                                                                        child: Text('Lesson Time')
+                                                                        child: Text('Lesson Time'.tr)
                                                                     ),
                                                                     Container(
                                                                         margin: EdgeInsets.only(bottom: 10),
                                                                         child: Text(
-                                                                          '${DateFormat('E, dd MMM yy, HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                          '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                           style: TextStyle(
                                                                             fontWeight: FontWeight.bold,
                                                                           ),
@@ -1220,7 +1236,7 @@ class _HistoryState extends State<History> {
                                                                     Container(
                                                                         margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                                                                         child: Text(
-                                                                          'What is your rating for ${tutorInfo.name}?',
+                                                                          '${'What is your rating for'.tr} ${tutorInfo.name}?',
                                                                           style: TextStyle(
                                                                             fontWeight: FontWeight.bold,
                                                                             fontSize: 17,
@@ -1234,7 +1250,7 @@ class _HistoryState extends State<History> {
                                                                       itemCount: 5,
                                                                       itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
                                                                       itemBuilder: (context, _) => Tooltip(
-                                                                        message: tooltipMsg[_],
+                                                                        message: tooltipMsg[_].tr,
                                                                         child: Icon(Icons.star, color: Colors.amber,),
                                                                       ),
                                                                       onRatingUpdate: (r) {
@@ -1258,7 +1274,7 @@ class _HistoryState extends State<History> {
                                                                             borderSide: BorderSide(width: 1, color: Colors.blue),
                                                                             borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                           ),
-                                                                          hintText: "Content Review",
+                                                                          hintText: "Review Content".tr,
                                                                           isCollapsed: true,
                                                                         ),
                                                                       ),
@@ -1280,7 +1296,7 @@ class _HistoryState extends State<History> {
                                                                 ),
                                                               ),
                                                               child: Text(
-                                                                'Later',
+                                                                'Later'.tr,
                                                                 style: TextStyle(
                                                                   color: Colors.blue,
                                                                 ),
@@ -1296,7 +1312,7 @@ class _HistoryState extends State<History> {
                                                                 ),
                                                               ),
                                                               child: Text(
-                                                                'Submit',
+                                                                'Submit Rating'.tr,
                                                                 style: TextStyle(
                                                                   color: Colors.white,
                                                                 ),
@@ -1315,7 +1331,7 @@ class _HistoryState extends State<History> {
                                                   }
                                                 });
                                               },
-                                              child: Text('Edit', style: TextStyle(color: Colors.blue),),
+                                              child: Text('Edit'.tr, style: TextStyle(color: Colors.blue),),
                                             ),
                                           )
                                         )),
@@ -1339,7 +1355,7 @@ class _HistoryState extends State<History> {
                                                         return Focus(
                                                           focusNode: _dialogFocus,
                                                           child: AlertDialog(
-                                                            title: Text('Reporting'),
+                                                            title: Text('Reporting'.tr),
                                                             content: GestureDetector(
                                                               onTap: () {
                                                                 _dialogFocus.requestFocus();
@@ -1366,12 +1382,12 @@ class _HistoryState extends State<History> {
                                                                       Text(tutorInfo.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),
                                                                       Container(
                                                                           margin: EdgeInsets.only(top: 10),
-                                                                          child: Text('Lesson Time')
+                                                                          child: Text('Lesson Time'.tr)
                                                                       ),
                                                                       Container(
                                                                           margin: EdgeInsets.only(bottom: 10),
                                                                           child: Text(
-                                                                            '${DateFormat('E, dd MMM yy, HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                            '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                             style: TextStyle(
                                                                               fontWeight: FontWeight.bold,
                                                                             ),
@@ -1382,13 +1398,13 @@ class _HistoryState extends State<History> {
                                                                         margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                                                                         child: RichText(
                                                                           text: TextSpan(
-                                                                              text: "*",
+                                                                              text: "* ",
                                                                               style: TextStyle(
                                                                                 color: Colors.red,
                                                                               ),
                                                                               children: [
                                                                                 TextSpan(
-                                                                                  text: ' What was the reason you reported on the lesson?',
+                                                                                  text: 'What was the reason you reported on the lesson?',
                                                                                   style: TextStyle(
                                                                                     fontWeight: FontWeight.bold,
                                                                                     color: Theme.of(context).primaryColor,
@@ -1436,7 +1452,7 @@ class _HistoryState extends State<History> {
                                                                               borderSide: BorderSide(width: 1, color: Colors.blue),
                                                                               borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                             ),
-                                                                            hintText: "Additional Notes",
+                                                                            hintText: "Additional Notes".tr,
                                                                             isCollapsed: true,
                                                                           ),
                                                                         ),
@@ -1458,7 +1474,7 @@ class _HistoryState extends State<History> {
                                                                   ),
                                                                 ),
                                                                 child: Text(
-                                                                  'Later',
+                                                                  'Later'.tr,
                                                                   style: TextStyle(
                                                                     color: Colors.blue,
                                                                   ),
@@ -1474,7 +1490,7 @@ class _HistoryState extends State<History> {
                                                                   ),
                                                                 ),
                                                                 child: Text(
-                                                                  'Submit',
+                                                                  'Submit Report'.tr,
                                                                   style: TextStyle(
                                                                     color: Colors.white,
                                                                   ),
@@ -1495,7 +1511,7 @@ class _HistoryState extends State<History> {
                                               }
                                             });
                                           },
-                                          child: Text('Report', style: TextStyle(color: Colors.blue),),
+                                          child: Text('Report'.tr, style: TextStyle(color: Colors.blue),),
                                         ),
                                       )
                                   ),

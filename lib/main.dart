@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/course/CourseDiscover.dart';
@@ -15,15 +14,17 @@ import 'package:individual_project/authentication/forgotpassword/ForgotPassword.
 import 'package:individual_project/authentication/Login.dart';
 import 'package:individual_project/authentication/forgotpassword/ForgotPassword_sent.dart';
 import 'package:individual_project/profileNsetting/Setting.dart';
+import 'package:individual_project/scheduleNhistory/Schedule.dart';
 import 'package:individual_project/tutor/BecomeTutor.dart';
 import 'package:individual_project/tutor/TutorList.dart';
 import 'package:individual_project/tutor/TutorProfile.dart';
 import 'package:individual_project/course/Courses.dart';
-import 'package:individual_project/course/Schedule.dart';
-import 'package:individual_project/course/History.dart';
+import 'package:individual_project/scheduleNhistory/History.dart';
 import 'package:individual_project/course/CourseDetail.dart';
-import 'package:individual_project/videoconference/VideoCall.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';//
+
+import 'LocaleString.dart';//
 
 
 Future main() async {
@@ -54,13 +55,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => HistoryProvider()),
         ChangeNotifierProvider(create: (context) => ScheduleProvider()),
       ],
-      child: MaterialApp(
+      child: GetMaterialApp(//
         localizationsDelegates: [
           LocaleNamesLocalizationsDelegate(),
           // ... more localization delegates
         ],
         debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
+        translations: LocaleString(),//
+        locale: Locale('en','US'),//
+        title: 'LetTutor - 19120713',
 
         onGenerateRoute: (settings) {
           if (settings.name == '/tutor_profile') {
@@ -111,7 +114,6 @@ class MyApp extends StatelessWidget {
           '/schedule' : (context) => Schedule(),
           '/courses' : (context) => Courses(),
           '/become_tutor' : (context) => BecomeTutor(),
-          '/video_cfr' : (context) => VideoCall(),
         },
 
         theme: isDarkMode?

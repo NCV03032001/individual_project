@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +7,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:individual_project/model/Course/CourseList.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
 
@@ -19,7 +19,7 @@ class Courses extends StatefulWidget {
 }
 
 class _CoursesState extends State<Courses> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   final FocusNode _screenFocus = FocusNode();
   bool _isLoading = false;
@@ -168,7 +168,7 @@ class _CoursesState extends State<Courses> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/tutor');
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -219,9 +219,13 @@ class _CoursesState extends State<Courses> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Eng"),
+                  Get.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -233,9 +237,13 @@ class _CoursesState extends State<Courses> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Vi"),
+                  Get.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
             onSelected: (String value) {
@@ -277,7 +285,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -285,25 +293,25 @@ class _CoursesState extends State<Courses> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -315,7 +323,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -334,7 +342,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -353,7 +361,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -372,7 +380,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -380,25 +388,25 @@ class _CoursesState extends State<Courses> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -410,7 +418,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -429,7 +437,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -448,7 +456,7 @@ class _CoursesState extends State<Courses> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -502,7 +510,7 @@ class _CoursesState extends State<Courses> {
                 margin: EdgeInsets.only(bottom: 20),
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Discover Courses',
+                  'Discover Courses'.tr,
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -524,7 +532,7 @@ class _CoursesState extends State<Courses> {
                             left: BorderSide(color: Colors.grey, width: 5),
                           )
                       ),
-                      child: Text('LiveTutor has built the most quality, methodical and scientific courses in the fields of life for those who are in need of improving their knowledge of the fields.',
+                      child: Text('LetTutor has built the most quality, methodical and scientific courses in the fields of life for those who are in need of improving their knowledge of the fields.'.tr,
                         style: TextStyle(fontSize: 15,),
                       ),
                     ),
@@ -535,7 +543,7 @@ class _CoursesState extends State<Courses> {
                 margin: EdgeInsets.only(bottom: 5),
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Find desired courses:',
+                  'Find desired courses'.tr,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -558,7 +566,7 @@ class _CoursesState extends State<Courses> {
                       borderSide: BorderSide(width: 1, color: Colors.blue),
                       borderRadius: BorderRadius.all(Radius.circular(50)),
                     ),
-                    hintText: 'Enter course name',
+                    hintText: 'Enter course name'.tr,
                     suffixIcon: Icon(Icons.search_outlined),
                   ),
                   onTap: () {
@@ -603,7 +611,7 @@ class _CoursesState extends State<Courses> {
                               borderSide: BorderSide(width: 1, color: Colors.blue),
                               borderRadius: BorderRadius.all(Radius.circular(50)),
                             ),
-                            hintText: 'Select level',
+                            hintText: 'Select level'.tr,
                           ),
                         ),
                         onChanged: (val) {
@@ -666,7 +674,7 @@ class _CoursesState extends State<Courses> {
                 margin: EdgeInsets.only(bottom: 5),
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Sort filter:',
+                  'Sort filter'.tr,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -682,7 +690,7 @@ class _CoursesState extends State<Courses> {
                       FocusScope.of(context).requestFocus(_sFocus);
                     },
                     child: DropdownSearch<String>(
-                      items: sItems,
+                      items: sItems.map((e) => e.tr).toList(),
                       key: _sKey,
                       clearButtonProps: ClearButtonProps(
                         isVisible: true,
@@ -707,7 +715,7 @@ class _CoursesState extends State<Courses> {
                             borderSide: BorderSide(width: 1, color: Colors.blue),
                             borderRadius: BorderRadius.all(Radius.circular(50)),
                           ),
-                          hintText: 'Sort by Level',
+                          hintText: 'Sort by Level'.tr,
                         ),
                       ),
                     ),
@@ -730,13 +738,15 @@ class _CoursesState extends State<Courses> {
                           if (_nController.text.isNotEmpty) {
                             queryParameters['q'] = _nController.text;
                           }
-                          else queryParameters.remove('q');
+                          else {
+                            queryParameters.remove('q');
+                          }
 
                           List<String> tempLevel = _lvKey.currentState!.getSelectedItems;
                           List<String> tempLevelInt = [];
-                          tempLevel.forEach((element) {
-                            tempLevelInt.add(lvItems.indexWhere((e) => e == element).toString());
-                          });
+                          for (var element in tempLevel) {
+                            tempLevelInt.add(lvItems.indexWhere((e) => e.tr == element).toString());
+                          }
                           if (tempLevelInt.isNotEmpty) {
                             queryParameters['level[]'] = tempLevelInt;
                           }
@@ -746,10 +756,10 @@ class _CoursesState extends State<Courses> {
 
                           List<String> tempCats = _cKey.currentState!.getSelectedItems;
                           List<String> tempCatIds = [];
-                          tempCats.forEach((element) {
+                          for (var element in tempCats) {
                             Categories aTempCat = cFetch[cFetch.indexWhere((e) => e.title == element)];
                             tempCatIds.add(aTempCat.id);
-                          });
+                          }
                           if (tempCatIds.isNotEmpty) {
                             queryParameters['categoryId[]'] = tempCatIds;
                           }
@@ -788,7 +798,7 @@ class _CoursesState extends State<Courses> {
                           ),
                         ),
                         child: Text(
-                          'Search',
+                          'Search'.tr,
                           style: TextStyle(
                             fontSize: 20,
                             color: Colors.blue,
@@ -820,7 +830,7 @@ class _CoursesState extends State<Courses> {
                           ),
                         ),
                         child: Text(
-                          'Reset Filters',
+                          'Reset Filters'.tr,
                           style: TextStyle(
                             fontSize: 20,
                             color: Colors.blue,
@@ -851,7 +861,7 @@ class _CoursesState extends State<Courses> {
                       lvMap.firstWhere((element) => element['level'] == readCourseList[i].level)["levelName"]!, readCourseList[i].topics.length.toString());
                 }),
               )
-                  : Text("No Course found."),
+                  : Text("No Course found.".tr),
               NumberPaginator(
                 controller: _pagiController,
                 // by default, the paginator shows numbers as center content

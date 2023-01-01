@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:get/get.dart';//
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:email_validator/email_validator.dart';
 
@@ -20,7 +21,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   bool _isLoading = false;
   final _fgpwFormKey = GlobalKey<FormState>();
   final FocusNode _fgpwFocus = FocusNode();
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +47,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 onTap: () {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                       "/login",
-                          (route) => route.isCurrent && route.settings.name == '/login'
-                          ? false
-                          : true);
+                          (route) => false);
                 }, //sửa sau
                 child: SizedBox(
                   height: 30,
@@ -100,9 +99,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           child: SvgPicture.asset('assets/images/usaFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Engilish')
+                        Text('Engilish'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      print("Eng"),
+                      Get.updateLocale(Locale('en', 'US')),
+                    },
                   ),
                   PopupMenuItem(
                     value: 'assets/images/vnFlag.svg',
@@ -114,9 +117,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           child: SvgPicture.asset('assets/images/vnFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Vietnamese')
+                        Text('Vietnamese'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      print("Vi"),
+                      Get.updateLocale(Locale('vi', 'VN')),
+                    }, //
                   ),
                 ],
                 onSelected: (String value) {
@@ -146,7 +153,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       Container(
                           margin: EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'Reset Password',
+                            'Reset Password'.tr,
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -156,7 +163,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       Container(
                           margin: EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'Please enter your email address to search for your account.',
+                            'Please enter your email address to search for your account.'.tr,
                             style: TextStyle(
                               fontSize: 15,
                             ),
@@ -166,7 +173,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           margin: EdgeInsets.only(bottom: 10),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Email',
+                            'Email'.tr,
                             style: TextStyle(
                               fontSize: 20,
                             ),
@@ -205,9 +212,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               ),
                               validator: (val) {
                                 if(val == null || val.isEmpty){
-                                  return "Please input your Email!";
+                                  return "Please input your Email!".tr;
                                 } else if(!EmailValidator.validate(val, true)){
-                                  return "Invalid Email Address!";
+                                  return "Invalid Email Address!".tr;
                                 }
                                 return null;
                               }
@@ -249,7 +256,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                   : Container(),
                               SizedBox(width: 10,),
                               Text(
-                                'Sent reset link',
+                                'Sent reset link'.tr,
                                 style: TextStyle(
                                   fontSize: 15,
                                   color: Colors.white,

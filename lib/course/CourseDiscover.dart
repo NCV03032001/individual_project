@@ -9,9 +9,7 @@ import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
-//import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
-//import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:get/get.dart';
 
 class CourseDiscover extends StatefulWidget {
   final CourseClass thisCourse;
@@ -23,13 +21,9 @@ class CourseDiscover extends StatefulWidget {
 }
 
 class _CourseDiscoverState extends State<CourseDiscover> {
-  String _firstSelected ='assets/images/usaFlag.svg';
-  // CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
-  //     reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
-  //     createdAt: "", updatedAt: "", topics: [], categories: [], users: []);
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   bool _isLoading = false;
-  //final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
 
   final List<Map<String, String>> lvMap = [
     {"level": "0", "levelName": "Any Level",},
@@ -51,43 +45,18 @@ class _CourseDiscoverState extends State<CourseDiscover> {
     super.initState();
     _dropdownValue = widget.thisCourse.topics[widget.index].nameFile;
     _downloadLink = _dropdownValue;
-    /*setState(() {
-      _isLoading = true;
-      _errorController.text = "";
-    });*/
   }
 
   @override
   Widget build(BuildContext context) {
     CourseClass thisCourse = widget.thisCourse;
     var size = MediaQuery.of(context).size;
-    /*Widget tempWid = Container(
-      decoration: BoxDecoration(
-          border: Border.all(
-            width: 2,
-            color: Colors.grey,
-          )
-      ),
-      width: size.width,
-      height: size.height,
-      child: SfPdfViewer.network(
-        _dropdownValue,
-        controller: _pdfViewerController,
-        //key: _pdfViewerKey,
-        onDocumentLoaded: (e) {
-          setState(() {
-            print("Loaded PDF");
-            _isLoading = false;
-          });
-        },
-      ),
-    );*/
 
     return Scaffold(
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/tutor');
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -138,9 +107,13 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Eng"),
+                  Get.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -152,9 +125,13 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Vi"),
+                  Get.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
             onSelected: (String value) {
@@ -191,12 +168,12 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -204,25 +181,25 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -234,7 +211,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -253,7 +230,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -272,7 +249,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -291,7 +268,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -299,25 +276,25 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -329,7 +306,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -348,7 +325,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -367,7 +344,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -378,25 +355,25 @@ class _CourseDiscoverState extends State<CourseDiscover> {
             ],
             onSelected: (value) {
               if (value == 'Profile') {
-                Navigator.popAndPushNamed(context, '/profile');
+                Navigator.pushNamed(context, '/profile');
               }
               else if (value == 'Tutor') {
-                Navigator.popAndPushNamed(context, '/tutor');
+                Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
               }
               else if (value == 'Schedule') {
-                Navigator.popAndPushNamed(context, '/schedule');
+                Navigator.pushNamed(context, '/schedule');
               }
               else if (value == 'History') {
-                Navigator.popAndPushNamed(context, '/history');
+                Navigator.pushNamed(context, '/history');
               }
               else if (value == 'Courses') {
-                Navigator.popAndPushNamed(context, '/courses');
+                Navigator.pushNamed(context, '/courses');
               }
               else if (value == 'BecomeTutor') {
-                Navigator.popAndPushNamed(context, '/become_tutor');
+                Navigator.pushNamed(context, '/become_tutor');
               }
               else if (value == 'Setting') {
-                Navigator.popAndPushNamed(context, '/setting');
+                Navigator.pushNamed(context, '/setting');
               }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
@@ -444,7 +421,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                         Container(
                           margin: EdgeInsets.only(bottom: 15),
                           alignment: Alignment.centerLeft,
-                          child: Text("List Topics", style: TextStyle(
+                          child: Text("List Topics".tr, style: TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                               overflow: TextOverflow.ellipsis
@@ -489,15 +466,15 @@ class _CourseDiscoverState extends State<CourseDiscover> {
               ),
             ),
             _isLoading == true
-                ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Changing PDF...'),
-                SizedBox(width: 10,),
-                CircularProgressIndicator(),
-              ],
-            )
-                : Container(),
+            ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Changing PDF...'.tr),
+            SizedBox(width: 10,),
+            CircularProgressIndicator(),
+          ],
+        )
+            : Container(),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -524,11 +501,9 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     Icons.download_outlined,
                     color: Theme.of(context).primaryColor,
                   ),
-                  //onPressed: null,
                   onPressed: () async {
                     Map<Permission, PermissionStatus> statuses = await [
                       Permission.storage,
-                      //add more permission to request here.
                     ].request();
 
                     if(statuses[Permission.storage]!.isGranted){
@@ -537,12 +512,11 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                         String savename = "${thisCourse.topics[thisCourse.topics.indexWhere((element) => element.nameFile == _downloadLink)].name}.pdf";
                         String savePath = "${dir.path}/$savename";
                         print(savePath);
-                        //output:  /storage/emulated/0/Download/banner.png
                         showDialog(
                           context: context,
                           builder: (BuildContext context) => AlertDialog(
-                            title: Text('Confirm Download'),
-                            content: Text('Are you sure to download file:\n\t\t\t\t$savename\nto: ${savePath.replaceAll("/$savename", "")}?'),
+                            title: Text('Confirm Download'.tr),
+                            content: Text('${'Are you sure to download file:'.tr}\n\t\t\t\t$savename\n${'to:'.tr} ${savePath.replaceAll("/$savename", "")}?'),
                             actions: [
                               OutlinedButton(
                                 onPressed: () => Navigator.pop(context, 'Cancel'),
@@ -555,7 +529,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Cancel',
+                                  'Cancel'.tr,
                                   style: TextStyle(
                                     color: Colors.blue,
                                   ),
@@ -573,7 +547,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Download',
+                                  'Download'.tr,
                                   style: TextStyle(
                                     color: Colors.white,
                                   ),
@@ -598,7 +572,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                               context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('File is saved to download folder.', style: TextStyle(color: Colors.green),),
+                                  content: Text('File is saved to download folder.'.tr, style: TextStyle(color: Colors.green),),
                                   duration: Duration(seconds: 3),
                                 ),
                               );
@@ -619,15 +593,6 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                       print("No permission to read and write.");
                     }
                   },
-                  /*onPressed: () async {
-                    final taskId = await FlutterDownloader.enqueue(
-                      url: _dropdownValue,
-                      headers: {}, // optional: header send with url (auth token etc)
-                      savedDir: '/storage/emulated/0/Download/',
-                      showNotification: true, // show download progress in status bar (for Android)
-                      openFileFromNotification: true, // click on notification to open downloaded file (for Android)
-                    );
-                  },*/
                 ),
               ],
             ),

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class Setting extends StatefulWidget {
@@ -16,7 +17,7 @@ class Setting extends StatefulWidget {
 }
 
 class _SettingState extends State<Setting> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   static const keyDarkMode = 'key-darkmode';
 
@@ -36,12 +37,8 @@ class _SettingState extends State<Setting> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  "/tutor",
-                      (route) => route.isCurrent && route.settings.name == "/tutor"
-                      ? false
-                      : true);
-            },  //sửa sau
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
+            }, //sửa sau
             child: SizedBox(
               height: 30,
               child: SvgPicture.asset('assets/images/logo.svg'),
@@ -91,9 +88,13 @@ class _SettingState extends State<Setting> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Eng"),
+                  Get.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -105,9 +106,13 @@ class _SettingState extends State<Setting> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Vi"),
+                  Get.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
             onSelected: (String value) {
@@ -149,7 +154,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -157,25 +162,25 @@ class _SettingState extends State<Setting> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -187,7 +192,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -206,7 +211,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -225,7 +230,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -244,7 +249,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -252,25 +257,25 @@ class _SettingState extends State<Setting> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -282,7 +287,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -301,7 +306,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -320,7 +325,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -365,7 +370,7 @@ class _SettingState extends State<Setting> {
               margin: EdgeInsets.only(bottom: 20),
               alignment: Alignment.centerLeft,
               child: Text(
-                'Settings',
+                'Settings'.tr,
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -415,7 +420,7 @@ class _SettingState extends State<Setting> {
                                       : true);
                             },
                             child: Text(
-                              'Edit profile',
+                              'Edit profile'.tr,
                               style: TextStyle(
                                 color: Colors.blue,
                               ),
@@ -429,20 +434,20 @@ class _SettingState extends State<Setting> {
               ),
             ),
             SettingsGroup(
-              title: 'GENERAL',
+              title: 'GENERAL'.tr,
               children: <Widget>[
                 setDarkMode(),
               ],
             ),
             SettingsGroup(
-              title: 'ACCOUNT',
+              title: 'ACCOUNT'.tr,
               children: <Widget>[
                 changePassword(),
                 deleteAccount(),
               ],
             ),
             SettingsGroup(
-              title: 'CONTRACT',
+              title: 'CONTRACT'.tr,
               children: <Widget>[
                 reportabug(),
                 sendFeadback(),
@@ -469,16 +474,15 @@ class _SettingState extends State<Setting> {
       size: 30,
       color: Colors.blue,
     ),
-    title: 'Dark Mode',
+    title: 'Dark Mode'.tr,
     onChange: (val) {
       print(val);
       print(Settings.getValue<bool>(Setting.keyDarkMode));
-      //Settings.setValue<bool>(keyDarkMode, val);
     },
   );
 
   Widget changePassword() => SimpleSettingsTile(
-    title: 'Change password',
+    title: 'Change password'.tr,
     leading: SizedBox(
       width: 30,
       height: 30,
@@ -495,7 +499,7 @@ class _SettingState extends State<Setting> {
                   return Focus(
                     focusNode: _dialogFocus,
                     child: AlertDialog(
-                      title: Text('Change Password'),
+                      title: Text('Change Password'.tr),
                       content: GestureDetector(
                         onTap: () {
                           _dialogFocus.requestFocus();
@@ -514,7 +518,7 @@ class _SettingState extends State<Setting> {
                                       margin: EdgeInsets.only(bottom: 10),
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        'Current Password',
+                                        'Current Password'.tr,
                                       )
                                   ),
                                   Container(
@@ -548,7 +552,7 @@ class _SettingState extends State<Setting> {
                                         ),
                                         validator: (val) {
                                           if(val == null || val.isEmpty){
-                                            return "Please input your Password!";
+                                            return "Please input your Password!".tr;
                                           }
                                           return null;
                                         }
@@ -558,7 +562,7 @@ class _SettingState extends State<Setting> {
                                       margin: EdgeInsets.only(bottom: 10),
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        'New Password',
+                                        'New Password'.tr,
                                       )
                                   ),
                                   Container(
@@ -592,7 +596,7 @@ class _SettingState extends State<Setting> {
                                         ),
                                         validator: (val) {
                                           if(val == null || val.isEmpty){
-                                            return "Please input New Password!";
+                                            return "Please input New Password!".tr;
                                           }
                                           return null;
                                         }
@@ -602,7 +606,7 @@ class _SettingState extends State<Setting> {
                                       margin: EdgeInsets.only(bottom: 10),
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        'Confirm New Password',
+                                        'Confirm New Password'.tr,
                                       )
                                   ),
                                   Container(
@@ -636,7 +640,7 @@ class _SettingState extends State<Setting> {
                                         ),
                                         validator: (val) {
                                           if(val == null || val.isEmpty){
-                                            return "Please input Confirm!";
+                                            return "Please input Confirm!".tr;
                                           }
                                           return null;
                                         }
@@ -686,7 +690,7 @@ class _SettingState extends State<Setting> {
                                   : SizedBox(width: 15,),
                               SizedBox(width: 10,),
                               Text(
-                                'Confirm Change',
+                                'Confirm Change'.tr,
                                 style: TextStyle(
                                   fontSize: 15,
                                   color: Colors.white,
@@ -700,7 +704,7 @@ class _SettingState extends State<Setting> {
                             if (_cpwKey.currentState!.validate()) {
                               if (_cnpwController.text != _npwController.text) {
                                 setState(() {
-                                  _errorController.text = "Confirm doesn't match!";
+                                  _errorController.text = "Confirm doesn't match!".tr;
                                   _isSuccess = false;
                                 });
                                 return;
@@ -731,7 +735,7 @@ class _SettingState extends State<Setting> {
                                 setState(() {
                                   _isLoading = false;
                                   _isSuccess = true;
-                                  _errorController.text = "Successfully changed password!";
+                                  _errorController.text = "Successfully changed password!".tr;
                                 });
                               }
                             }
@@ -751,40 +755,72 @@ class _SettingState extends State<Setting> {
     }, //lead to change password page
   );
   Widget deleteAccount() => SimpleSettingsTile(
-      title: 'Delete account',
+      title: 'Delete account'.tr,
       leading: SizedBox(
         width: 30,
         height: 30,
         child: Image.asset('assets/images/icons/DeleteAccount.png', color: Colors.blue,),
       ),
-    onTap: null, //lead to delete account page
+    onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Delete account'.tr),
+            content: Text('Under construction'.tr),
+          );
+        }
+    ), //lead to delete account page
   );
+
   Widget reportabug() => SimpleSettingsTile(
-    title: 'Report A Bug',
+    title: 'Report A Bug'.tr,
     leading: SizedBox(
       width: 30,
       height: 30,
       child: Image.asset('assets/images/icons/ReportBug.png', color: Colors.blue,),
     ),
-    onTap: null, //lead to delete account page
+    onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Report A Bug'.tr),
+            content: Text('Under construction'.tr),
+          );
+        }
+    ), //lead to delete account page
   );
-
   Widget sendFeadback() => SimpleSettingsTile(
-      title: 'Send Feedback',
+      title: 'Send Feedback'.tr,
       leading: SizedBox(
         width: 30,
         height: 30,
         child: Image.asset('assets/images/icons/SendFeedback.png', color: Colors.blue,),
       ),
-      onTap: null, //lead to delete account page
+      onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Send Feedback'.tr),
+            content: Text('Under construction'.tr),
+          );
+        }
+      ), //lead to delete account page
     );
   Widget aboutDeveloper() => SimpleSettingsTile(
-    title: 'About Developer',
+    title: 'About Developer'.tr,
     leading: SizedBox(
       width: 30,
       height: 30,
       child: Icon(Icons.info_outline, color: Colors.blue, size: 30,)
     ),
-    onTap: null, //lead to delete account page
+    onTap: () => showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('About Developer'.tr),
+          content: Text('Nguyễn Công Văn - 19120713'),
+        );
+      }
+    ), //lead to delete account page
   );
 }

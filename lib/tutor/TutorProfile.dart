@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:individual_project/model/Tutor/Tutor.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
@@ -29,7 +30,7 @@ class TutorProfile extends StatefulWidget {
 }
 
 class _TutorProfileState extends State<TutorProfile> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
   bool _isLoading = false;
 
   Tutor thisTutor = Tutor(
@@ -47,6 +48,7 @@ class _TutorProfileState extends State<TutorProfile> {
   List<FeedbackItem> fbList = [];
   final TextEditingController _fbError = TextEditingController();
   int _maxFbPage = 1;
+  Locale? appLocal = Get.locale;
 
   final TextEditingController _errorController = TextEditingController();
   String _videoErr = "";
@@ -211,14 +213,13 @@ class _TutorProfileState extends State<TutorProfile> {
     if (response.statusCode != 200) {
       final Map parsed = json.decode(response.body);
       final String err = parsed["message"];
-      print(err);
       showDialog(
         context: context,
         builder: (BuildContext context) {
           double width = MediaQuery.of(context).size.width;
           double height = MediaQuery.of(context).size.height;
           return AlertDialog(
-            title: Text('Boogking details'),
+            title: Text('Booking details'.tr),
             content: Container(
               constraints: BoxConstraints(
                 maxHeight: height/2,
@@ -236,7 +237,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     Container(
                         margin: EdgeInsets.only(bottom: 10),
                         alignment: Alignment.center,
-                        child: Text('Booking falied', style: TextStyle(
+                        child: Text('Booking failed'.tr, style: TextStyle(
                           fontSize: 20,
                         ),)
                     ),
@@ -277,7 +278,7 @@ class _TutorProfileState extends State<TutorProfile> {
             double width = MediaQuery.of(context).size.width;
             double height = MediaQuery.of(context).size.height;
             return AlertDialog(
-              title: Text('Boogking details'),
+              title: Text('Boogking details'.tr),
               content: Container(
                 constraints: BoxConstraints(
                   maxHeight: height/2,
@@ -295,11 +296,11 @@ class _TutorProfileState extends State<TutorProfile> {
                       Container(
                           margin: EdgeInsets.only(bottom: 10),
                           alignment: Alignment.center,
-                          child: Text('Booking success', style: TextStyle(
+                          child: Text('Booking success'.tr, style: TextStyle(
                             fontSize: 20,
                           ),)
                       ),
-                      Text('Check your Schedule to see class detail', style: TextStyle(
+                      Text('Check your Schedule to see class detail'.tr, style: TextStyle(
                         fontWeight: FontWeight.w300,
                       ),),
                     ],
@@ -356,7 +357,6 @@ class _TutorProfileState extends State<TutorProfile> {
     if (response.statusCode != 200) {
       final Map parsed = json.decode(response.body);
       final String err = parsed["message"];
-      print(err);
     }
     else {
       final Map parsed = json.decode(response.body);
@@ -416,13 +416,8 @@ class _TutorProfileState extends State<TutorProfile> {
     else {
       final Map<String, dynamic> parsed = json.decode(response.body);
       setState(() {
-        //print(parsed);
         _maxFbPage = parsed['data']['count'];
-        //print(_maxFbPage);
         fbList = List.from(parsed['data']['rows']).map((e) => FeedbackItem.fromJson(e)).toList();
-        // fbList.forEach((element) {
-        //   print(element.content);
-        // });
       });
     }
 
@@ -454,7 +449,7 @@ class _TutorProfileState extends State<TutorProfile> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/tutor');
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -505,9 +500,13 @@ class _TutorProfileState extends State<TutorProfile> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Eng"),
+                  Get.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -519,9 +518,13 @@ class _TutorProfileState extends State<TutorProfile> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  print("Vi"),
+                  Get.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
             onSelected: (String value) {
@@ -563,7 +566,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -571,25 +574,25 @@ class _TutorProfileState extends State<TutorProfile> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -601,7 +604,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -620,7 +623,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -639,7 +642,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -658,7 +661,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -666,25 +669,25 @@ class _TutorProfileState extends State<TutorProfile> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -696,7 +699,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -715,7 +718,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -734,7 +737,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -745,25 +748,25 @@ class _TutorProfileState extends State<TutorProfile> {
             ],
             onSelected: (value) {
               if (value == 'Profile') {
-                Navigator.popAndPushNamed(context, '/profile');
+                Navigator.pushNamed(context, '/profile');
               }
               else if (value == 'Tutor') {
-                Navigator.popAndPushNamed(context, '/tutor');
+                Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
               }
               else if (value == 'Schedule') {
-                Navigator.popAndPushNamed(context, '/schedule');
+                Navigator.pushNamed(context, '/schedule');
               }
               else if (value == 'History') {
-                Navigator.popAndPushNamed(context, '/history');
+                Navigator.pushNamed(context, '/history');
               }
               else if (value == 'Courses') {
-                Navigator.popAndPushNamed(context, '/courses');
+                Navigator.pushNamed(context, '/courses');
               }
               else if (value == 'BecomeTutor') {
-                Navigator.popAndPushNamed(context, '/become_tutor');
+                Navigator.pushNamed(context, '/become_tutor');
               }
               else if (value == 'Setting') {
-                Navigator.popAndPushNamed(context, '/setting');
+                Navigator.pushNamed(context, '/setting');
               }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
@@ -860,13 +863,13 @@ class _TutorProfileState extends State<TutorProfile> {
                                 ? Row(
                                 children: []..addAll(List.generate(thisTutor.rating!.toInt(), (index) {
                                   return Tooltip(
-                                    message: tooltipMsg[index],
+                                    message: tooltipMsg[index].tr,
                                     child: Icon(Icons.star, color: Colors.yellow,),
                                   );
                                 }))
                                   ..addAll(List.generate((5-thisTutor.rating!.toInt()), (index) {
                                     return Tooltip(
-                                      message: tooltipMsg[4-index],
+                                      message: tooltipMsg[4-index].tr,
                                       child: Icon(Icons.star, color: Colors.grey,),
                                     );
                                   }).reversed)..add(
@@ -956,7 +959,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                 : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
                           ),
                           SizedBox(height: 10,),
-                          Text('Favorite', style: TextStyle(
+                          Text('Favorite'.tr, style: TextStyle(
                               color: thisTutor.isFavorite == true ? Colors.red : Colors.blue
                           ),),
                         ],
@@ -979,7 +982,7 @@ class _TutorProfileState extends State<TutorProfile> {
                               return Focus(
                                 focusNode: _dialogFocus,
                                 child: AlertDialog(
-                                  title: Text('Report ${thisTutor.name}'),
+                                  title: Text('Report'.tr +' ${thisTutor.name}'),
                                   content: GestureDetector(
                                     onTap: () {
                                       _dialogFocus.requestFocus();
@@ -1000,7 +1003,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                                     Icon(Icons.info, color: Colors.blue,),
                                                     SizedBox(width: 10,),
                                                     Expanded(child: Text(
-                                                      'Help us understand what\'s happening',
+                                                      'Help us understand what\'s happening'.tr,
                                                       style: TextStyle(
                                                         fontWeight: FontWeight.bold,
                                                       ),
@@ -1016,16 +1019,16 @@ class _TutorProfileState extends State<TutorProfile> {
                                                     setState(() {
                                                       firstVal = !firstVal;
                                                       if(firstVal == true) {
-                                                        _rpController.text = "This tutor is annoying me\n" + _rpController.text;
+                                                        _rpController.text = "${"This tutor is annoying me".tr}\n${_rpController.text}";
                                                       }
                                                       else {
-                                                        _rpController.text = _rpController.text.replaceAll("This tutor is annoying me\n", "")
-                                                            .replaceAll("This tutor is annoying me", "");
+                                                        _rpController.text = _rpController.text.replaceAll("${"This tutor is annoying me".tr}\n", "")
+                                                            .replaceAll("This tutor is annoying me".tr, "");
                                                       }
                                                     });
                                                   },
                                                 ),
-                                                Expanded(child: Text("This tutor is annoying me")),
+                                                Expanded(child: Text("This tutor is annoying me".tr)),
                                               ],
                                             ),
                                             Row(
@@ -1036,16 +1039,16 @@ class _TutorProfileState extends State<TutorProfile> {
                                                     setState(() {
                                                       secondVal = !secondVal;
                                                       if(secondVal == true) {
-                                                        _rpController.text = "This profile is pretending be someone or is fake\n" + _rpController.text;
+                                                        _rpController.text = "${"This profile is pretending be someone or is fake".tr}\n${_rpController.text}";
                                                       }
                                                       else {
-                                                        _rpController.text = _rpController.text.replaceAll("This profile is pretending be someone or is fake\n", "")
-                                                            .replaceAll("This profile is pretending be someone or is fake", "");
+                                                        _rpController.text = _rpController.text.replaceAll("${"This profile is pretending be someone or is fake".tr}\n", "")
+                                                            .replaceAll("This profile is pretending be someone or is fake".tr, "");
                                                       }
                                                     });
                                                   },
                                                 ),
-                                                Expanded(child: Text("This profile is pretending be someone or is fake")),
+                                                Expanded(child: Text("This profile is pretending be someone or is fake".tr)),
                                               ],
                                             ),
                                             Row(
@@ -1056,16 +1059,16 @@ class _TutorProfileState extends State<TutorProfile> {
                                                     setState(() {
                                                       thirdVal = !thirdVal;
                                                       if(thirdVal == true) {
-                                                        _rpController.text = "Inappropriate profile photo\n" + _rpController.text;
+                                                        _rpController.text = "${"Inappropriate profile photo".tr}\n${_rpController.text}";
                                                       }
                                                       else {
-                                                        _rpController.text = _rpController.text.replaceAll("Inappropriate profile photo\n", "")
-                                                            .replaceAll("Inappropriate profile photo", "");
+                                                        _rpController.text = _rpController.text.replaceAll("${"Inappropriate profile photo".tr}\n", "")
+                                                            .replaceAll("Inappropriate profile photo".tr, "");
                                                       }
                                                     });
                                                   },
                                                 ),
-                                                Expanded(child: Text("Inappropriate profile photo")),
+                                                Expanded(child: Text("Inappropriate profile photo".tr)),
                                               ],
                                             ),
                                             Container(
@@ -1085,26 +1088,26 @@ class _TutorProfileState extends State<TutorProfile> {
                                                     borderSide: BorderSide(width: 1, color: Colors.blue),
                                                     borderRadius: BorderRadius.all(Radius.circular(10)),
                                                   ),
-                                                  hintText: "Please let us know details about your problem",
+                                                  hintText: "Please let us know details about your problem".tr,
                                                   isCollapsed: true,
                                                 ),
                                                 onChanged: (val) {
-                                                  if (val.contains('This tutor is annoying me')) {
+                                                  if (val.contains('This tutor is annoying me'.tr)) {
                                                     setState(() {
                                                       firstVal = true;
                                                     });
                                                   }
-                                                  if (val.contains('This profile is pretending be someone or is fake')) {
+                                                  if (val.contains('This profile is pretending be someone or is fake'.tr)) {
                                                     setState(() {
                                                       secondVal = true;
                                                     });
                                                   }
-                                                  if (val.contains('Inappropriate profile photo')) {
+                                                  if (val.contains('Inappropriate profile photo'.tr)) {
                                                     setState(() {
                                                       thirdVal = true;
                                                     });
                                                   }
-                                                  setState(() {});
+                                                  setState((){});
                                                 },
                                               ),
                                             ),
@@ -1125,7 +1128,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                         ),
                                       ),
                                       child: Text(
-                                        'Cancel',
+                                        'Cancel'.tr,
                                         style: TextStyle(
                                           color: Colors.blue,
                                         ),
@@ -1141,7 +1144,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                         ),
                                       ),
                                       child: Text(
-                                        'Submit',
+                                        'Submit'.tr,
                                         style: TextStyle(
                                           color: Colors.white,
                                         ),
@@ -1167,7 +1170,7 @@ class _TutorProfileState extends State<TutorProfile> {
                             child: Icon(Icons.info_outline, color: Colors.blue, size: 35,),
                           ),
                           SizedBox(height: 10,),
-                          Text('Report', style: TextStyle(
+                          Text('Report'.tr, style: TextStyle(
                             color: Colors.blue,
                           ),),
                         ],
@@ -1193,7 +1196,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                   builder: (context, setState) {
                                     setState(() {});
                                     return AlertDialog(
-                                      title: Text('Others review'),
+                                      title: Text('Others review'.tr),
                                       content: GestureDetector(
                                         onTap: () {
                                           FocusScope.of(context).requestFocus(_dialogFocus);
@@ -1244,7 +1247,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                                                 ),
                                                                 SizedBox(width: 15,),
                                                                 Text(
-                                                                  timeago.format(DateTime.parse(e.createdAt)),
+                                                                  timeago.format(DateTime.parse(e.createdAt), locale: appLocal?.languageCode),
                                                                   style: TextStyle(
                                                                     fontWeight: FontWeight.w400,
                                                                     fontSize: 15,
@@ -1265,7 +1268,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                                                           return Icon(Icons.star, color: Colors.grey, size: 15,);
                                                                         }))
                                                                   )
-                                                                      : Text('No reviews yet', style:  TextStyle(
+                                                                      : Text('No reviews yet'.tr, style:  TextStyle(
                                                                     fontStyle: FontStyle.italic,
                                                                   ),),
                                                                 ],
@@ -1355,7 +1358,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.fromLTRB(0, 20, 0, 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Languages',
+              'Languages'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1394,7 +1397,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Specialties',
+              'Specialties'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1423,7 +1426,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     color: Colors.blue,
                   ),
                   child: specList.indexWhere((e) => e['inJson'] == value) != -1
-                      ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                      ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!.tr)
                       : Text(value.toUpperCase()),
                 )).toList(),
               ),
@@ -1434,7 +1437,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 10),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Suggested courses',
+              'Suggested courses'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1461,7 +1464,7 @@ class _TutorProfileState extends State<TutorProfile> {
                       ),
                     ),
                     TextSpan(
-                      text: "Link",
+                      text: "Link".tr,
                       style: TextStyle(
                           fontSize: 17,
                           color: Colors.blue
@@ -1478,7 +1481,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Interests',
+              'Interests'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1498,7 +1501,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Teaching experience',
+              'Teaching experience'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1518,7 +1521,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Schedule',
+              'Timesheet'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1528,7 +1531,7 @@ class _TutorProfileState extends State<TutorProfile> {
           Container(
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
             alignment: Alignment.centerLeft,
-            child: const Text('Each class lasts 25 minutes.\nPlease wait for loading after each navigation.',
+            child: Text('${"Each class lasts 25 minutes.".tr}\n${'Please wait for loading after each navigation.'.tr}',
               style: TextStyle(
                 fontSize: 15,
               ),),
@@ -1556,7 +1559,7 @@ class _TutorProfileState extends State<TutorProfile> {
                   color: Theme.of(context).backgroundColor,
                   child: Center(
                     child: Text(
-                        "Reserved",
+                        "Reserved".tr,
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontSize: 9,
@@ -1570,7 +1573,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     color: Theme.of(context).backgroundColor,
                     child: Center(
                       child: Text(
-                        "Booked",
+                        "Booked".tr,
                         style: TextStyle(
                           color: Colors.green,
                           fontSize: 9,
@@ -1579,7 +1582,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     )
                 );
               }
-              if (meeting.startTime.compareTo(now) <= 0) {
+              if (meeting.startTime.difference(now).compareTo(Duration(hours: 2)) <= 0) {
                 return OutlinedButton(
                   onPressed: null,
                   style: OutlinedButton.styleFrom(
@@ -1591,7 +1594,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                   ),
                   child: Text(
-                    'Book',
+                    'Book'.tr,
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 9,
@@ -1610,7 +1613,7 @@ class _TutorProfileState extends State<TutorProfile> {
                         return Focus(
                           focusNode: _dialogFocus,
                           child: AlertDialog(
-                            title: Text("Booking details"),
+                            title: Text("Booking details".tr),
                             content: GestureDetector(
                               onTap: () {
                                 _dialogFocus.requestFocus();
@@ -1626,17 +1629,17 @@ class _TutorProfileState extends State<TutorProfile> {
                                       Container(
                                           margin: EdgeInsets.only(bottom: 10),
                                           alignment: Alignment.centerLeft,
-                                          child: Text('Booking Time')
+                                          child: Text('Booking Time'.tr)
                                       ),
                                       Container(
                                           margin: EdgeInsets.only(bottom: 10),
                                           alignment: Alignment.center,
-                                          child: Text('${DateFormat('HH:mm').format(meeting.startTime)}-${DateFormat('HH:mm E, dd MMMM yyyy').format(meeting.endTime)}')
+                                          child: Text('${DateFormat('HH:mm', appLocal?.languageCode).format(meeting.startTime)}-${DateFormat('HH:mm EEEE, dd MM yyyy', appLocal?.languageCode).format(meeting.endTime)}')
                                       ),
                                       Container(
                                           margin: EdgeInsets.only(bottom: 10),
                                           alignment: Alignment.centerLeft,
-                                          child: Text('Notes')
+                                          child: Text('Notes'.tr)
                                       ),
                                       Container(
                                         margin: EdgeInsets.only(bottom: 10),
@@ -1676,7 +1679,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Cancel',
+                                  'Cancel'.tr,
                                   style: TextStyle(
                                     color: Colors.blue,
                                   ),
@@ -1692,7 +1695,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Book',
+                                  'Book'.tr,
                                   style: TextStyle(
                                     color: Colors.white,
                                   ),
@@ -1717,7 +1720,7 @@ class _TutorProfileState extends State<TutorProfile> {
                   ),
                 ),
                 child: Text(
-                  'Book',
+                  'Book'.tr,
                   style: TextStyle(
                     color: Colors.blue,
                     fontSize: 9,

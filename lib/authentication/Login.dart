@@ -9,6 +9,8 @@ import 'package:individual_project/model/User/Tokens.dart';
 import 'package:individual_project/model/User/User.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';//
+
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -24,7 +26,7 @@ class _LoginState extends State<Login> {
   bool _isObscure = true;
   bool _isLoading = false;
 
-  String _firstSelected ='assets/images/usaFlag.svg';
+  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
 
   final _loginFormKey = GlobalKey<FormState>();
 
@@ -107,9 +109,13 @@ class _LoginState extends State<Login> {
                           child: SvgPicture.asset('assets/images/usaFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Engilish')
+                        Text('Engilish'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      print("Eng"),
+                      Get.updateLocale(Locale('en', 'US')),
+                    },
                   ),
                   PopupMenuItem(
                     value: 'assets/images/vnFlag.svg',
@@ -121,9 +127,13 @@ class _LoginState extends State<Login> {
                           child: SvgPicture.asset('assets/images/vnFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Vietnamese')
+                        Text('Vietnamese'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      print("Vi"),
+                      Get.updateLocale(Locale('vi', 'VN')),
+                    }, //
                   ),
                 ],
                 onSelected: (String value) {
@@ -154,8 +164,9 @@ class _LoginState extends State<Login> {
                       children: [
                         Container(
                             margin: EdgeInsets.only(bottom: 20),
+                            alignment: Alignment.centerLeft,
                             child: Text(
-                              'Say hello to your English tutors',
+                              'Say hello to your English tutors'.tr,
                               style: TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
@@ -166,7 +177,7 @@ class _LoginState extends State<Login> {
                         Container(
                             margin: EdgeInsets.only(bottom: 20),
                             child: Text(
-                              'Become fluent faster through one on one video chat lessons tailored to your goals.',
+                              'Become fluent faster through one on one video chat lessons tailored to your goals.'.tr,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -177,7 +188,7 @@ class _LoginState extends State<Login> {
                             margin: EdgeInsets.only(bottom: 10),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'EMAIL',
+                              'EMAIL'.tr,
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.grey,
@@ -215,9 +226,9 @@ class _LoginState extends State<Login> {
                               ),
                               validator: (val) {
                                 if(val == null || val.isEmpty){
-                                  return "Please input your Email!";
+                                  return "Please input your Email!".tr;
                                 } else if(!EmailValidator.validate(val, true)){
-                                  return "Invalid Email Address!";
+                                  return "Invalid Email Address!".tr;
                                 }
                                 return null;
                               }
@@ -227,7 +238,7 @@ class _LoginState extends State<Login> {
                             margin: EdgeInsets.only(bottom: 10),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'PASSWORD',
+                              'PASSWORD'.tr,
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.grey,
@@ -275,7 +286,7 @@ class _LoginState extends State<Login> {
                               ),
                               validator: (val) {
                                 if(val == null || val.isEmpty){
-                                  return "Please input your Password!";
+                                  return "Please input your Password!".tr;
                                 }
                                 return null;
                               }
@@ -304,7 +315,7 @@ class _LoginState extends State<Login> {
                           child: TextButton(
                             focusNode: _fgpwFocus,
                             child: Text(
-                              'Forgot Password?',
+                              'Forgot Password?'.tr,
                               style: TextStyle(
                                 color: Colors.blue,
                                 fontSize: 20,
@@ -335,7 +346,7 @@ class _LoginState extends State<Login> {
                                   : Container(),
                                   SizedBox(width: 15,),
                                   Text(
-                                    'LOG IN',
+                                    'LOG IN'.tr,
                                     style: TextStyle(
                                       fontSize: 25,
                                       fontWeight: FontWeight.bold,
@@ -387,7 +398,7 @@ class _LoginState extends State<Login> {
                         Container(
                           margin: EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'Or continue with',
+                            'Or continue with'.tr,
                             style: TextStyle(
                               fontSize: 20,
                             ),
@@ -441,13 +452,16 @@ class _LoginState extends State<Login> {
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Not a member yet? ',
+                                  text: 'Not a member yet?'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: "Sign up",
+                                  text: ' ',
+                                ),
+                                TextSpan(
+                                  text: "Sign up".tr,
                                   style: TextStyle(
                                     color: Colors.blue,
                                   ),
