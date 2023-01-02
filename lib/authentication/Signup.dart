@@ -21,7 +21,7 @@ class _SignupState extends State<Signup> {
   bool _isObscure = true;
   bool _isSuccess = false;
   bool _isLoading = false;
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
   final _signupFormKey = GlobalKey<FormState>();
 
@@ -75,7 +75,7 @@ class _SignupState extends State<Signup> {
                         child: SizedBox(
                           width: 25,
                           height: 25,
-                          child: SvgPicture.asset(_firstSelected),
+                          child: SvgPicture.asset('${c.firstSelected}'),
                         ),
                       ),
                       Center(
@@ -110,8 +110,9 @@ class _SignupState extends State<Signup> {
                       ],
                     ),
                     onTap: () => {
-                      print("Eng"),
-                      Get.updateLocale(Locale('en', 'US')),
+                      
+                      c.updateImg('assets/images/usaFlag.svg'),
+                      c.updateLocale(Locale('en', 'US')),
                     },
                   ),
                   PopupMenuItem(
@@ -128,16 +129,17 @@ class _SignupState extends State<Signup> {
                       ],
                     ),
                     onTap: () => {
-                      print("Vi"),
-                      Get.updateLocale(Locale('vi', 'VN')),
+                      
+                      c.updateImg('assets/images/vnFlag.svg'),
+                      c.updateLocale(Locale('vi', 'VN')),
                     }, //
                   ),
                 ],
-                onSelected: (String value) {
-                  setState(() {
-                    _firstSelected = value;
-                  });
-                },
+                /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
               ),
             ],
             //automaticallyImplyLeading: false,
@@ -350,7 +352,7 @@ class _SignupState extends State<Signup> {
                                 _errorController.text = "";
                               });
                               var url = Uri.https('sandbox.api.lettutor.com', 'auth/register');
-                              var response = await http.post(
+                                var response = await http.post(
                                   url,
                                   /*headers: {
                                     "Content-Type": "application/json",

@@ -9,7 +9,9 @@ import 'package:individual_project/model/User/Tokens.dart';
 import 'package:individual_project/model/User/User.dart';
 import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
-import 'package:get/get.dart';//
+import 'package:get/get.dart';
+
+import '../main.dart';//
 
 
 class Login extends StatefulWidget {
@@ -26,7 +28,7 @@ class _LoginState extends State<Login> {
   bool _isObscure = true;
   bool _isLoading = false;
 
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
   final _loginFormKey = GlobalKey<FormState>();
 
@@ -78,7 +80,7 @@ class _LoginState extends State<Login> {
                         child: SizedBox(
                           width: 25,
                           height: 25,
-                          child: SvgPicture.asset(_firstSelected),
+                          child: SvgPicture.asset('${c.firstSelected}'),
                         ),
                       ),
                       Center(
@@ -113,8 +115,9 @@ class _LoginState extends State<Login> {
                       ],
                     ),
                     onTap: () => {
-                      print("Eng"),
-                      Get.updateLocale(Locale('en', 'US')),
+                      
+                      c.updateImg('assets/images/usaFlag.svg'),
+                      c.updateLocale(Locale('en', 'US')),
                     },
                   ),
                   PopupMenuItem(
@@ -131,16 +134,17 @@ class _LoginState extends State<Login> {
                       ],
                     ),
                     onTap: () => {
-                      print("Vi"),
-                      Get.updateLocale(Locale('vi', 'VN')),
+                      
+                      c.updateImg('assets/images/vnFlag.svg'),
+                      c.updateLocale(Locale('vi', 'VN')),
                     }, //
                   ),
                 ],
-                onSelected: (String value) {
-                  setState(() {
-                    _firstSelected = value;
-                  });
-                },
+                /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
               ),
             ],
             //automaticallyImplyLeading: false,

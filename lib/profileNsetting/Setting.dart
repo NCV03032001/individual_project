@@ -8,8 +8,10 @@ import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 class Setting extends StatefulWidget {
-  static const keyDarkMode = 'key-darkmode';
+  static String keyDarkMode = 'key-darkmode';
   const Setting({Key? key}) : super(key: key);
 
   @override
@@ -17,9 +19,9 @@ class Setting extends StatefulWidget {
 }
 
 class _SettingState extends State<Setting> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
-  static const keyDarkMode = 'key-darkmode';
+  static String keyDarkMode = 'key-darkmode';
 
   TextEditingController _pwController = TextEditingController();
   TextEditingController _npwController = TextEditingController();
@@ -57,7 +59,7 @@ class _SettingState extends State<Setting> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -92,8 +94,9 @@ class _SettingState extends State<Setting> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -110,16 +113,17 @@ class _SettingState extends State<Setting> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -353,6 +357,9 @@ class _SettingState extends State<Setting> {
               else if (value == 'BecomeTutor') {
                 Navigator.pushNamed(context, '/become_tutor');
               }
+              else if (value == 'Settings') {
+                Navigator.pushReplacementNamed(context, '/setting');
+              }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
                         (route) {return false;});
@@ -475,9 +482,25 @@ class _SettingState extends State<Setting> {
       color: Colors.blue,
     ),
     title: 'Dark Mode'.tr,
-    onChange: (val) {
-      print(val);
-      print(Settings.getValue<bool>(Setting.keyDarkMode));
+    onChange: (val) async {
+      /*await Settings.setValue(Setting.keyDarkMode, val).then((e) => {
+        setState(() {
+          c.updateIsDark(val);
+          print(c.testDark);
+          print(val);
+          print(Settings.getValue<bool>(Setting.keyDarkMode));
+        })
+      });*/
+      await Settings.setValue(Setting.keyDarkMode, val).then((e) => c.updateIsDark(val));
+      //c.updateIsDark(val);
+      //Get.changeTheme(c.testDark.value == true? ThemeData.dark() : ThemeData.light());
+      //Get.changeTheme(Get.isDarkMode? ThemeData.dark() : ThemeData.light());
+      //Get.changeThemeMode(c.testDark.value? ThemeMode.dark : ThemeMode.light);
+      /*setState(() {
+        print(c.testDark);
+        print(Get.isDarkMode);
+        print(Settings.getValue<bool>(Setting.keyDarkMode));
+      });*/
     },
   );
 

@@ -18,6 +18,7 @@ import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../main.dart';
 import '../model/Tutor/TutorProvider.dart';
 
 class TutorProfile extends StatefulWidget {
@@ -30,7 +31,7 @@ class TutorProfile extends StatefulWidget {
 }
 
 class _TutorProfileState extends State<TutorProfile> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
   bool _isLoading = false;
 
   Tutor thisTutor = Tutor(
@@ -48,7 +49,7 @@ class _TutorProfileState extends State<TutorProfile> {
   List<FeedbackItem> fbList = [];
   final TextEditingController _fbError = TextEditingController();
   int _maxFbPage = 1;
-  Locale? appLocal = Get.locale;
+  
 
   final TextEditingController _errorController = TextEditingController();
   String _videoErr = "";
@@ -129,11 +130,7 @@ class _TutorProfileState extends State<TutorProfile> {
     });
   }
 
-  final Map<String, dynamic> query = {
-    //"tutorId" : thisTutor.id,
-    //"startTimestamp": getDate(now).millisecondsSinceEpoch,
-    //"endTimestamp": 9
-  };
+  final Map<String, dynamic> query = {};
 
   final now = DateTime.now();
   List<TutorSchedule> scheList = [];
@@ -260,7 +257,7 @@ class _TutorProfileState extends State<TutorProfile> {
                   ),
                 ),
                 child: Text(
-                  'Done',
+                  'Done'.tr,
                   style: TextStyle(
                     color: Colors.blue,
                   ),
@@ -469,7 +466,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -504,8 +501,9 @@ class _TutorProfileState extends State<TutorProfile> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -522,16 +520,17 @@ class _TutorProfileState extends State<TutorProfile> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -1247,7 +1246,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                                                 ),
                                                                 SizedBox(width: 15,),
                                                                 Text(
-                                                                  timeago.format(DateTime.parse(e.createdAt), locale: appLocal?.languageCode),
+                                                                  timeago.format(DateTime.parse(e.createdAt), locale: c.testLocale.value.languageCode),//c.testLocale.value.languageCode),
                                                                   style: TextStyle(
                                                                     fontWeight: FontWeight.w400,
                                                                     fontSize: 15,
@@ -1290,7 +1289,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                             }).toList(),
                                           )
                                           : Center(
-                                            child: Text("No Review found."),
+                                            child: Text('No Review found.'.tr),
                                           ),
                                         ),
                                       ),
@@ -1613,7 +1612,7 @@ class _TutorProfileState extends State<TutorProfile> {
                         return Focus(
                           focusNode: _dialogFocus,
                           child: AlertDialog(
-                            title: Text("Booking details".tr),
+                            title: Text('Booking details'.tr),
                             content: GestureDetector(
                               onTap: () {
                                 _dialogFocus.requestFocus();
@@ -1634,7 +1633,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                       Container(
                                           margin: EdgeInsets.only(bottom: 10),
                                           alignment: Alignment.center,
-                                          child: Text('${DateFormat('HH:mm', appLocal?.languageCode).format(meeting.startTime)}-${DateFormat('HH:mm EEEE, dd MM yyyy', appLocal?.languageCode).format(meeting.endTime)}')
+                                          child: Text('${DateFormat('HH:mm', c.testLocale.value.languageCode).format(meeting.startTime)}-${DateFormat('HH:mm EEEE, dd MM yyyy', c.testLocale.value.languageCode).format(meeting.endTime)}')
                                       ),
                                       Container(
                                           margin: EdgeInsets.only(bottom: 10),

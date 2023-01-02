@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../main.dart';
 import '../model/Tutor/Tutor.dart';
 import '../model/data/LearnTopicData.dart';
 import '../model/data/TestPreparationData.dart';
@@ -28,8 +29,8 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final FocusNode _screenFocus = FocusNode();
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
-  Locale? appLocal = Get.locale;
+  
+  final Controller c = Get.put(Controller());
 
   bool _isLoading = false;
   final _changeInfoFormKey = GlobalKey<FormState>();
@@ -227,7 +228,7 @@ class _ProfileState extends State<Profile> {
                       child: SizedBox(
                         width: 25,
                         height: 25,
-                        child: SvgPicture.asset(_firstSelected),
+                        child: SvgPicture.asset('${c.firstSelected}'),
                       ),
                     ),
                     Center(
@@ -262,8 +263,9 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                   onTap: () => {
-                    print("Eng"),
-                    Get.updateLocale(Locale('en', 'US')),
+                    
+                    c.updateImg('assets/images/usaFlag.svg'),
+                    c.updateLocale(Locale('en', 'US')),
                   },
                 ),
                 PopupMenuItem(
@@ -280,16 +282,17 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                   onTap: () => {
-                    print("Vi"),
-                    Get.updateLocale(Locale('vi', 'VN')),
+                    
+                    c.updateImg('assets/images/vnFlag.svg'),
+                    c.updateLocale(Locale('vi', 'VN')),
                   }, //
                 ),
               ],
-              onSelected: (String value) {
-                setState(() {
-                  _firstSelected = value;
-                });
-              },
+              /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
             ),
             SizedBox(width: 10,),
             PopupMenuButton<String>(
@@ -602,7 +605,7 @@ class _ProfileState extends State<Profile> {
                                             builder: (context, setState) {
                                               setState(() {});
                                               return AlertDialog(
-                                                title: Text('Others review'),
+                                                title: Text('Others review'.tr),
                                                 content: GestureDetector(
                                                   onTap: () {
                                                     FocusScope.of(context).requestFocus(_dialogFocus);
@@ -653,7 +656,7 @@ class _ProfileState extends State<Profile> {
                                                                           ),
                                                                           SizedBox(width: 15,),
                                                                           Text(
-                                                                            timeago.format(DateTime.parse(e.createdAt), locale: appLocal?.languageCode),
+                                                                            timeago.format(DateTime.parse(e.createdAt), locale: c.testLocale.value.languageCode),
                                                                             style: TextStyle(
                                                                               fontWeight: FontWeight.w400,
                                                                               fontSize: 15,
@@ -674,7 +677,7 @@ class _ProfileState extends State<Profile> {
                                                                                     return Icon(Icons.star, color: Colors.grey, size: 15,);
                                                                                   }))
                                                                             )
-                                                                                : Text('No reviews yet', style:  TextStyle(
+                                                                                : Text('No review yet'.tr, style:  TextStyle(
                                                                               fontStyle: FontStyle.italic,
                                                                             ),),
                                                                           ],
@@ -696,7 +699,7 @@ class _ProfileState extends State<Profile> {
                                                       }).toList(),
                                                     )
                                                         : Center(
-                                                      child: Text("No Review found."),
+                                                      child: Text('No Review found.'.tr),
                                                     ),
                                                   ),
                                                 ),
@@ -1437,7 +1440,7 @@ class _ProfileState extends State<Profile> {
       child: Column(
         children: <Widget>[
           Text(
-            "Choose Profile photo",
+            "Choose Profile photo".tr,
             style: TextStyle(
               fontSize: 20.0,
             ),

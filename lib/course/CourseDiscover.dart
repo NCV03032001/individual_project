@@ -11,6 +11,8 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
 
+import '../main.dart';
+
 class CourseDiscover extends StatefulWidget {
   final CourseClass thisCourse;
   final int index;
@@ -21,7 +23,7 @@ class CourseDiscover extends StatefulWidget {
 }
 
 class _CourseDiscoverState extends State<CourseDiscover> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
   bool _isLoading = false;
 
@@ -76,7 +78,7 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -111,8 +113,9 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -129,16 +132,17 @@ class _CourseDiscoverState extends State<CourseDiscover> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(

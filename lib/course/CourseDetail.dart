@@ -9,6 +9,8 @@ import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 class CourseDetail extends StatefulWidget {
   final String id;
   const CourseDetail({Key? key, required this.id}) : super(key: key);
@@ -18,7 +20,7 @@ class CourseDetail extends StatefulWidget {
 }
 
 class _CourseDetailState extends State<CourseDetail> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
   CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
       reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
       createdAt: "", updatedAt: "", topics: [], categories: [], users: []);
@@ -107,7 +109,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -142,8 +144,9 @@ class _CourseDetailState extends State<CourseDetail> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -160,16 +163,17 @@ class _CourseDetailState extends State<CourseDetail> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(

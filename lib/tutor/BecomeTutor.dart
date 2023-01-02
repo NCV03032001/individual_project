@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
+import '../main.dart';
 import '../model/User/UserProvider.dart';
 
 class BecomeTutor extends StatefulWidget {
@@ -13,7 +14,7 @@ class BecomeTutor extends StatefulWidget {
 }
 
 class _BecomeTutorState extends State<BecomeTutor> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
   FocusNode _screenFocus = new FocusNode();
 
@@ -49,7 +50,7 @@ class _BecomeTutorState extends State<BecomeTutor> {
                       child: SizedBox(
                         width: 25,
                         height: 25,
-                        child: SvgPicture.asset(_firstSelected),
+                        child: SvgPicture.asset('${c.firstSelected}'),
                       ),
                     ),
                     Center(
@@ -84,8 +85,9 @@ class _BecomeTutorState extends State<BecomeTutor> {
                     ],
                   ),
                   onTap: () => {
-                    print("Eng"),
-                    Get.updateLocale(Locale('en', 'US')),
+                    
+                    c.updateImg('assets/images/usaFlag.svg'),
+                    c.updateLocale(Locale('en', 'US')),
                   },
                 ),
                 PopupMenuItem(
@@ -102,16 +104,17 @@ class _BecomeTutorState extends State<BecomeTutor> {
                     ],
                   ),
                   onTap: () => {
-                    print("Vi"),
-                    Get.updateLocale(Locale('vi', 'VN')),
+                    
+                    c.updateImg('assets/images/vnFlag.svg'),
+                    c.updateLocale(Locale('vi', 'VN')),
                   }, //
                 ),
               ],
-              onSelected: (String value) {
-                setState(() {
-                  _firstSelected = value;
-                });
-              },
+              /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
             ),
             SizedBox(width: 10,),
             PopupMenuButton<String>(

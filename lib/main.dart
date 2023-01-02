@@ -23,6 +23,7 @@ import 'package:individual_project/scheduleNhistory/History.dart';
 import 'package:individual_project/course/CourseDetail.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';//
+import 'package:get_storage/get_storage.dart';//
 
 import 'LocaleString.dart';//
 
@@ -31,6 +32,7 @@ Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Settings.init(cacheProvider: SharePreferenceCache());
+  await GetStorage.init();
 
   runApp(const MyApp());
 }
@@ -42,12 +44,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //bool isDarkMode = false;
+    //var appLocale = Locale('en','US').obs;
+    final Controller c = Get.put(Controller());
+    c.readGetStorage();
 
-    return ValueChangeObserver<bool>(
+    return /*ValueChangeObserver<bool>(
         cacheKey: Setting.keyDarkMode,
         defaultValue: false,
 
-        builder: (_, isDarkMode, __) => MultiProvider(
+        builder: (_, isDarkMode, __) =>*/ MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TutorProvider()),
@@ -62,7 +67,8 @@ class MyApp extends StatelessWidget {
         ],
         debugShowCheckedModeBanner: false,
         translations: LocaleString(),//
-        locale: Locale('en','US'),//
+        //locale: Locale('en','US'),//
+        locale: c.testLocale.value,//
         title: 'LetTutor - 19120713',
 
         onGenerateRoute: (settings) {
@@ -116,7 +122,8 @@ class MyApp extends StatelessWidget {
           '/become_tutor' : (context) => BecomeTutor(),
         },
 
-        theme: isDarkMode?
+        //theme: Get.isDarkMode?
+        /*theme: c.testDark == true?
         ThemeData.dark().copyWith(
           primaryColor: Colors.white,
           scaffoldBackgroundColor: Color(0xff170635),
@@ -128,10 +135,78 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         backgroundColor: Colors.white,
         canvasColor: Colors.white,
+        ),*/
+        theme: ThemeData.light().copyWith(
+          primaryColor: Color(0xff170635),
+          scaffoldBackgroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          canvasColor: Colors.white,
         ),
+        darkTheme: ThemeData.dark().copyWith(
+          primaryColor: Colors.white,
+          scaffoldBackgroundColor: Color(0xff170635),
+          backgroundColor: Color(0xff170635),
+          canvasColor: Color(0xff170635),
+        ),
+        themeMode: c.testDark.value == true ? ThemeMode.dark : ThemeMode.light,
         home: const Login(),
       ),
-    )
+    //)
     );
+  }
+}
+
+class Controller extends GetxController{
+  var firstSelected  = GetStorage().read('locale') != null
+      ? GetStorage().read('locale') != 'vi'
+      ? 'assets/images/usaFlag.svg'.obs
+      : 'assets/images/vnFlag.svg'.obs
+      : 'assets/images/usaFlag.svg'.obs;
+
+  readGetStorage() {
+    print(GetStorage().read('isDark'));
+    print(GetStorage().read('locale'));
+
+    firstSelected  = GetStorage().read('locale') != null
+        ? GetStorage().read('locale') != 'vi'
+        ? 'assets/images/usaFlag.svg'.obs
+        : 'assets/images/vnFlag.svg'.obs
+        : 'assets/images/usaFlag.svg'.obs;
+
+    testLocale = GetStorage().read('locale') != null ?
+    GetStorage().read('locale') == 'vi'
+        ? Locale('vi', 'VN').obs
+        : Locale('en', 'US').obs
+        : Locale('en', 'US').obs;
+
+    testDark = GetStorage().read('isDark') != null
+        ? GetStorage().read('isDark') == true
+        ? true.obs : false.obs  : false.obs;
+  }
+
+  updateImg(String newImg) => firstSelected.value = newImg;
+
+  var testLocale = GetStorage().read('locale') != null ?
+  GetStorage().read('locale') == 'vi'
+  ? Locale('vi', 'VN').obs
+  : Locale('en', 'US').obs
+  : Locale('en', 'US').obs;
+
+  updateLocale(Locale newLocale) {
+    testLocale.value = newLocale;
+    Get.updateLocale(newLocale);
+    GetStorage().write('locale', newLocale.languageCode);
+    //print(GetStorage().read('locale'));
+  }
+
+  var testDark = GetStorage().read('isDark') != null
+  ? GetStorage().read('isDark') == true
+  ? true.obs : false.obs  : false.obs;
+
+  updateIsDark(bool val) {
+    testDark.value = val;
+    //Get.changeTheme(val ? ThemeData.dark() :ThemeData.light());
+    Get.changeThemeMode(val ? ThemeMode.dark : ThemeMode.light);
+    //GetStorage().write('isDark', val);
   }
 }

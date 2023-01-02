@@ -17,6 +17,8 @@ import 'package:get/get.dart';
 import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import '../main.dart';
+
 class Tutor extends StatefulWidget {
   const Tutor({Key? key}) : super(key: key);
 
@@ -39,8 +41,8 @@ class _TutorState extends State<Tutor> {
   TextEditingController _upErrController = TextEditingController();
   String dateFormat = "";
 
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
-  Locale? appLocal = Get.locale;
+  final Controller c = Get.put(Controller());
+  
 
   Timer? countdownTimer;
   Duration myDuration = Duration(days: 1);
@@ -276,7 +278,7 @@ class _TutorState extends State<Tutor> {
         });
 
         setState(() {
-          dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', appLocal?.languageCode).format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', appLocal?.languageCode).format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
+          dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', c.testLocale.value.languageCode).format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', c.testLocale.value.languageCode).format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
           myDuration = Duration(milliseconds: startTime - timeNow);
           if (myDuration.isNegative) {
             myDuration = -myDuration;
@@ -373,7 +375,7 @@ class _TutorState extends State<Tutor> {
                       child: SizedBox(
                         width: 25,
                         height: 25,
-                        child: SvgPicture.asset(_firstSelected),
+                        child: SvgPicture.asset('${c.firstSelected}'),
                       ),
                     ),
                     Center(
@@ -408,12 +410,9 @@ class _TutorState extends State<Tutor> {
                     ],
                   ),
                   onTap: () => {
-                    print("Eng"),
-                    Get.updateLocale(Locale('en', 'US')),
-                    setState(() {
-                      appLocal = Get.locale;
-                      dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', 'en').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', 'en').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
-                    }),
+                    
+                    c.updateImg('assets/images/usaFlag.svg'),
+                    c.updateLocale(Locale('en', 'US')),
                   },
                 ),
                 PopupMenuItem(
@@ -430,20 +429,17 @@ class _TutorState extends State<Tutor> {
                     ],
                   ),
                   onTap: () => {
-                    print("Vi"),
-                    Get.updateLocale(Locale('vi', 'VN')),
-                    setState(() {
-                      appLocal = Get.locale;
-                      dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', 'vi').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', 'vi').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
-                    }),
+                    
+                    c.updateImg('assets/images/vnFlag.svg'),
+                    c.updateLocale(Locale('vi', 'VN')),
                   }, //
                 ),
               ],
-              onSelected: (String value) {
-                setState(() {
-                  _firstSelected = value;
-                });
-              },
+              /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
             ),
             SizedBox(width: 10,),
             PopupMenuButton<String>(
@@ -1400,7 +1396,7 @@ class _TutorState extends State<Tutor> {
                                                         child: Image.asset('assets/images/icons/close.png'),
                                                       ),
                                                       SizedBox(width: 10),
-                                                      Text("Not set country"),
+                                                      Text("Not set country".tr),
                                                     ],
                                                   ),
                                                 ),
@@ -1423,7 +1419,7 @@ class _TutorState extends State<Tutor> {
                                                           );
                                                         }).reversed)
                                                   )
-                                                      : Text('No reviews yet'.tr, style:  TextStyle(
+                                                      : Text('No review yet'.tr, style:  TextStyle(
                                                     fontStyle: FontStyle.italic,
                                                   ),),
                                                 ),

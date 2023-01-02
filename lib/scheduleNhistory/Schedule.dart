@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 
 class Schedule extends StatefulWidget {
   const Schedule({Key? key}) : super(key: key);
@@ -21,7 +23,7 @@ class Schedule extends StatefulWidget {
 }
 
 class _ScheduleState extends State<Schedule> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
   @override
   void initState() {
@@ -169,7 +171,7 @@ class _ScheduleState extends State<Schedule> {
 
   final _editRequestKey = GlobalKey<FormState>();
 
-  Locale? appLocal = Get.locale;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +202,7 @@ class _ScheduleState extends State<Schedule> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -235,11 +237,9 @@ class _ScheduleState extends State<Schedule> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
-                  setState(() {
-                    appLocal = Get.locale;
-                  }),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -256,19 +256,17 @@ class _ScheduleState extends State<Schedule> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
-                  setState(() {
-                    appLocal = Get.locale;
-                  }),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -595,7 +593,7 @@ class _ScheduleState extends State<Schedule> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(DateFormat('E, dd, MMM, yy', appLocal?.languageCode).format(startDateTime), style: TextStyle(
+                                  Text(DateFormat('E, dd, MMM, yy', c.testLocale.value.languageCode).format(startDateTime), style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                   ),),
@@ -759,7 +757,7 @@ class _ScheduleState extends State<Schedule> {
                                                                       Container(
                                                                           margin: EdgeInsets.only(bottom: 10),
                                                                           child: Text(
-                                                                            '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                            '${DateFormat('E, dd MMM yy, HH:mm', c.testLocale.value.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                             style: TextStyle(
                                                                               fontWeight: FontWeight.bold,
                                                                             ),

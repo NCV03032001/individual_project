@@ -15,6 +15,8 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
+import '../main.dart';
+
 
 class History extends StatefulWidget {
   const History({Key? key}) : super(key: key);
@@ -24,8 +26,8 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
-  Locale? appLocal = Get.locale;
+  final Controller c = Get.put(Controller());
+
 
   @override
   void initState() {
@@ -222,7 +224,7 @@ class _HistoryState extends State<History> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -257,11 +259,9 @@ class _HistoryState extends State<History> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
-                  setState(() {
-                    appLocal = Get.locale;
-                  }),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -278,19 +278,17 @@ class _HistoryState extends State<History> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
-                  setState(() {
-                    appLocal = Get.locale;
-                  }),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -612,11 +610,11 @@ class _HistoryState extends State<History> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(DateFormat('E, dd, MMM, yy', appLocal?.languageCode).format(startDateTime), style: TextStyle(
+                                  Text(DateFormat('E, dd, MMM, yy', c.testLocale.value.languageCode).format(startDateTime), style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                   ),),
-                                  Text(timeago.format(endDateTime, locale: appLocal?.languageCode)),
+                                  Text(timeago.format(endDateTime, locale: c.testLocale.value.languageCode)),
                                 ],
                               ),
                             ),
@@ -722,7 +720,7 @@ class _HistoryState extends State<History> {
                           alignment: Alignment.centerLeft,
                           child: Row(
                             children: [
-                              Text('Lesson Time: ${DateFormat('HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}', style: TextStyle(
+                              Text('${'Lesson Time:'.tr} ${DateFormat('HH:mm').format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}', style: TextStyle(
                                   fontSize: 17
                               ),),
                               e.recordUrl != null && e.showRecordUrl == true
@@ -863,7 +861,7 @@ class _HistoryState extends State<History> {
                                                           Container(
                                                               margin: EdgeInsets.only(bottom: 10),
                                                               child: Text(
-                                                                '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                '${DateFormat('E, dd MMM yy, HH:mm', c.testLocale.value.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                 style: TextStyle(
                                                                   fontWeight: FontWeight.bold,
                                                                 ),
@@ -911,7 +909,7 @@ class _HistoryState extends State<History> {
                                                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                                                   borderRadius: BorderRadius.all(Radius.circular(10)),
                                                                 ),
-                                                                hintText: "Review Content",
+                                                                hintText: "Review Content".tr,
                                                                 isCollapsed: true,
                                                               ),
                                                             ),
@@ -1021,7 +1019,7 @@ class _HistoryState extends State<History> {
                                                                   Container(
                                                                       margin: EdgeInsets.only(bottom: 10),
                                                                       child: Text(
-                                                                        '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                        '${DateFormat('E, dd MMM yy, HH:mm', c.testLocale.value.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                         style: TextStyle(
                                                                           fontWeight: FontWeight.bold,
                                                                         ),
@@ -1038,7 +1036,7 @@ class _HistoryState extends State<History> {
                                                                           ),
                                                                           children: [
                                                                             TextSpan(
-                                                                              text: 'What was the reason you reported on the lesson?',
+                                                                              text: 'What was the reason you reported on the lesson?'.tr,
                                                                               style: TextStyle(
                                                                                 fontWeight: FontWeight.bold,
                                                                                 color: Theme.of(context).primaryColor,
@@ -1226,7 +1224,7 @@ class _HistoryState extends State<History> {
                                                                     Container(
                                                                         margin: EdgeInsets.only(bottom: 10),
                                                                         child: Text(
-                                                                          '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                          '${DateFormat('E, dd MMM yy, HH:mm', c.testLocale.value.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                           style: TextStyle(
                                                                             fontWeight: FontWeight.bold,
                                                                           ),
@@ -1387,7 +1385,7 @@ class _HistoryState extends State<History> {
                                                                       Container(
                                                                           margin: EdgeInsets.only(bottom: 10),
                                                                           child: Text(
-                                                                            '${DateFormat('E, dd MMM yy, HH:mm', appLocal?.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
+                                                                            '${DateFormat('E, dd MMM yy, HH:mm', c.testLocale.value.languageCode).format(startDateTime)} - ${DateFormat('HH:mm').format(endDateTime)}',
                                                                             style: TextStyle(
                                                                               fontWeight: FontWeight.bold,
                                                                             ),
@@ -1404,7 +1402,7 @@ class _HistoryState extends State<History> {
                                                                               ),
                                                                               children: [
                                                                                 TextSpan(
-                                                                                  text: 'What was the reason you reported on the lesson?',
+                                                                                  text: 'What was the reason you reported on the lesson?'.tr,
                                                                                   style: TextStyle(
                                                                                     fontWeight: FontWeight.bold,
                                                                                     color: Theme.of(context).primaryColor,

@@ -11,6 +11,8 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
 
+import '../main.dart';
+
 class Courses extends StatefulWidget {
   const Courses({Key? key}) : super(key: key);
 
@@ -19,7 +21,7 @@ class Courses extends StatefulWidget {
 }
 
 class _CoursesState extends State<Courses> {
-  String _firstSelected = Get.locale?.languageCode == 'vi' ? 'assets/images/vnFlag.svg' : 'assets/images/usaFlag.svg';
+  final Controller c = Get.put(Controller());
 
   final FocusNode _screenFocus = FocusNode();
   bool _isLoading = false;
@@ -188,7 +190,7 @@ class _CoursesState extends State<Courses> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -223,8 +225,9 @@ class _CoursesState extends State<Courses> {
                   ],
                 ),
                 onTap: () => {
-                  print("Eng"),
-                  Get.updateLocale(Locale('en', 'US')),
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
                 },
               ),
               PopupMenuItem(
@@ -241,16 +244,17 @@ class _CoursesState extends State<Courses> {
                   ],
                 ),
                 onTap: () => {
-                  print("Vi"),
-                  Get.updateLocale(Locale('vi', 'VN')),
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
                 }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -658,7 +662,7 @@ class _CoursesState extends State<Courses> {
                               borderSide: BorderSide(width: 1, color: Colors.blue),
                               borderRadius: BorderRadius.all(Radius.circular(50)),
                             ),
-                            hintText: 'Select category',
+                            hintText: 'Select category'.tr,
                           ),
                         ),
                         onChanged: (val) {
