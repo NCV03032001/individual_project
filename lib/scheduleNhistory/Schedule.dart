@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../main.dart';
+import '../notification/notification.dart';
 
 
 class Schedule extends StatefulWidget {
@@ -127,7 +128,7 @@ class _ScheduleState extends State<Schedule> {
       );
     }
   }
-  void cancelSchedule(String reasonId, String? note, String bookingID) async {
+  void cancelSchedule(String reasonId, String? note, String bookingID, int startMili) async {
     var url = Uri.https('sandbox.api.lettutor.com', 'booking/schedule-detail', );
 
     Map<String, dynamic> body = {
@@ -158,12 +159,14 @@ class _ScheduleState extends State<Schedule> {
     else {
       final Map parsed = json.decode(response.body);
       final String err = parsed["message"];
+      NotificationService.cancelNotification(startMili);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(err, style: TextStyle(color: Colors.green),),
           duration: Duration(seconds: 3),
         ),
       );
+
     }
   }
 
@@ -877,7 +880,7 @@ class _ScheduleState extends State<Schedule> {
                                                 String? tempNote;
                                                 if (noteController.text.isNotEmpty) tempNote = noteController.text;
 
-                                                Future<void> cancel() async{return cancelSchedule(reasonId, tempNote, e.id);};
+                                                Future<void> cancel() async{return cancelSchedule(reasonId, tempNote, e.id, e.scheduleDetailInfo.startPeriodTimestamp);};
                                                 await cancel();
 
                                                 getScheduleList(queryParameters);

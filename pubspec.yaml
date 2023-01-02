@@ -58,6 +58,7 @@ dependencies:
   jitsi_meet_wrapper: ^0.0.5
   get: ^4.6.5
   get_storage: ^2.0.3
+  flutter_local_notifications: ^13.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

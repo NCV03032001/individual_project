@@ -43,8 +43,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    //bool isDarkMode = false;
-    //var appLocale = Locale('en','US').obs;
     final Controller c = Get.put(Controller());
     c.readGetStorage();
 
@@ -68,6 +66,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         translations: LocaleString(),//
         //locale: Locale('en','US'),//
+        builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!),
         locale: c.testLocale.value,//
         title: 'LetTutor - 19120713',
 
@@ -122,8 +121,8 @@ class MyApp extends StatelessWidget {
           '/become_tutor' : (context) => BecomeTutor(),
         },
 
-        //theme: Get.isDarkMode?
-        /*theme: c.testDark == true?
+        /*theme: Get.isDarkMode?
+        theme: c.testDark == true?
         ThemeData.dark().copyWith(
           primaryColor: Colors.white,
           scaffoldBackgroundColor: Color(0xff170635),

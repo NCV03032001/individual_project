@@ -20,6 +20,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../main.dart';
 import '../model/Tutor/TutorProvider.dart';
+import '../notification/notification.dart';
 
 class TutorProfile extends StatefulWidget {
   final ProfileArg theArg;
@@ -198,7 +199,7 @@ class _TutorProfileState extends State<TutorProfile> {
     return _AppointmentDataSource(appointments);
   }
 
-  void bookClass(String id, String note) async {
+  void bookClass(String id, String note, int startMili) async {
     var url = Uri.https('sandbox.api.lettutor.com', 'booking');
     var response = await http.post(url,
         headers: {
@@ -274,6 +275,7 @@ class _TutorProfileState extends State<TutorProfile> {
           builder: (BuildContext context) {
             double width = MediaQuery.of(context).size.width;
             double height = MediaQuery.of(context).size.height;
+            NotificationService.addNotification(startMili);
             return AlertDialog(
               title: Text('Boogking details'.tr),
               content: Container(
@@ -1706,7 +1708,7 @@ class _TutorProfileState extends State<TutorProfile> {
                       }
                   ).then((value) {
                     if(value == "OK") {
-                      bookClass(meeting.id.toString(), _noteController.text);
+                      bookClass(meeting.id.toString(), _noteController.text, meeting.startTime.millisecondsSinceEpoch);
                     }
                   });
                 },
