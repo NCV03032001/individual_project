@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
+
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:individual_project/course/CourseDiscover.dart';
@@ -25,7 +27,7 @@ import 'package:provider/provider.dart';
 import 'package:get/get.dart';//
 import 'package:get_storage/get_storage.dart';//
 
-import 'LocaleString.dart';//
+import 'LocaleString.dart';
 
 
 Future main() async {
@@ -43,14 +45,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final Controller c = Get.put(Controller());
+    final theGetController c = Get.put(theGetController());
     c.readGetStorage();
 
-    return /*ValueChangeObserver<bool>(
-        cacheKey: Setting.keyDarkMode,
-        defaultValue: false,
+    // String? appTitle = FlavorConfig.instance.variables["appTitle"];
+    // if (appTitle == null) print("Build mode: null");
+    // appTitle ??= 'LetTutor - 19120713';
 
-        builder: (_, isDarkMode, __) =>*/ MultiProvider(
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => TutorProvider()),
@@ -68,6 +70,7 @@ class MyApp extends StatelessWidget {
         //locale: Locale('en','US'),//
         builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child!),
         locale: c.testLocale.value,//
+        //title: appTitle,
         title: 'LetTutor - 19120713',
 
         onGenerateRoute: (settings) {
@@ -121,20 +124,6 @@ class MyApp extends StatelessWidget {
           '/become_tutor' : (context) => BecomeTutor(),
         },
 
-        /*theme: Get.isDarkMode?
-        theme: c.testDark == true?
-        ThemeData.dark().copyWith(
-          primaryColor: Colors.white,
-          scaffoldBackgroundColor: Color(0xff170635),
-          backgroundColor: Color(0xff170635),
-          canvasColor: Color(0xff170635),
-        )
-          : ThemeData.light().copyWith(
-        primaryColor: Color(0xff170635),
-        scaffoldBackgroundColor: Colors.white,
-        backgroundColor: Colors.white,
-        canvasColor: Colors.white,
-        ),*/
         theme: ThemeData.light().copyWith(
           primaryColor: Color(0xff170635),
           scaffoldBackgroundColor: Colors.white,
@@ -150,12 +139,11 @@ class MyApp extends StatelessWidget {
         themeMode: c.testDark.value == true ? ThemeMode.dark : ThemeMode.light,
         home: const Login(),
       ),
-    //)
     );
   }
 }
 
-class Controller extends GetxController{
+class theGetController extends GetxController{
   var firstSelected  = GetStorage().read('locale') != null
       ? GetStorage().read('locale') != 'vi'
       ? 'assets/images/usaFlag.svg'.obs
@@ -195,7 +183,6 @@ class Controller extends GetxController{
     testLocale.value = newLocale;
     Get.updateLocale(newLocale);
     GetStorage().write('locale', newLocale.languageCode);
-    //print(GetStorage().read('locale'));
   }
 
   var testDark = GetStorage().read('isDark') != null
@@ -206,6 +193,6 @@ class Controller extends GetxController{
     testDark.value = val;
     //Get.changeTheme(val ? ThemeData.dark() :ThemeData.light());
     Get.changeThemeMode(val ? ThemeMode.dark : ThemeMode.light);
-    //GetStorage().write('isDark', val);
+    GetStorage().write('isDark', val);
   }
 }

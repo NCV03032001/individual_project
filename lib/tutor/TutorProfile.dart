@@ -33,7 +33,7 @@ class TutorProfile extends StatefulWidget {
 }
 
 class _TutorProfileState extends State<TutorProfile> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
   bool _isLoading = false;
 
   Tutor thisTutor = Tutor(

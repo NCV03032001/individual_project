@@ -12,7 +12,7 @@ class ForgotPassword_sent extends StatefulWidget {
 }
 
 class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   @override
   Widget build(BuildContext context) {

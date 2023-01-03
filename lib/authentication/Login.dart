@@ -28,7 +28,7 @@ class _LoginState extends State<Login> {
   bool _isObscure = true;
   bool _isLoading = false;
 
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   final _loginFormKey = GlobalKey<FormState>();
 

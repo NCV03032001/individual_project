@@ -20,7 +20,7 @@ class CourseDetail extends StatefulWidget {
 }
 
 class _CourseDetailState extends State<CourseDetail> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
   CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
       reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
       createdAt: "", updatedAt: "", topics: [], categories: [], users: []);

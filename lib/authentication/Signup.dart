@@ -21,7 +21,7 @@ class _SignupState extends State<Signup> {
   bool _isObscure = true;
   bool _isSuccess = false;
   bool _isLoading = false;
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   final _signupFormKey = GlobalKey<FormState>();
 

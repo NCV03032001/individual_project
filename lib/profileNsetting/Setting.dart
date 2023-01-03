@@ -19,7 +19,7 @@ class Setting extends StatefulWidget {
 }
 
 class _SettingState extends State<Setting> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   static String keyDarkMode = 'key-darkmode';
 

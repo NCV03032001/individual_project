@@ -24,7 +24,7 @@ class Schedule extends StatefulWidget {
 }
 
 class _ScheduleState extends State<Schedule> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   @override
   void initState() {

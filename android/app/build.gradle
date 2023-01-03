@@ -61,6 +61,27 @@ android {
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions "app"
+    productFlavors {
+        dev {
+            // 1
+            dimension "app"
+            // 2
+            resValue "string", "app_name", "[dev]LetTutor - 19120713"
+
+            applicationId "com.example.individual_project.dev"
+            // 3
+            applicationIdSuffix ".dev"
+        }
+        production {
+            dimension "app"
+            resValue "string", "app_name", "[prod]LetTutor - 19120713"
+
+            applicationId "com.example.individual_project.prod"
+            applicationIdSuffix ".prod"
+        }
+    }
+
 }
 
 flutter {

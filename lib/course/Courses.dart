@@ -21,7 +21,7 @@ class Courses extends StatefulWidget {
 }
 
 class _CoursesState extends State<Courses> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   final FocusNode _screenFocus = FocusNode();
   bool _isLoading = false;

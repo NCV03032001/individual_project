@@ -14,7 +14,7 @@ class BecomeTutor extends StatefulWidget {
 }
 
 class _BecomeTutorState extends State<BecomeTutor> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   FocusNode _screenFocus = new FocusNode();
 

@@ -23,7 +23,7 @@ class CourseDiscover extends StatefulWidget {
 }
 
 class _CourseDiscoverState extends State<CourseDiscover> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   bool _isLoading = false;
 

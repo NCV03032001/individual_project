@@ -30,7 +30,7 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   final FocusNode _screenFocus = FocusNode();
   
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   bool _isLoading = false;
   final _changeInfoFormKey = GlobalKey<FormState>();

@@ -26,7 +26,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
 
   @override

@@ -23,7 +23,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   bool _isLoading = false;
   final _fgpwFormKey = GlobalKey<FormState>();
   final FocusNode _fgpwFocus = FocusNode();
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
 
   @override
   Widget build(BuildContext context) {

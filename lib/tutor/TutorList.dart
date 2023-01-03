@@ -41,7 +41,7 @@ class _TutorState extends State<Tutor> {
   TextEditingController _upErrController = TextEditingController();
   String dateFormat = "";
 
-  final Controller c = Get.put(Controller());
+  final theGetController c = Get.put(theGetController());
   
 
   Timer? countdownTimer;
