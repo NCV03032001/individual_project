@@ -25,7 +25,7 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
-  static Future addNotification(int startMili) async {
+  static Future addNotification(int startMili, String? email) async {
     var scheduledDate = DateTime.fromMillisecondsSinceEpoch(startMili).subtract(Duration(minutes: 10));
     var scheduledDateTz = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5));
 
@@ -39,10 +39,18 @@ class NotificationService {
     //DateTime tempDate = DateTime.fromMillisecondsSinceEpoch(startMili);
     int id = startMili~/10000;
 
+    String body = "";
+
+    if (email != null) {
+      body = 'For ${email}. You have a class at in 10 minutes!';
+    } else {
+      body = 'You have a class at in 10 minutes!';
+    }
+
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id,
       'LetTutor Class Notification',
-      'You have a class at in 10 minutes!',
+      body,
       scheduledDateTz,
       const NotificationDetails(
           android: AndroidNotificationDetails(

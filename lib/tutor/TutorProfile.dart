@@ -20,6 +20,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../main.dart';
 import '../model/Tutor/TutorProvider.dart';
+import '../model/User/User.dart';
 import '../notification/notification.dart';
 
 class TutorProfile extends StatefulWidget {
@@ -163,14 +164,15 @@ class _TutorProfileState extends State<TutorProfile> {
   }
 
   Appointment makeAppoint(TutorSchedule aSch) {
+    User thisUserInfo = context.read<UserProvider>().thisUser;
     if (aSch.isBooked && aSch.bookingInfo.isNotEmpty) {
       String tempId = aSch.bookingInfo.firstWhere((element) => !element.isDeleted).userId;
-      String thisUserId = context.read<UserProvider>().thisUser.id;
-      if (tempId == thisUserId) {
+      if (tempId == thisUserInfo.id) {
         return Appointment(
           startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
           endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
           subject: 'Booked',
+          notes: thisUserInfo.email,
           id: aSch.id,
         );
       }
@@ -179,6 +181,7 @@ class _TutorProfileState extends State<TutorProfile> {
           startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
           endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
           subject: 'Reserved',
+          notes: thisUserInfo.email,
           id: aSch.id,
         );
       }
@@ -187,6 +190,7 @@ class _TutorProfileState extends State<TutorProfile> {
       startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
       endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
       subject: 'Book',
+      notes: thisUserInfo.email,
       id: aSch.id,
     );
   }
@@ -199,7 +203,7 @@ class _TutorProfileState extends State<TutorProfile> {
     return _AppointmentDataSource(appointments);
   }
 
-  void bookClass(String id, String note, int startMili) async {
+  void bookClass(String id, String note, int startMili, String? email) async {
     var url = Uri.https('sandbox.api.lettutor.com', 'booking');
     var response = await http.post(url,
         headers: {
@@ -275,9 +279,9 @@ class _TutorProfileState extends State<TutorProfile> {
           builder: (BuildContext context) {
             double width = MediaQuery.of(context).size.width;
             double height = MediaQuery.of(context).size.height;
-            NotificationService.addNotification(startMili);
+            NotificationService.addNotification(startMili, email);
             return AlertDialog(
-              title: Text('Boogking details'.tr),
+              title: Text('Booking details'.tr),
               content: Container(
                 constraints: BoxConstraints(
                   maxHeight: height/2,
@@ -318,7 +322,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                   ),
                   child: Text(
-                    'Done',
+                    'Done'.tr,
                     style: TextStyle(
                       color: Colors.blue,
                     ),
@@ -1708,7 +1712,7 @@ class _TutorProfileState extends State<TutorProfile> {
                       }
                   ).then((value) {
                     if(value == "OK") {
-                      bookClass(meeting.id.toString(), _noteController.text, meeting.startTime.millisecondsSinceEpoch);
+                      bookClass(meeting.id.toString(), _noteController.text, meeting.startTime.millisecondsSinceEpoch, meeting.notes);
                     }
                   });
                 },
