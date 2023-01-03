@@ -81,13 +81,13 @@ android {
         dev {
             dimension "app"
             resValue "string", "app_name", "[dev]LetTutor - 19120713"
-            applicationId "com.example.individual_project.dev"
+            applicationId "com.individual_project.lettutor.dev"
             applicationIdSuffix ".dev"
         }
         production {
             dimension "app"
             resValue "string", "app_name", "LetTutor - 19120713"
-            applicationId "com.example.individual_project.prod"
+            applicationId "com.individual_project.lettutor.prod"
             applicationIdSuffix ".main"
         }
     }
