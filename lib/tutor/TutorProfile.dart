@@ -934,8 +934,11 @@ class _TutorProfileState extends State<TutorProfile> {
                           });
                         }
                         else {
-                          if (tempBody != null) searchTutorList(postBody: tempBody!);
-                          else searchTutorList();
+                          if (tempBody != null) {
+                            searchTutorList(postBody: tempBody);
+                          } else {
+                            searchTutorList();
+                          }
                           setState(() {
                             _errorController.text = "";
                             thisTutor.isFavorite = !thisTutor.isFavorite!;
