@@ -1451,15 +1451,20 @@ class _ProfileState extends State<Profile> {
           Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
             ElevatedButton.icon(
               icon: Icon(Icons.camera),
-              onPressed: () {
-                takePhoto(ImageSource.camera);
+              onPressed: () async {
+                Future<void> getPhoto() async { return takePhoto(ImageSource.camera);}
+                await getPhoto();
+
+                Navigator.pop(context);
               },
               label: Text("Camera".tr),
             ),
             ElevatedButton.icon(
               icon: Icon(Icons.image),
-              onPressed: () {
-                takePhoto(ImageSource.gallery);
+              onPressed: () async {
+                Future<void> getPhoto() async { return takePhoto(ImageSource.gallery);}
+                await getPhoto();
+
                 Navigator.pop(context);
               },
               label: Text("Gallery".tr),
