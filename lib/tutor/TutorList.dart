@@ -789,6 +789,9 @@ class _TutorState extends State<Tutor> {
                               isVideoMuted: true,
                               userDisplayName: "${userInfo.name}",
                               userEmail: "${userInfo.email}",
+                              configOverrides: {
+                                'prejoinPageEnabled': false //This here
+                              },
                             );
 
                             await JitsiMeetWrapper.joinMeeting(

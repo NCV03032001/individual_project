@@ -35,7 +35,7 @@ class _ProfileState extends State<Profile> {
   bool _isLoading = false;
   final _changeInfoFormKey = GlobalKey<FormState>();
 
-  PickedFile? _imageFile;
+  XFile? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
   final FocusNode _dialogFocus = FocusNode();
@@ -1460,6 +1460,7 @@ class _ProfileState extends State<Profile> {
               icon: Icon(Icons.image),
               onPressed: () {
                 takePhoto(ImageSource.gallery);
+                Navigator.pop(context);
               },
               label: Text("Gallery".tr),
             ),
@@ -1469,7 +1470,7 @@ class _ProfileState extends State<Profile> {
     );
   }
   void takePhoto(ImageSource source) async {
-    final pickedFile = await _picker.getImage(
+    final pickedFile = await _picker.pickImage(
       source: source,
     );
     if (pickedFile != null) {
@@ -1503,7 +1504,6 @@ class _ProfileState extends State<Profile> {
           ),
         );
       }
-      Navigator.pop(context);
     }
   }
 }

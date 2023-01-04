@@ -48,8 +48,8 @@ dependencies:
   number_paginator: ^0.2.3
   flutter_localized_locales: ^2.0.3
   timeago: ^3.3.0
-  syncfusion_flutter_pdfviewer: ^20.4.41
-  syncfusion_flutter_calendar: ^20.4.41
+  syncfusion_flutter_pdfviewer: ^20.4.42
+  syncfusion_flutter_calendar: ^20.4.42
   dio: ^4.0.6
   permission_handler: ^10.2.0
   path_provider: ^2.0.11
