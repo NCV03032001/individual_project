@@ -354,12 +354,11 @@ class _SignupState extends State<Signup> {
                               var url = Uri.https('sandbox.api.lettutor.com', 'auth/register');
                                 var response = await http.post(
                                   url,
-                                  /*headers: {
+                                  headers: {
                                     "Content-Type": "application/json",
-                                    'Referer': "https://sandbox.app.lettutor.com/",
-                                    "DNT": '1'
-                                  },*/
-                                  body: jsonEncode(<String, dynamic>{'email': _emailController.text, 'password': _pwController.text, "source": null}));
+                                    'Referer': "https://sandbox.api.lettutor.com/",
+                                  },
+                                  body: jsonEncode(<String, dynamic>{'email': _emailController.text, 'password': _pwController.text, "source": "https://sandbox.api.lettutor.com/"}));
                               if (response.statusCode != 201) {
                                 final Map parsed = json.decode(response.body);
                                 final String err = parsed["message"];
