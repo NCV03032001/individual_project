@@ -367,6 +367,158 @@ class Tutor {
   }
 }
 
+class FeedbackItem {
+  FeedbackItem({
+    required this.id,
+    required this.firstId,
+    required this.secondId,
+    required this.rating,
+    required this.content,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.name,
+    required this.avatar,
+
+  });
+  late final String id;
+  late final String firstId;
+  late final String secondId;
+  late final int? rating;
+  late final String content;
+  late final String createdAt;
+  late final String updatedAt;
+  late final String name;
+  late final String? avatar;
+
+  FeedbackItem.fromJson(Map<String, dynamic> json){
+    id = json['id'];
+    firstId = json['firstId'];
+    secondId = json['secondId'];
+    rating = json['rating'].toInt();
+    content = json['content'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    name = json['firstInfo']['name'];
+    avatar = json['firstInfo']['avatar'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final _data = <String, dynamic>{};
+    _data['id'] = id;
+    _data['firstId'] = firstId;
+    _data['secondId'] = secondId;
+    _data['rating'] = rating;
+    _data['content'] = content;
+    _data['createdAt'] = createdAt;
+    _data['updatedAt'] = updatedAt;
+    _data['firstInfo']['name'] = name;
+    _data['firstInfo']['avatar'] = avatar;
+    return _data;
+  }
+}
+
+class TutorSchedule {
+  TutorSchedule({
+    required this.startPeriodTimestamp,
+    required this.endPeriodTimestamp,
+    required this.id,
+    required this.scheduleId,
+    required this.startPeriod,
+    required this.endPeriod,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.bookingInfo,
+    required this.isBooked,
+  });
+  late final int startPeriodTimestamp;
+  late final int endPeriodTimestamp;
+  late final String id;
+  late final String scheduleId;
+  late final String startPeriod;
+  late final String endPeriod;
+  late final String createdAt;
+  late final String updatedAt;
+  late final List<BookingInfo> bookingInfo;
+  late final bool isBooked;
+
+  TutorSchedule.fromJson(Map<String, dynamic> json){
+    startPeriodTimestamp = json['startPeriodTimestamp'];
+    endPeriodTimestamp = json['endPeriodTimestamp'];
+    id = json['id'];
+    scheduleId = json['scheduleId'];
+    startPeriod = json['startPeriod'];
+    endPeriod = json['endPeriod'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    bookingInfo = List.from(json['bookingInfo']).map((e)=>BookingInfo.fromJson(e)).toList();
+    isBooked = json['isBooked'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final _data = <String, dynamic>{};
+    _data['startPeriodTimestamp'] = startPeriodTimestamp;
+    _data['endPeriodTimestamp'] = endPeriodTimestamp;
+    _data['id'] = id;
+    _data['scheduleId'] = scheduleId;
+    _data['startPeriod'] = startPeriod;
+    _data['endPeriod'] = endPeriod;
+    _data['createdAt'] = createdAt;
+    _data['updatedAt'] = updatedAt;
+    _data['bookingInfo'] = bookingInfo.map((e)=>e.toJson()).toList();
+    _data['isBooked'] = isBooked;
+    return _data;
+  }
+}
+
+class BookingInfo {
+  BookingInfo({
+    required this.createdAtTimeStamp,
+    required this.updatedAtTimeStamp,
+    required this.id,
+    required this.isDeleted,
+    required this.createdAt,
+    required this.scheduleDetailId,
+    required this.updatedAt,
+    required this.cancelReasonId,
+    required this.userId,
+  });
+  late final int createdAtTimeStamp;
+  late final int updatedAtTimeStamp;
+  late final String id;
+  late final bool isDeleted;
+  late final String createdAt;
+  late final String scheduleDetailId;
+  late final String updatedAt;
+  late final int? cancelReasonId;
+  late final String userId;
+
+  BookingInfo.fromJson(Map<String, dynamic> json){
+    createdAtTimeStamp = json['createdAtTimeStamp'];
+    updatedAtTimeStamp = json['updatedAtTimeStamp'];
+    id = json['id'];
+    isDeleted = json['isDeleted'];
+    createdAt = json['createdAt'];
+    scheduleDetailId = json['scheduleDetailId'];
+    updatedAt = json['updatedAt'];
+    cancelReasonId = json['cancelReasonId'];
+    userId = json['userId'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final _data = <String, dynamic>{};
+    _data['createdAtTimeStamp'] = createdAtTimeStamp;
+    _data['updatedAtTimeStamp'] = updatedAtTimeStamp;
+    _data['id'] = id;
+    _data['isDeleted'] = isDeleted;
+    _data['createdAt'] = createdAt;
+    _data['scheduleDetailId'] = scheduleDetailId;
+    _data['updatedAt'] = updatedAt;
+    _data['cancelReasonId'] = cancelReasonId;
+    _data['userId'] = userId;
+    return _data;
+  }
+}
+
 class TempCourse{
   TempCourse({
     required this.id,

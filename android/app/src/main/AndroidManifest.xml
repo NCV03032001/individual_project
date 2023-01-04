@@ -1,10 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.individual_project">
+    package="com.example.individual_project"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
    <application
-        android:label="Simple Video Study App"
+        tools:replace="android:label"
+        android:label="@string/app_name"
+        android:exported="true"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -26,6 +32,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+       <!--<service
+           android:name="org.jitsi.meet.sdk.ConnectionService"
+           android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
+           android:exported="true">
+           <intent-filter>
+               <action android:name="android.telecom.ConnectionService" />
+           </intent-filter>
+       </service>-->
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -1,9 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:individual_project/model/Tutor.dart';
-import 'package:http/http.dart' as http;
-
+import 'package:individual_project/model/Tutor/Tutor.dart';
 
 class TutorProvider with ChangeNotifier, Diagnosticable {
   late int count;
@@ -23,8 +19,7 @@ class TutorProvider with ChangeNotifier, Diagnosticable {
     theList = List.from(json['rows']).map((e)=>Tutor.fromListJson(e)).toList();
     notifyListeners();
   }
-
-  void makeList() {
+/*  void makeList() {
     //var toRemove = [];
     for (var aFav in favList) {
       for(var aNor in theList) {
@@ -95,5 +90,5 @@ class TutorProvider with ChangeNotifier, Diagnosticable {
       return -1;
     }
     return rating;
-  }
+  }*/
 }

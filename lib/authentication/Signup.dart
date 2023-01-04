@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:email_validator/email_validator.dart';
+import 'package:individual_project/main.dart';
 
 class Signup extends StatefulWidget {
   const Signup({Key? key}) : super(key: key);
@@ -19,7 +21,7 @@ class _SignupState extends State<Signup> {
   bool _isObscure = true;
   bool _isSuccess = false;
   bool _isLoading = false;
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
 
   final _signupFormKey = GlobalKey<FormState>();
 
@@ -52,9 +54,7 @@ class _SignupState extends State<Signup> {
                 onTap: () {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                       "/login",
-                          (route) => route.isCurrent && route.settings.name == "/login"
-                          ? false
-                          : true);
+                          (route) => false);
                 }, //sửa sau
                 child: SizedBox(
                   height: 30,
@@ -75,7 +75,7 @@ class _SignupState extends State<Signup> {
                         child: SizedBox(
                           width: 25,
                           height: 25,
-                          child: SvgPicture.asset(_firstSelected),
+                          child: SvgPicture.asset('${c.firstSelected}'),
                         ),
                       ),
                       Center(
@@ -106,9 +106,14 @@ class _SignupState extends State<Signup> {
                           child: SvgPicture.asset('assets/images/usaFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Engilish')
+                        Text('Engilish'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      
+                      c.updateImg('assets/images/usaFlag.svg'),
+                      c.updateLocale(Locale('en', 'US')),
+                    },
                   ),
                   PopupMenuItem(
                     value: 'assets/images/vnFlag.svg',
@@ -120,16 +125,21 @@ class _SignupState extends State<Signup> {
                           child: SvgPicture.asset('assets/images/vnFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Vietnamese')
+                        Text('Vietnamese'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      
+                      c.updateImg('assets/images/vnFlag.svg'),
+                      c.updateLocale(Locale('vi', 'VN')),
+                    }, //
                   ),
                 ],
-                onSelected: (String value) {
-                  setState(() {
-                    _firstSelected = value;
-                  });
-                },
+                /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
               ),
             ],
             //automaticallyImplyLeading: false,
@@ -153,8 +163,9 @@ class _SignupState extends State<Signup> {
                     children: [
                       Container(
                           margin: EdgeInsets.only(bottom: 20),
+                          alignment: Alignment.centerLeft,
                           child: Text(
-                            'Say hello to your English tutors',
+                            'Start learning with LetTutor'.tr,
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -165,7 +176,7 @@ class _SignupState extends State<Signup> {
                       Container(
                           margin: EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'Become fluent faster through one on one video chat lessons tailored to your goals.',
+                            'Become fluent faster through one on one video chat lessons tailored to your goals.'.tr,
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -176,7 +187,7 @@ class _SignupState extends State<Signup> {
                           margin: EdgeInsets.only(bottom: 10),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'EMAIL',
+                            'EMAIL'.tr,
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.grey,
@@ -214,9 +225,9 @@ class _SignupState extends State<Signup> {
                           ),
                           validator: (val) {
                             if(val == null || val.isEmpty){
-                              return "Please input your Email!";
+                              return "Please input your Email!".tr;
                             } else if(!EmailValidator.validate(val, true)){
-                              return "Invalid Email Address!";
+                              return "Invalid Email Address!".tr;
                             }
                             return null;
                           }
@@ -226,7 +237,7 @@ class _SignupState extends State<Signup> {
                           margin: EdgeInsets.only(bottom: 10),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'PASSWORD',
+                            'PASSWORD'.tr,
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.grey,
@@ -274,7 +285,7 @@ class _SignupState extends State<Signup> {
                           ),
                           validator: (val) {
                             if(val == null || val.isEmpty){
-                              return "Please input your Password!";
+                              return "Please input your Password!".tr;
                             }
                             return null;
                           }
@@ -320,7 +331,7 @@ class _SignupState extends State<Signup> {
                               : Container(),
                               SizedBox(width: 15,),
                               Text(
-                                'SIGN UP',
+                                'SIGN UP'.tr,
                                 style: TextStyle(
                                   fontSize: 25,
                                   fontWeight: FontWeight.bold,
@@ -341,7 +352,14 @@ class _SignupState extends State<Signup> {
                                 _errorController.text = "";
                               });
                               var url = Uri.https('sandbox.api.lettutor.com', 'auth/register');
-                              var response = await http.post(url, body: {'email': _emailController.text, 'password': _pwController.text, "source": ""});
+                                var response = await http.post(
+                                  url,
+                                  /*headers: {
+                                    "Content-Type": "application/json",
+                                    'Referer': "https://sandbox.app.lettutor.com/",
+                                    "DNT": '1'
+                                  },*/
+                                  body: jsonEncode(<String, dynamic>{'email': _emailController.text, 'password': _pwController.text, "source": null}));
                               if (response.statusCode != 201) {
                                 final Map parsed = json.decode(response.body);
                                 final String err = parsed["message"];
@@ -355,7 +373,7 @@ class _SignupState extends State<Signup> {
                                 setState(() {
                                   _isLoading = false;
                                   _isSuccess = true;
-                                  _errorController.text = "Successfully registered! Please go to your email to verify (activate) the account.";
+                                  _errorController.text = "Successfully registered! Please go to your email to verify (activate) the account.".tr;
                                 });
                               }
                             }
@@ -369,7 +387,7 @@ class _SignupState extends State<Signup> {
                       Container(
                         margin: EdgeInsets.only(bottom: 20),
                         child: Text(
-                          'Or continue with',
+                          'Or continue with'.tr,
                           style: TextStyle(
                             fontSize: 20,
                           ),
@@ -423,22 +441,23 @@ class _SignupState extends State<Signup> {
                             ),
                             children: [
                               TextSpan(
-                                  text: 'Already have an account? ',
+                                  text: 'Already have an account?'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   )
                               ),
                               TextSpan(
-                                text: "Log in",
+                                text: ' ',
+                              ),
+                              TextSpan(
+                                text: "Log in".tr,
                                 style: TextStyle(
                                     color: Colors.blue
                                 ),
                                 recognizer: TapGestureRecognizer()..onTap = () {
                                   Navigator.of(context).pushNamedAndRemoveUntil(
                                       "/login",
-                                          (route) => route.isCurrent && route.settings.name == "/login"
-                                          ? false
-                                          : true);
+                                          (route) => false);
                                 }, //sửa sau
                               ),
                             ]

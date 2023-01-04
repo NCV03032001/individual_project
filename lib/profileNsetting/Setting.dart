@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 class Setting extends StatefulWidget {
-  static const keyDarkMode = 'key-darkmode';
+  static String keyDarkMode = 'key-darkmode';
   const Setting({Key? key}) : super(key: key);
 
   @override
@@ -16,9 +19,9 @@ class Setting extends StatefulWidget {
 }
 
 class _SettingState extends State<Setting> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
 
-  static const keyDarkMode = 'key-darkmode';
+  static String keyDarkMode = 'key-darkmode';
 
   TextEditingController _pwController = TextEditingController();
   TextEditingController _npwController = TextEditingController();
@@ -36,12 +39,8 @@ class _SettingState extends State<Setting> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  "/tutor",
-                      (route) => route.isCurrent && route.settings.name == "/tutor"
-                      ? false
-                      : true);
-            },  //sửa sau
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
+            }, //sửa sau
             child: SizedBox(
               height: 30,
               child: SvgPicture.asset('assets/images/logo.svg'),
@@ -60,7 +59,7 @@ class _SettingState extends State<Setting> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -91,9 +90,14 @@ class _SettingState extends State<Setting> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -105,16 +109,21 @@ class _SettingState extends State<Setting> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -149,7 +158,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -157,25 +166,25 @@ class _SettingState extends State<Setting> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -187,7 +196,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -206,7 +215,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -225,7 +234,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -244,7 +253,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -252,25 +261,25 @@ class _SettingState extends State<Setting> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -282,7 +291,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -301,7 +310,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -320,7 +329,7 @@ class _SettingState extends State<Setting> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -348,6 +357,9 @@ class _SettingState extends State<Setting> {
               else if (value == 'BecomeTutor') {
                 Navigator.pushNamed(context, '/become_tutor');
               }
+              else if (value == 'Settings') {
+                Navigator.pushReplacementNamed(context, '/setting');
+              }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
                         (route) {return false;});
@@ -365,7 +377,7 @@ class _SettingState extends State<Setting> {
               margin: EdgeInsets.only(bottom: 20),
               alignment: Alignment.centerLeft,
               child: Text(
-                'Settings',
+                'Settings'.tr,
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -415,7 +427,7 @@ class _SettingState extends State<Setting> {
                                       : true);
                             },
                             child: Text(
-                              'Edit profile',
+                              'Edit profile'.tr,
                               style: TextStyle(
                                 color: Colors.blue,
                               ),
@@ -429,20 +441,20 @@ class _SettingState extends State<Setting> {
               ),
             ),
             SettingsGroup(
-              title: 'GENERAL',
+              title: 'GENERAL'.tr,
               children: <Widget>[
                 setDarkMode(),
               ],
             ),
             SettingsGroup(
-              title: 'ACCOUNT',
+              title: 'ACCOUNT'.tr,
               children: <Widget>[
                 changePassword(),
                 deleteAccount(),
               ],
             ),
             SettingsGroup(
-              title: 'CONTRACT',
+              title: 'CONTRACT'.tr,
               children: <Widget>[
                 reportabug(),
                 sendFeadback(),
@@ -452,13 +464,13 @@ class _SettingState extends State<Setting> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/
     );
   }
 
@@ -469,16 +481,31 @@ class _SettingState extends State<Setting> {
       size: 30,
       color: Colors.blue,
     ),
-    title: 'Dark Mode',
-    onChange: (val) {
-      print(val);
-      print(Settings.getValue<bool>(Setting.keyDarkMode));
-      //Settings.setValue<bool>(keyDarkMode, val);
+    title: 'Dark Mode'.tr,
+    onChange: (val) async {
+      /*await Settings.setValue(Setting.keyDarkMode, val).then((e) => {
+        setState(() {
+          c.updateIsDark(val);
+          print(c.testDark);
+          print(val);
+          print(Settings.getValue<bool>(Setting.keyDarkMode));
+        })
+      });*/
+      await Settings.setValue(Setting.keyDarkMode, val).then((e) => c.updateIsDark(val));
+      //c.updateIsDark(val);
+      //Get.changeTheme(c.testDark.value == true? ThemeData.dark() : ThemeData.light());
+      //Get.changeTheme(Get.isDarkMode? ThemeData.dark() : ThemeData.light());
+      //Get.changeThemeMode(c.testDark.value? ThemeMode.dark : ThemeMode.light);
+      /*setState(() {
+        print(c.testDark);
+        print(Get.isDarkMode);
+        print(Settings.getValue<bool>(Setting.keyDarkMode));
+      });*/
     },
   );
 
   Widget changePassword() => SimpleSettingsTile(
-    title: 'Change password',
+    title: 'Change password'.tr,
     leading: SizedBox(
       width: 30,
       height: 30,
@@ -490,252 +517,259 @@ class _SettingState extends State<Setting> {
           builder: (BuildContext context) {
             return StatefulBuilder(
                 builder: (context, setState) {
-                  return AlertDialog(
-                    title: Text('Change Password'),
-                    content: GestureDetector(
-                      onTap: () {
-                        FocusScope.of(context).requestFocus(_dialogFocus);
-                      },
-                      child: SizedBox(
-                        width: 280,
-                        height: 300,
-                        child: SingleChildScrollView(
-                          child: Form(
-                            key: _cpwKey,
-                            child: Column(
-                              children: [
-                                Container(
-                                    margin: EdgeInsets.only(bottom: 10),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Current Password',
-                                    )
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(bottom: 10),
-                                  child: TextFormField(
-                                      keyboardType: TextInputType.visiblePassword,
-                                      controller: _pwController,
-                                      autovalidateMode: AutovalidateMode.always,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.grey),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.blue),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.red),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.orange),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        errorStyle: TextStyle(
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                      validator: (val) {
-                                        if(val == null || val.isEmpty){
-                                          return "Please input your Password!";
-                                        }
-                                        return null;
-                                      }
+                  double width = MediaQuery.of(context).size.width;
+                  double height = MediaQuery.of(context).size.height;
+                  return Focus(
+                    focusNode: _dialogFocus,
+                    child: AlertDialog(
+                      title: Text('Change Password'.tr),
+                      content: GestureDetector(
+                        onTap: () {
+                          _dialogFocus.requestFocus();
+                        },
+                        child: Container(
+                          width: width - 30,
+                          constraints: BoxConstraints(
+                            maxHeight: height/2,
+                          ),
+                          child: SingleChildScrollView(
+                            child: Form(
+                              key: _cpwKey,
+                              child: Column(
+                                children: [
+                                  Container(
+                                      margin: EdgeInsets.only(bottom: 10),
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Current Password'.tr,
+                                      )
                                   ),
-                                ),
-                                Container(
+                                  Container(
                                     margin: EdgeInsets.only(bottom: 10),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'New Password',
-                                    )
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(bottom: 10),
-                                  child: TextFormField(
-                                      keyboardType: TextInputType.visiblePassword,
-                                      controller: _npwController,
-                                      autovalidateMode: AutovalidateMode.always,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.grey),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                    child: TextFormField(
+                                        keyboardType: TextInputType.visiblePassword,
+                                        controller: _pwController,
+                                        autovalidateMode: AutovalidateMode.always,
+                                        obscureText: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.grey),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.blue),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.red),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.orange),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          errorStyle: TextStyle(
+                                            fontSize: 15,
+                                          ),
                                         ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.blue),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.red),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.orange),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        errorStyle: TextStyle(
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                      validator: (val) {
-                                        if(val == null || val.isEmpty){
-                                          return "Please input New Password!";
+                                        validator: (val) {
+                                          if(val == null || val.isEmpty){
+                                            return "Please input your Password!".tr;
+                                          }
+                                          return null;
                                         }
-                                        return null;
-                                      }
-                                  ),
-                                ),
-                                Container(
-                                    margin: EdgeInsets.only(bottom: 10),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Confirm New Password',
-                                    )
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(bottom: 10),
-                                  child: TextFormField(
-                                      keyboardType: TextInputType.visiblePassword,
-                                      controller: _cnpwController,
-                                      autovalidateMode: AutovalidateMode.always,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                        contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.grey),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.blue),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.red),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1, color: Colors.orange),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        errorStyle: TextStyle(
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                      validator: (val) {
-                                        if(val == null || val.isEmpty){
-                                          return "Please input Confirm!";
-                                        }
-                                        return null;
-                                      }
-                                  ),
-                                ),
-                                _errorController.text.isNotEmpty
-                                    ? Container(
-                                  margin: EdgeInsets.only(bottom: 20),
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      width: 1,
-                                      color: _isSuccess ? Color(0xff99FF99) : Color(0xffffccc7),
                                     ),
-                                    color: _isSuccess ? Color(0xffF2FFF0) : Color(0xfffff2f0),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      _isSuccess
-                                          ? Icon(Icons.check_circle, color: Colors.green, size: 17.5,)
-                                          : Image.asset('assets/images/icons/close.png', width: 15, height: 15),
-                                      SizedBox(width: 15,),
-                                      Flexible(child: Text(_errorController.text, style: TextStyle(color: Colors.black),),),
-                                    ],
+                                  Container(
+                                      margin: EdgeInsets.only(bottom: 10),
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'New Password'.tr,
+                                      )
                                   ),
-                                ) : Container(),
-                              ],
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 10),
+                                    child: TextFormField(
+                                        keyboardType: TextInputType.visiblePassword,
+                                        controller: _npwController,
+                                        autovalidateMode: AutovalidateMode.always,
+                                        obscureText: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.grey),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.blue),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.red),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.orange),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          errorStyle: TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        validator: (val) {
+                                          if(val == null || val.isEmpty){
+                                            return "Please input New Password!".tr;
+                                          }
+                                          return null;
+                                        }
+                                    ),
+                                  ),
+                                  Container(
+                                      margin: EdgeInsets.only(bottom: 10),
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Confirm New Password'.tr,
+                                      )
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 10),
+                                    child: TextFormField(
+                                        keyboardType: TextInputType.visiblePassword,
+                                        controller: _cnpwController,
+                                        autovalidateMode: AutovalidateMode.always,
+                                        obscureText: true,
+                                        decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.grey),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.blue),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          errorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.red),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(width: 1, color: Colors.orange),
+                                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                                          ),
+                                          errorStyle: TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        validator: (val) {
+                                          if(val == null || val.isEmpty){
+                                            return "Please input Confirm!".tr;
+                                          }
+                                          return null;
+                                        }
+                                    ),
+                                  ),
+                                  _errorController.text.isNotEmpty
+                                      ? Container(
+                                    margin: EdgeInsets.only(bottom: 20),
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        width: 1,
+                                        color: _isSuccess ? Color(0xff99FF99) : Color(0xffffccc7),
+                                      ),
+                                      color: _isSuccess ? Color(0xffF2FFF0) : Color(0xfffff2f0),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        _isSuccess
+                                            ? Icon(Icons.check_circle, color: Colors.green, size: 17.5,)
+                                            : Image.asset('assets/images/icons/close.png', width: 15, height: 15),
+                                        SizedBox(width: 15,),
+                                        Flexible(child: Text(_errorController.text, style: TextStyle(color: Colors.black),),),
+                                      ],
+                                    ),
+                                  ) : Container(),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    actions: [
-                      OutlinedButton(
-                        focusNode: _cpwFocus,
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.all(15),
-                          backgroundColor: Colors.blue,
-                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _isLoading
-                                ? SizedBox(height: 15, width: 15, child: CircularProgressIndicator(color: Colors.white,),)
-                                : SizedBox(width: 15,),
-                            SizedBox(width: 10,),
-                            Text(
-                              'Confirm Change',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.white,
+                      actions: [
+                        OutlinedButton(
+                          focusNode: _cpwFocus,
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.all(15),
+                            backgroundColor: Colors.blue,
+                            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _isLoading
+                                  ? SizedBox(height: 15, width: 15, child: CircularProgressIndicator(color: Colors.white,),)
+                                  : SizedBox(width: 15,),
+                              SizedBox(width: 10,),
+                              Text(
+                                'Confirm Change'.tr,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 25,),
-                          ],
-                        ),
-                        onPressed: () async {
-                          _cpwFocus.requestFocus();
-                          if (_cpwKey.currentState!.validate()) {
-                            if (_cnpwController.text != _npwController.text) {
+                              SizedBox(width: 25,),
+                            ],
+                          ),
+                          onPressed: () async {
+                            _cpwFocus.requestFocus();
+                            if (_cpwKey.currentState!.validate()) {
+                              if (_cnpwController.text != _npwController.text) {
+                                setState(() {
+                                  _errorController.text = "Confirm doesn't match!".tr;
+                                  _isSuccess = false;
+                                });
+                                return;
+                              }
                               setState(() {
-                                _errorController.text = "Confirm doesn't match!";
+                                _isLoading = true;
                                 _isSuccess = false;
+                                _errorController.text = "";
                               });
-                              return;
+                              var url = Uri.https('sandbox.api.lettutor.com', 'auth/change-password');
+                              var response = await http.post(url,
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+                                  },
+                                  body: jsonEncode({'password': _pwController.text, "newPassword": _npwController.text})
+                              );
+                              if (response.statusCode != 200) {
+                                final Map parsed = json.decode(response.body);
+                                final String err = parsed["message"];
+                                setState(() {
+                                  _isLoading = false;
+                                  _isSuccess = false;
+                                  _errorController.text = err;
+                                });
+                              }
+                              else {
+                                setState(() {
+                                  _isLoading = false;
+                                  _isSuccess = true;
+                                  _errorController.text = "Successfully changed password!".tr;
+                                });
+                              }
                             }
-                            setState(() {
-                              _isLoading = true;
+                            else setState(() {
                               _isSuccess = false;
                               _errorController.text = "";
                             });
-                            var url = Uri.https('sandbox.api.lettutor.com', 'auth/change-password');
-                            var response = await http.post(url,
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
-                                },
-                                body: jsonEncode({'password': _pwController.text, "newPassword": _npwController.text})
-                            );
-                            if (response.statusCode != 200) {
-                              final Map parsed = json.decode(response.body);
-                              final String err = parsed["message"];
-                              setState(() {
-                                _isLoading = false;
-                                _isSuccess = false;
-                                _errorController.text = err;
-                              });
-                            }
-                            else {
-                              setState(() {
-                                _isLoading = false;
-                                _isSuccess = true;
-                                _errorController.text = "Successfully changed password!";
-                              });
-                            }
-                          }
-                          else setState(() {
-                            _isSuccess = false;
-                            _errorController.text = "";
-                          });
-                        }, //sửa sau
-                      ),
-                    ],
+                          }, //sửa sau
+                        ),
+                      ],
+                    ),
                   );
                 }
             );
@@ -744,40 +778,72 @@ class _SettingState extends State<Setting> {
     }, //lead to change password page
   );
   Widget deleteAccount() => SimpleSettingsTile(
-      title: 'Delete account',
+      title: 'Delete account'.tr,
       leading: SizedBox(
         width: 30,
         height: 30,
         child: Image.asset('assets/images/icons/DeleteAccount.png', color: Colors.blue,),
       ),
-    onTap: null, //lead to delete account page
+    onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Delete account'.tr),
+            content: Text('Under construction'.tr),
+          );
+        }
+    ), //lead to delete account page
   );
+
   Widget reportabug() => SimpleSettingsTile(
-    title: 'Report A Bug',
+    title: 'Report A Bug'.tr,
     leading: SizedBox(
       width: 30,
       height: 30,
       child: Image.asset('assets/images/icons/ReportBug.png', color: Colors.blue,),
     ),
-    onTap: null, //lead to delete account page
+    onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Report A Bug'.tr),
+            content: Text('Under construction'.tr),
+          );
+        }
+    ), //lead to delete account page
   );
-
   Widget sendFeadback() => SimpleSettingsTile(
-      title: 'Send Feedback',
+      title: 'Send Feedback'.tr,
       leading: SizedBox(
         width: 30,
         height: 30,
         child: Image.asset('assets/images/icons/SendFeedback.png', color: Colors.blue,),
       ),
-      onTap: null, //lead to delete account page
+      onTap: () => showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Send Feedback'.tr),
+            content: Text('Under construction'.tr),
+          );
+        }
+      ), //lead to delete account page
     );
   Widget aboutDeveloper() => SimpleSettingsTile(
-    title: 'About Developer',
+    title: 'About Developer'.tr,
     leading: SizedBox(
       width: 30,
       height: 30,
       child: Icon(Icons.info_outline, color: Colors.blue, size: 30,)
     ),
-    onTap: null, //lead to delete account page
+    onTap: () => showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('About Developer'.tr),
+          content: Text('Nguyễn Công Văn - 19120713'),
+        );
+      }
+    ), //lead to delete account page
   );
 }

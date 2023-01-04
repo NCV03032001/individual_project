@@ -2,16 +2,22 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:country_picker/country_picker.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/model/TutorProvider.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Tutor/TutorProvider.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
+import 'package:individual_project/tutor/TutorProfile.dart';
 import 'package:provider/provider.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:number_paginator/number_paginator.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
+import '../main.dart';
 
 class Tutor extends StatefulWidget {
   const Tutor({Key? key}) : super(key: key);
@@ -25,6 +31,7 @@ class _TutorState extends State<Tutor> {
   bool _isLoading = false;
   bool _upcomingLoading = false;
   bool _hasUpcoming = false;
+  int _countMode = 1;
   int totalLearn = 0;
 
   int _maxPage = 1;
@@ -34,14 +41,20 @@ class _TutorState extends State<Tutor> {
   TextEditingController _upErrController = TextEditingController();
   String dateFormat = "";
 
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
+  
 
   Timer? countdownTimer;
   Duration myDuration = Duration(days: 1);
+  String? userId = "";
+  String? tutorId = "";
+  int startTime = 0;
+  int endTime = 0;
 
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting();
     setState(() {
       _errorController.text = "";
       _upErrController.text = "";
@@ -53,45 +66,44 @@ class _TutorState extends State<Tutor> {
       _hasUpcoming = false;
       totalLearn = 0;
     });
-    // Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
-    //   access: Access(
-    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzExMTUyMTYsImV4cCI6MTY3MTIwMTYxNiwidHlwZSI6ImFjY2VzcyJ9._HCnjzYOgzilLAmEhehvEAcgtkBIh9dgYnNUvKkAqBk",
-    //     expires: "2022-12-08T05:35:46.286Z"
-    //   ),
-    //   refresh: Refresh(
-    //     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzAzOTEzNDYsImV4cCI6MTY3Mjk4MzM0NiwidHlwZSI6InJlZnJlc2gifQ.5DiiDFVhCFUnlHFosgDn7EvWUwWBGy5kcADSR9opstE",
-    //     expires: "2023-01-06T05:35:46.286Z"
-    //   )
-    // );
-    //startTimer();
-    //searchTutorList();
     getUpcomingLesson();
-    //getPreTutorList();
     searchTutorList();
   }
   /// Timer related methods ///
-  void startTimer() {
+  void startTimer(int mode, Duration endDur) {
     countdownTimer =
-        Timer.periodic(Duration(seconds: 1), (_) => setCountDown());
+        Timer.periodic(Duration(seconds: 1), (_) => setCountDown(mode, endDur));
   }
   void stopTimer() {
     setState(() => countdownTimer!.cancel());
   }
   void resetTimer() {
     stopTimer();
-    setState(() => myDuration = Duration(days: 5));
+    getUpcomingLesson();
   }
-  void setCountDown() {
-    final reduceSecondsBy = 1;
-    setState(() {
-      final seconds = myDuration.inSeconds - reduceSecondsBy;
-      if (seconds < 0) {
-        countdownTimer!.cancel();
-        getUpcomingLesson();
-      } else {
-        myDuration = Duration(seconds: seconds);
-      }
-    });
+  void setCountDown(int mode, Duration endDur) {
+    const reduceSecondsBy = 1;
+    final endGap = endDur.inSeconds;
+    if (mode == -1) {
+      setState(() {
+        final seconds = myDuration.inSeconds + reduceSecondsBy;
+        if (seconds >= endGap) {
+          resetTimer();
+        } else {
+          myDuration = Duration(seconds: seconds);
+        }
+      });
+    }
+    else {
+      setState(() {
+        final seconds = myDuration.inSeconds - reduceSecondsBy;
+        if (seconds < 0) {
+          resetTimer();
+        } else {
+          myDuration = Duration(seconds: seconds);
+        }
+      });
+    }
   }
 
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
@@ -101,16 +113,12 @@ class _TutorState extends State<Tutor> {
 
   List<String> selectedNation = [];
   final _ntKey = GlobalKey<DropdownSearchState<String>>();
-  final List<String> items = [
-    'Foreign Tutor',
-    'Vietnamese Tutor',
-    'Native English Tutor',
-  ];
+
   final FocusNode _ntFocus = FocusNode();
   List<Map<String, dynamic>> nationList = [
+    {"nation": "Foreign Tutor", "nationClause": {"isVietNamese": false, "isNative": false}},
     {"nation": "Vietnamese Tutor", "nationClause": {"isVietNamese": true}},
     {"nation": "Native English Tutor", "nationClause": {"isNative": true}},
-    {"nation": "Foreign Tutor", "nationClause": {"isVietNamese": false, "isNative": false}},
   ];
 
   DateTime selectedDate = DateTime.now();
@@ -148,7 +156,8 @@ class _TutorState extends State<Tutor> {
     {'inJson': 'starters', 'toShow': 'STARTERS'},
     {'inJson': 'movers', 'toShow': 'MOVERS'},
     {'inJson': 'flyers', 'toShow': 'FLYERS'},
-    {'inJson': 'ket', 'toShow': 'PET'},
+    {'inJson': 'ket', 'toShow': 'KET'},
+    {'inJson': 'pet', 'toShow': 'PET'},
     {'inJson': 'ielts', 'toShow': 'IELTS'},
     {'inJson': 'toefl', 'toShow': 'TOEFL'},
     {'inJson': 'toeic', 'toShow': 'TOEIC'},
@@ -158,39 +167,6 @@ class _TutorState extends State<Tutor> {
 
   final FocusNode _searchFocus = FocusNode();
   final FocusNode _rsFocus = FocusNode();
-
-  void getPreTutorList({Map<String, String> queryParameters = const {'perPage': '99999999','page': '1',}}) async {
-    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/more', queryParameters);
-    var response = await http.get(url,
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
-      },
-    );
-
-    if (response.statusCode != 200) {
-      final Map parsed = json.decode(response.body);
-      final String err = parsed["message"];
-      setState(() {
-        _errorController.text = err;
-      });
-    }
-    else {
-      final Map parsed = json.decode(response.body);
-
-      var tutorProv = Provider.of<TutorProvider>(context, listen: false);
-      tutorProv.fromJson(parsed);
-      var readTutorProv = context.read<TutorProvider>();
-
-      print(readTutorProv.total.length);
-
-      print(readTutorProv.favList.length);
-
-      setState(() {
-        _errorController.text = "";
-      });
-    }
-  }
 
   void searchTutorList({Map<String, dynamic> postBody = const {
     "filters": {
@@ -215,27 +191,29 @@ class _TutorState extends State<Tutor> {
     if (response.statusCode != 200) {
       final Map parsed = json.decode(response.body);
       final String err = parsed["message"];
-      print(err);
+      setState(() {
+        _errorController.text = err;
+      });
     }
     else {
       final Map parsed = json.decode(response.body);
       //print(parsed);
       var tutorProv = Provider.of<TutorProvider>(context, listen: false);
       tutorProv.fromSearchJson(parsed);
-      var readTutorProv = context.read<TutorProvider>();
-
-      print(readTutorProv.theList.length);
-      // for (var aTutor in readTutorProv.theList) {
-      //   print(aTutor.isFavorite);
-      // }
-
       setState(() {
         _errorController.text = "";
       });
     }
     setState(() {
       _isLoading = false;
-      _maxPage = context.read<TutorProvider>().count~/9;
+      var maxCount = context.read<TutorProvider>().count;
+      if (maxCount~/9 < maxCount/9) {
+        _maxPage = maxCount~/9 + 1;
+      }
+      else {
+        _maxPage = maxCount~/9;
+      }
+
       if (_maxPage < 1) _maxPage = 1;
     });
   }
@@ -263,16 +241,54 @@ class _TutorState extends State<Tutor> {
     }
     else {
       final Map parsed = json.decode(response.body);
-      if (parsed["data"].length == 1) {
+      var nextL = parsed["data"].length;
+
+      if (nextL != 0) {
         int timeNow = DateTime.now().millisecondsSinceEpoch;
-        int startTime = parsed['data'][0]['scheduleDetailInfo']['startPeriodTimestamp'];
-        int endTime = parsed['data'][0]['scheduleDetailInfo']['endPeriodTimestamp'];
+        List<Map<String, dynamic>> nextList = List.generate(nextL, (index) {
+          return {
+            'start': parsed['data'][index]['scheduleDetailInfo']['startPeriodTimestamp'],
+            'end': parsed['data'][index]['scheduleDetailInfo']['endPeriodTimestamp'],
+            'userId': parsed['data'][index]['userId'],
+            'tutorId': parsed['data'][index]['scheduleDetailInfo']['scheduleInfo']['tutorId']
+          };
+        });
+        nextList.sort((a, b) => a['start'].compareTo(b['start']));
+        //print(nextList);
+        startTime = nextList[0]['start'];
+        endTime = nextList[0]['end'];
+        userId = nextList[0]['userId'];
+        tutorId = nextList[0]['tutorId'];
+
+        if (endTime < timeNow) {
+          for (var i = 1; i < nextL; i++) {
+            startTime = nextList[i]['start'];
+            endTime = nextList[i]['end'];
+            userId = nextList[i]['userId'];
+            tutorId = nextList[i]['tutorId'];
+            if (endTime >= timeNow) {
+              break;
+            }
+          }
+        }
+
         setState(() {
-          dateFormat = "${DateFormat('EEEE, d MMM, yyyy, hh:mm').format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('hh:mm').format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
+          _hasUpcoming = false;
+          return;
+        });
+
+        setState(() {
+          dateFormat = "${DateFormat('EEE, d MMM, yyyy, HH:mm', c.testLocale.value.languageCode).format(DateTime.fromMillisecondsSinceEpoch(startTime))} - ${DateFormat('HH:mm', c.testLocale.value.languageCode).format(DateTime.fromMillisecondsSinceEpoch(endTime))}";
           myDuration = Duration(milliseconds: startTime - timeNow);
+          if (myDuration.isNegative) {
+            myDuration = -myDuration;
+            _countMode = -1;
+          }
           _hasUpcoming = true;
         });
-        startTimer();
+
+        var endDur = Duration(milliseconds: endTime - timeNow);
+        startTimer(_countMode, endDur);
       }
       else {
         setState(() {
@@ -325,7 +341,7 @@ class _TutorState extends State<Tutor> {
     double height = MediaQuery.of(context).size.height;
     
     String strDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = strDigits(myDuration.inHours.remainder(24));
+    final hours = strDigits(myDuration.inHours);
     final minutes = strDigits(myDuration.inMinutes.remainder(60));
     final seconds = strDigits(myDuration.inSeconds.remainder(60));
 
@@ -359,7 +375,7 @@ class _TutorState extends State<Tutor> {
                       child: SizedBox(
                         width: 25,
                         height: 25,
-                        child: SvgPicture.asset(_firstSelected),
+                        child: SvgPicture.asset('${c.firstSelected}'),
                       ),
                     ),
                     Center(
@@ -390,9 +406,14 @@ class _TutorState extends State<Tutor> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish')
+                      Text('Engilish'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    
+                    c.updateImg('assets/images/usaFlag.svg'),
+                    c.updateLocale(Locale('en', 'US')),
+                  },
                 ),
                 PopupMenuItem(
                   value: 'assets/images/vnFlag.svg',
@@ -404,16 +425,21 @@ class _TutorState extends State<Tutor> {
                         child: SvgPicture.asset('assets/images/vnFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Vietnamese')
+                      Text('Vietnamese'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    
+                    c.updateImg('assets/images/vnFlag.svg'),
+                    c.updateLocale(Locale('vi', 'VN')),
+                  }, //
                 ),
               ],
-              onSelected: (String value) {
-                setState(() {
-                  _firstSelected = value;
-                });
-              },
+              /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
             ),
             SizedBox(width: 10,),
             PopupMenuButton<String>(
@@ -448,7 +474,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Profile',
+                        'Profile'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -456,7 +482,7 @@ class _TutorState extends State<Tutor> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                /*PopupMenuItem(
                   value: 'BuyLessons',
                   child: Row(
                     children: [
@@ -474,7 +500,7 @@ class _TutorState extends State<Tutor> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
                 PopupMenuItem(
                   value: 'Tutor',
                   child: Row(
@@ -486,7 +512,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Tutor',
+                        'Tutor'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -505,7 +531,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Schedule',
+                        'Schedule'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -524,7 +550,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'History',
+                        'History'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -543,7 +569,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Courses',
+                        'Courses'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -551,7 +577,7 @@ class _TutorState extends State<Tutor> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                /*PopupMenuItem(
                   value: 'MyCourse',
                   child: Row(
                     children: [
@@ -569,7 +595,7 @@ class _TutorState extends State<Tutor> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
                 PopupMenuItem(
                   value: 'BecomeTutor',
                   child: Row(
@@ -581,7 +607,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Become a Tutor',
+                        'Become a Tutor'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -600,7 +626,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Settings',
+                        'Settings'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -619,7 +645,7 @@ class _TutorState extends State<Tutor> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Logout',
+                        'Logout'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -684,7 +710,7 @@ class _TutorState extends State<Tutor> {
                         Container(
                           padding: EdgeInsets.only(bottom: 15),
                           child: Text(
-                            'You have no upcoming lesson',
+                            'You have no upcoming lesson'.tr,
                             style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -695,20 +721,20 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(top: 5),
                           child: totalLearn > 0
                           ? Text(
-                            'Total lesson time is ${totalLearn~/60} hours ${totalLearn%60} minutes',
+                            'Total lesson time is'.tr + ' ${totalLearn~/60} ' + 'hours'.tr + ' ${totalLearn%60} ' + 'minutes'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           )
                           : Text(
-                            'Welcome to LetTutor!',
+                            'Welcome to LetTutor!'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           ),
-                        )
+                        ),
                       ],
                     )
                     : Column(
@@ -717,7 +743,7 @@ class _TutorState extends State<Tutor> {
                         Container(
                           padding: EdgeInsets.only(bottom: 15),
                           child: Text(
-                            'Upcoming lesson',
+                            'Upcoming lesson'.tr,
                             style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -736,16 +762,47 @@ class _TutorState extends State<Tutor> {
                         ),
                         Container(
                           margin: EdgeInsets.only(bottom: 10),
-                          child: Text(
-                            '  (starts in $hours:$minutes:$seconds)',
+                          child: _countMode > 0
+                            ? Text(
+                            '(starts in'.tr + ' $hours:$minutes:$seconds)',
                             style: TextStyle(
                               color: Colors.yellow,
+                              fontSize: 15,
+                            ),
+                          )
+                          : Text(
+                            '(class time'.tr + ' $hours:$minutes:$seconds)',
+                            style: TextStyle(
+                              color: Colors.green,
                               fontSize: 15,
                             ),
                           ),
                         ),
                         OutlinedButton(
-                          onPressed: null,
+                          onPressed: () async{
+                            var userInfo = context.read<UserProvider>().thisUser;
+
+                            var options = JitsiMeetingOptions(
+                              roomNameOrUrl: "${userId}-${tutorId}",
+                              serverUrl: "https://meet.lettutor.com",
+                              isAudioMuted: true,
+                              isVideoMuted: true,
+                              userDisplayName: "${userInfo.name}",
+                              userEmail: "${userInfo.email}",
+                              configOverrides: {
+                                'prejoinPageEnabled': false //This here
+                              },
+                            );
+
+                            await JitsiMeetWrapper.joinMeeting(
+                              options: options,
+                              listener: JitsiMeetingListener(
+                                onConferenceWillJoin: (url) => print("onConferenceWillJoin: url: $url"),
+                                onConferenceJoined: (url) => print("onConferenceJoined: url: $url"),
+                                onConferenceTerminated: (url, error) => print("onConferenceTerminated: url: $url, error: $error"),
+                              ),
+                            );
+                          },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white,
                             padding: EdgeInsets.all(15),
@@ -761,7 +818,10 @@ class _TutorState extends State<Tutor> {
                                       )
                                   ),
                                   TextSpan(
-                                      text: '  Enter lesson room',
+                                    text: '  ',
+                                  ),
+                                  TextSpan(
+                                      text: 'Enter lesson room'.tr,
                                       style: TextStyle(
                                         color: Colors.blue,
                                         fontSize: 20,
@@ -775,20 +835,20 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(top: 5),
                           child: totalLearn > 0
                               ? Text(
-                            'Total lesson time is ${totalLearn~/60} hours ${totalLearn%60} minutes',
+                            'Total lesson time is'.tr + ' ${totalLearn~/60} ' + 'hours'.tr + ' ${totalLearn%60} ' + 'minutes'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           )
                               : Text(
-                            'Welcome to LetTutor!',
+                            'Welcome to LetTutor!'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
 
@@ -802,7 +862,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 20),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Find a tutor',
+                        'Find a tutor'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -813,7 +873,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Specify tutor detail:',
+                        'Specify tutor detail:'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -836,7 +896,7 @@ class _TutorState extends State<Tutor> {
                             borderSide: BorderSide(width: 1, color: Colors.blue),
                             borderRadius: BorderRadius.all(Radius.circular(50)),
                           ),
-                          hintText: 'Enter tutor name',
+                          hintText: 'Enter tutor name...'.tr,
                           suffixIcon: (_nController.text.isNotEmpty && _nFocus.hasFocus) ?
                           IconButton(onPressed: () {setState(() {
                             _nController.clear();
@@ -869,7 +929,7 @@ class _TutorState extends State<Tutor> {
                             child: DropdownSearch<String>.multiSelection(
                               selectedItems: selectedNation,
                               key: _ntKey,
-                              items: items,
+                              items: nationList.map((e) => e['nation'].toString().tr).toList(),
                               popupProps: PopupPropsMultiSelection.menu(
                                 showSelectedItems: true,
                                 showSearchBox: true,
@@ -894,7 +954,7 @@ class _TutorState extends State<Tutor> {
                                     borderSide: BorderSide(width: 1, color: Colors.blue),
                                     borderRadius: BorderRadius.all(Radius.circular(50)),
                                   ),
-                                  hintText: 'Select tutor nationnality',
+                                  hintText: 'Select tutor nationnality'.tr,
                                 ),
                               ),
                               onChanged: (val) {
@@ -910,7 +970,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Select available tutoring time:',
+                        'Select available tutoring time'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -937,7 +997,7 @@ class _TutorState extends State<Tutor> {
                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                   borderRadius: BorderRadius.all(Radius.circular(50)),
                                 ),
-                                hintText: 'Day',
+                                hintText: 'Date'.tr,
                                 suffixIcon: (_dController.text.isNotEmpty && _dFocus.hasFocus) ?
                                 IconButton(onPressed: () {setState(() {
                                   _dController.clear();
@@ -973,7 +1033,7 @@ class _TutorState extends State<Tutor> {
                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                   borderRadius: BorderRadius.all(Radius.circular(50)),
                                 ),
-                                hintText: 'Time range',
+                                hintText: 'Time range'.tr,
                                 suffixIcon: (_tController.text.isNotEmpty && _tFocus.hasFocus) ?
                                 IconButton(onPressed: () {setState(() {
                                   _tController.clear();
@@ -1062,7 +1122,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Select specialtie:',
+                        'Select specialtie:'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -1075,7 +1135,7 @@ class _TutorState extends State<Tutor> {
                       //key: ValueKey('tag'),
                       children: List.generate(tags.length, (i) {
                         return ChoiceChip(
-                          label: Text(tags[i]),
+                          label: Text(tags[i].tr),
                           selected: isSelectedTag[i],
                           selectedColor: Colors.blue,
                           focusNode: _tgFocus,
@@ -1111,7 +1171,7 @@ class _TutorState extends State<Tutor> {
                                 Map<String, bool> nationMap = {};
                                 List<String> tempNations = _ntKey.currentState!.getSelectedItems;
                                 tempNations.forEach((element) {
-                                  var tempNL = nationList.indexWhere((e) => e['nation'] == element);
+                                  var tempNL = nationList.indexWhere((e) => e['nation'].toString().tr == element);
                                   if (nationList[tempNL]['nationClause']['isVietNamese'] != null) {
                                     if(nationMap['isVietNamese'] == null) {
                                       nationMap['isVietNamese'] = nationList[tempNL]['nationClause']['isVietNamese'];
@@ -1156,7 +1216,7 @@ class _TutorState extends State<Tutor> {
                                   postBody['filters']['tutoringTimeAvailable'] = [null, null];
                                 }
 
-                                if (specList.indexWhere((element) => element['toShow'] == tags[isSelectedTag.indexWhere((element) => element == true)]) > 0) {
+                                if (specList.indexWhere((element) => element['toShow'] == tags[isSelectedTag.indexWhere((element) => element == true)]) >= 0) {
                                   String? tempSpec = specList[specList.indexWhere((
                                       element) => element['toShow'] ==
                                       tags[isSelectedTag.indexWhere((
@@ -1182,7 +1242,7 @@ class _TutorState extends State<Tutor> {
                                 ),
                               ),
                               child: Text(
-                                'Search',
+                                'Search'.tr,
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.blue,
@@ -1220,7 +1280,7 @@ class _TutorState extends State<Tutor> {
                                 ),
                               ),
                               child: Text(
-                                'Reset Filters',
+                                'Reset Filters'.tr,
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.blue,
@@ -1238,7 +1298,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Recommened Tutors',
+                        'Recommened Tutors'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -1277,8 +1337,8 @@ class _TutorState extends State<Tutor> {
                                           height: 120,
                                           width: 100,
                                           child: readTutorProv.theList[i].avatar != null
-                                              ? ImageProfile(Image.network(readTutorProv.theList[i].avatar!).image, readTutorProv.theList[i].isOnline!, readTutorProv.theList[i].userId)
-                                              : ImageProfile(Image.network("").image, readTutorProv.theList[i].isOnline!, readTutorProv.theList[i].userId),
+                                              ? ImageProfile(Image.network(readTutorProv.theList[i].avatar!).image, readTutorProv.theList[i].isOnline!, ProfileArg(readTutorProv.theList[i].userId, postBody))
+                                              : ImageProfile(Image.network("").image, readTutorProv.theList[i].isOnline!, ProfileArg(readTutorProv.theList[i].userId, postBody)),
                                         ),
                                         SizedBox(
                                           width: 10,
@@ -1288,7 +1348,7 @@ class _TutorState extends State<Tutor> {
                                             child: Column(
                                               children: [
                                                 GestureDetector(
-                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.theList[i].userId),
+                                                  onTap: () => Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(readTutorProv.theList[i].userId, postBody)),
                                                   child: Container(
                                                     alignment: Alignment.centerLeft,
                                                     padding: EdgeInsets.only(left: 10),
@@ -1339,35 +1399,32 @@ class _TutorState extends State<Tutor> {
                                                         child: Image.asset('assets/images/icons/close.png'),
                                                       ),
                                                       SizedBox(width: 10),
-                                                      Text("Not set country"),
+                                                      Text("Not set country".tr),
                                                     ],
                                                   ),
                                                 ),
                                                 Container(
                                                   padding: EdgeInsets.only(left: 10),
                                                   margin: EdgeInsets.only(bottom: 10),
-                                                  child: Row(
-                                                    children: [
-                                                      readTutorProv.theList[i].rating != null
-                                                          ? Row(
-                                                          children: []..addAll(List.generate(readTutorProv.theList[i].rating!.toInt(), (index) {
-                                                            return Tooltip(
-                                                              message: tooltipMsg[index],
-                                                              child: Icon(Icons.star, color: Colors.yellow,),
-                                                            );
-                                                          }))
-                                                            ..addAll(List.generate((5-readTutorProv.theList[i].rating!.toInt()), (index) {
-                                                              return Tooltip(
-                                                                message: tooltipMsg[4-index],
-                                                                child: Icon(Icons.star, color: Colors.grey,),
-                                                              );
-                                                            }).reversed)
-                                                      )
-                                                          : Text('No reviews yet', style:  TextStyle(
-                                                        fontStyle: FontStyle.italic,
-                                                      ),),
-                                                    ],
-                                                  ),
+                                                  alignment: Alignment.centerLeft,
+                                                  child: readTutorProv.theList[i].rating != null
+                                                      ? Row(
+                                                      children: []..addAll(List.generate(readTutorProv.theList[i].rating!.toInt(), (index) {
+                                                        return Tooltip(
+                                                          message: tooltipMsg[index].tr,
+                                                          child: Icon(Icons.star, color: Colors.yellow,),
+                                                        );
+                                                      }))
+                                                        ..addAll(List.generate((5-readTutorProv.theList[i].rating!.toInt()), (index) {
+                                                          return Tooltip(
+                                                            message: tooltipMsg[4-index].tr,
+                                                            child: Icon(Icons.star, color: Colors.grey,),
+                                                          );
+                                                        }).reversed)
+                                                  )
+                                                      : Text('No review yet'.tr, style:  TextStyle(
+                                                    fontStyle: FontStyle.italic,
+                                                  ),),
                                                 ),
                                               ],
                                             ),
@@ -1398,19 +1455,6 @@ class _TutorState extends State<Tutor> {
                                               });
                                             }
                                           },
-                                          /*onPressed: () async {
-                                            var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(readTutorProv.theList[i].userId, context.read<UserProvider>().thisTokens.access.token);
-                                            if (doFavRes != "Success") {
-                                              setState(() {
-                                                _errorController.text = doFavRes;
-                                              });
-                                            }
-                                            else {
-                                              setState(() {
-                                                _errorController.text = "";
-                                              });
-                                            }
-                                          },*/
                                           icon: readTutorProv.theList[i].isFavorite!
                                               ? Image.asset('assets/images/icons/Heart.png', color: Colors.red,)
                                               : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
@@ -1438,7 +1482,7 @@ class _TutorState extends State<Tutor> {
                                               color: Colors.blue,
                                             ),
                                             child: specList.indexWhere((e) => e['inJson'] == value) != -1
-                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                                                ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!.tr)
                                                 : Text(value.toUpperCase()),
                                           )).toList(),
                                         ),
@@ -1458,7 +1502,7 @@ class _TutorState extends State<Tutor> {
                                       width: double.infinity,
                                       alignment: Alignment.centerRight,
                                       child: ElevatedButton.icon(
-                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: readTutorProv.theList[i].userId),
+                                        onPressed: () => Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(readTutorProv.theList[i].userId, postBody)),
                                         style: OutlinedButton.styleFrom(
                                           padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
                                           backgroundColor: Colors.white,
@@ -1473,7 +1517,7 @@ class _TutorState extends State<Tutor> {
                                           child: Image.asset('assets/images/icons/Book.png', color: Colors.blue,),
                                         ),
                                         label: Text(
-                                          'Book',
+                                          'Book'.tr,
                                           style: TextStyle(
                                             fontSize: 20,
                                             color: Colors.blue,
@@ -1491,7 +1535,7 @@ class _TutorState extends State<Tutor> {
                           );
                         }),
                       ),
-                    ) : Text("No Tutor found.")
+                    ) : Text("No Tutor found.".tr)
                         : Text(_errorController.text),
                     NumberPaginator(
                       controller: _pagiController,
@@ -1500,7 +1544,6 @@ class _TutorState extends State<Tutor> {
                       initialPage: 0,
                       onPageChange: (int index) {
                         postBody['page'] = _pagiController.currentPage + 1;
-                        print(postBody);
                         searchTutorList(postBody: postBody);
                         //var queryParameters = {'perPage': '9','page': (_pagiController.currentPage + 1).toString(),};
                         //getPreTutorList(queryParameters: queryParameters);
@@ -1512,22 +1555,22 @@ class _TutorState extends State<Tutor> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Add your onPressed code here!
+
           },
           backgroundColor: Colors.grey,
           child: const Icon(Icons.message_outlined),
-        ),
+        ),*/
       ),
     );
   }
 
-  Widget ImageProfile(ImageProvider input, bool online, String id) {
+  Widget ImageProfile(ImageProvider input, bool online, ProfileArg arg) {
     return Stack(
       children: [
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/tutor_profile' , arguments: id),
+          onTap: () => Navigator.pushNamed(context, '/tutor_profile' , arguments: arg),
           child: CircleAvatar(
             radius: 80.0,
             backgroundImage: input,

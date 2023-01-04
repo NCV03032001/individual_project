@@ -5,12 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:individual_project/model/UserProvider.dart';
-import 'package:individual_project/model/User.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
+import 'package:individual_project/model/User/User.dart';
 import 'package:http/http.dart' as http;
+import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
+import '../main.dart';
+import '../model/Tutor/Tutor.dart';
 import '../model/data/LearnTopicData.dart';
 import '../model/data/TestPreparationData.dart';
 
@@ -24,12 +29,61 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final FocusNode _screenFocus = FocusNode();
-  String _firstSelected ='assets/images/usaFlag.svg';
+  
+  final theGetController c = Get.put(theGetController());
+
   bool _isLoading = false;
   final _changeInfoFormKey = GlobalKey<FormState>();
 
-  PickedFile? _imageFile;
+  XFile? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  final FocusNode _dialogFocus = FocusNode();
+  bool _isFbLoading = false;
+  List<FeedbackItem> fbList = [];
+  TextEditingController _fbError = TextEditingController();
+  int _maxFbPage = 1;
+  void getFeedBack({Map<String, String> query = const {'perPage': '12', 'page': '1'}}) async {
+    UserProvider thisUserProvider = context.read<UserProvider>();
+    var url = Uri.https('sandbox.api.lettutor.com', 'feedback/v2/${thisUserProvider.thisUser.id}', query);
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _fbError.text = err;
+      });
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      setState(() {
+        //print(parsed);
+        _maxFbPage = parsed['data']['count'];
+        //print(_maxFbPage);
+        fbList = List.from(parsed['data']['rows']).map((e) => FeedbackItem.fromJson(e)).toList();
+        fbList.forEach((element) {
+          print(element.content);
+        });
+      });
+    }
+
+    setState(() {
+      _isFbLoading = false;
+      if (_maxFbPage~/12 < _maxFbPage/12) {
+        _maxFbPage = _maxFbPage~/12 + 1;
+      }
+      else {
+        _maxFbPage = _maxFbPage~/12;
+      }
+
+      if (_maxFbPage < 1) _maxFbPage = 1;
+    });
+  }
 
   final TextEditingController _nameController = TextEditingController();
 
@@ -82,7 +136,7 @@ class _ProfileState extends State<Profile> {
   List<String> postTest = [];
   final List<LearnTopics> learnData = LearnTopicData.all;
   final List<TestPreparations> testData = TestPreparationData.all;
-  final List<String> subjectItems = ['Subjeish for Kids', 'Business English', 'Conversational English', 'Test Preparation:', 'STARTERS', 'MOVERS', 'FLYERS', 'KET', 'PET', 'IELTS', 'TOEFL', 'TOEIC'];
+  final List<String> subjectItems = ['English for Kids', 'Business English', 'Conversational English', 'Test Preparation:', 'STARTERS', 'MOVERS', 'FLYERS', 'KET', 'PET', 'IELTS', 'TOEFL', 'TOEIC'];
 
   final TextEditingController _ssController = TextEditingController();
   final FocusNode _scFocus = FocusNode();
@@ -90,16 +144,7 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
-    /*Provider.of<UserProvider>(context, listen: false).thisTokens = Tokens(
-      access: Access(
-        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzA0MzQ0ODIsImV4cCI6MTY3MDUyMDg4MiwidHlwZSI6ImFjY2VzcyJ9.1XRe5c5agbl9n2JVVUWV7bdybIFiEZiJs0PWvGjae9k",
-        expires: "2022-12-08T05:35:46.286Z"
-      ),
-      refresh: Refresh(
-        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTZhMGViZS1lOGNkLTRhODQtYTc0Yi0yOWZlNTM5NjRjNDciLCJpYXQiOjE2NzAzOTEzNDYsImV4cCI6MTY3Mjk4MzM0NiwidHlwZSI6InJlZnJlc2gifQ.5DiiDFVhCFUnlHFosgDn7EvWUwWBGy5kcADSR9opstE",
-        expires: "2023-01-06T05:35:46.286Z"
-      )
-    );*/
+
     UserProvider thisUserProvider = context.read<UserProvider>();
     thisUserProvider.getUser(thisUserProvider.thisTokens.access);
     
@@ -163,11 +208,7 @@ class _ProfileState extends State<Profile> {
         appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
           title: GestureDetector(
               onTap: () {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                    "/tutor",
-                        (route) => route.isCurrent && route.settings.name == "/tutor"
-                        ? false
-                        : true);
+                Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
               }, //sửa sau
               child: SizedBox(
                 height: 30,
@@ -187,7 +228,7 @@ class _ProfileState extends State<Profile> {
                       child: SizedBox(
                         width: 25,
                         height: 25,
-                        child: SvgPicture.asset(_firstSelected),
+                        child: SvgPicture.asset('${c.firstSelected}'),
                       ),
                     ),
                     Center(
@@ -218,9 +259,14 @@ class _ProfileState extends State<Profile> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish')
+                      Text('Engilish'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    
+                    c.updateImg('assets/images/usaFlag.svg'),
+                    c.updateLocale(Locale('en', 'US')),
+                  },
                 ),
                 PopupMenuItem(
                   value: 'assets/images/vnFlag.svg',
@@ -232,16 +278,21 @@ class _ProfileState extends State<Profile> {
                         child: SvgPicture.asset('assets/images/vnFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Vietnamese')
+                      Text('Vietnamese'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    
+                    c.updateImg('assets/images/vnFlag.svg'),
+                    c.updateLocale(Locale('vi', 'VN')),
+                  }, //
                 ),
               ],
-              onSelected: (String value) {
-                setState(() {
-                  _firstSelected = value;
-                });
-              },
+              /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
             ),
             SizedBox(width: 10,),
             PopupMenuButton<String>(
@@ -271,14 +322,12 @@ class _ProfileState extends State<Profile> {
                         height: 30,
                         child: CircleAvatar(
                           radius: 80.0,
-                          backgroundImage: _imageFile == null
-                              ? Image.network('${context.read<UserProvider>().thisUser.avatar}').image
-                              : FileImage(File(_imageFile!.path)),
+                          backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                         ),
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Profile',
+                        'Profile'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -286,7 +335,7 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                /*PopupMenuItem(
                   value: 'BuyLessons',
                   child: Row(
                     children: [
@@ -304,7 +353,7 @@ class _ProfileState extends State<Profile> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
                 PopupMenuItem(
                   value: 'Tutor',
                   child: Row(
@@ -316,7 +365,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Tutor',
+                        'Tutor'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -335,7 +384,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Schedule',
+                        'Schedule'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -354,7 +403,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'History',
+                        'History'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -373,7 +422,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Courses',
+                        'Courses'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -381,7 +430,7 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
+                /*PopupMenuItem(
                   value: 'MyCourse',
                   child: Row(
                     children: [
@@ -399,7 +448,7 @@ class _ProfileState extends State<Profile> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
                 PopupMenuItem(
                   value: 'BecomeTutor',
                   child: Row(
@@ -411,7 +460,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Become a Tutor',
+                        'Become a Tutor'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -430,7 +479,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Settings',
+                        'Settings'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -449,7 +498,7 @@ class _ProfileState extends State<Profile> {
                       ),
                       SizedBox(width: 20,),
                       Text(
-                        'Logout',
+                        'Logout'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
@@ -499,7 +548,7 @@ class _ProfileState extends State<Profile> {
                   margin: EdgeInsets.only(bottom: 20),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Proflie',
+                    'Proflie'.tr,
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -539,9 +588,154 @@ class _ProfileState extends State<Profile> {
                                 maxLines: 2,
                               ),
                               TextButton(
-                                onPressed: null,
+                                onPressed: () async {
+                                  setState(() {
+                                    _isFbLoading = true;
+                                  });
+                                  Future<void> fetchFb() async{return getFeedBack();}
+                                  await fetchFb();
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        double width = MediaQuery.of(context).size.width;
+                                        double height = MediaQuery.of(context).size.height;
+                                        final NumberPaginatorController pagiController = NumberPaginatorController();
+                                        Map<String, String> query = {'perPage': '12','page': '1'};
+                                        return StatefulBuilder(
+                                            builder: (context, setState) {
+                                              setState(() {});
+                                              return AlertDialog(
+                                                title: Text('Others review'.tr),
+                                                content: GestureDetector(
+                                                  onTap: () {
+                                                    FocusScope.of(context).requestFocus(_dialogFocus);
+                                                  },
+                                                  child: SizedBox(
+                                                    width: width - 30,
+                                                    height: height/2,
+                                                    child: _isFbLoading == true
+                                                        ? Center(
+                                                      child: SizedBox(width: 80, height: 80, child: CircularProgressIndicator(),),
+                                                    )
+                                                        : _fbError.text.isNotEmpty
+                                                        ? Text(_fbError.text)
+                                                        : fbList.isNotEmpty
+                                                        ? ListView(
+                                                      children: fbList.map((e) {
+                                                        return SizedBox(
+                                                          height: 100,
+                                                          child: Row(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              SizedBox(
+                                                                  width: 50,
+                                                                  height: 50,
+                                                                  child: CircleAvatar(
+                                                                    radius: 80.0,
+                                                                    backgroundImage: e.avatar != null ? Image.network(e.avatar!).image : Image.network("").image,
+                                                                  )
+                                                              ),
+                                                              SizedBox(
+                                                                width: 10,
+                                                              ),
+                                                              Expanded(
+                                                                child: SizedBox(
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Row(
+                                                                        children: [
+                                                                          Text(
+                                                                            e.name,
+                                                                            maxLines: 1,
+                                                                            overflow: TextOverflow.ellipsis ,
+                                                                            style: TextStyle(
+                                                                              fontSize: 15,
+                                                                              fontWeight: FontWeight.w300,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(width: 15,),
+                                                                          Text(
+                                                                            timeago.format(DateTime.parse(e.createdAt), locale: c.testLocale.value.languageCode),
+                                                                            style: TextStyle(
+                                                                              fontWeight: FontWeight.w400,
+                                                                              fontSize: 15,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      Container(
+                                                                        margin: EdgeInsets.only(bottom: 10),
+                                                                        child: Row(
+                                                                          children: [
+                                                                            e.rating != null
+                                                                                ? Row(
+                                                                                children: []..addAll(List.generate(e.rating!.toInt(), (index) {
+                                                                                  return Icon(Icons.star, color: Colors.yellow, size: 15,);
+                                                                                }))
+                                                                                  ..addAll(List.generate((5-e.rating!.toInt()), (index) {
+                                                                                    return Icon(Icons.star, color: Colors.grey, size: 15,);
+                                                                                  }))
+                                                                            )
+                                                                                : Text('No review yet'.tr, style:  TextStyle(
+                                                                              fontStyle: FontStyle.italic,
+                                                                            ),),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      SizedBox(
+                                                                        height: 30,
+                                                                        child: SingleChildScrollView(
+                                                                          child: Text(e.content),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                    )
+                                                        : Center(
+                                                      child: Text('No Review found.'.tr),
+                                                    ),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  NumberPaginator(
+                                                    controller: pagiController,
+                                                    // by default, the paginator shows numbers as center content
+                                                    config: NumberPaginatorUIConfig(
+                                                      mode: ContentDisplayMode.dropdown,
+                                                    ),
+                                                    numberPages: _maxFbPage,
+                                                    initialPage: 0,
+                                                    onPageChange: (int index) async {
+                                                      setState((){
+                                                        _isFbLoading = true;
+                                                      });
+                                                      print(pagiController.currentPage + 1);
+                                                      query['page'] = (pagiController.currentPage + 1).toString();
+                                                      Future<void> fetchFb() async {
+                                                        return getFeedBack(query: query);
+                                                      }
+                                                      await fetchFb();
+                                                      setState(() {
+                                                        print("In Dialog load: $_isFbLoading");
+                                                      });
+                                                    },
+                                                  )
+                                                ],
+                                              );
+                                            }
+                                        );
+                                      }
+                                  );
+                                },
                                 child: Text(
-                                  'Others review you',
+                                  'Others review you'.tr,
                                   style: TextStyle(
                                     color: Colors.blue,
                                   ),
@@ -572,7 +766,7 @@ class _ProfileState extends State<Profile> {
                                 ),
                                 children: [
                                   TextSpan(
-                                      text: 'Name:',
+                                      text: 'Name:'.tr,
                                       style: TextStyle(
                                         color: Theme.of(context).primaryColor,
                                       )
@@ -614,7 +808,7 @@ class _ProfileState extends State<Profile> {
                             ),
                             validator: (val) {
                               if(val == null || val.isEmpty){
-                                return "Please input your Name!";
+                                return "Please input your Name!".tr;
                               }
                               return null;
                             },
@@ -634,7 +828,7 @@ class _ProfileState extends State<Profile> {
                           flex: 1,
                           child: Container(
                             padding: EdgeInsets.only(top: 15),
-                            child: Text('Email Address:'),
+                            child: Text('Email Address:'.tr),
                           ),
                         ),
                         Expanded(
@@ -676,7 +870,7 @@ class _ProfileState extends State<Profile> {
                             ),
                             children: [
                               TextSpan(
-                                  text: 'Country:',
+                                  text: 'Country:'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   )
@@ -747,7 +941,7 @@ class _ProfileState extends State<Profile> {
                           },
                           validator: (val) {
                             if (val == null || val.isEmpty) {
-                              return "Please select your Country!";
+                              return "Please select your Country!".tr;
                             }
                             return null;
                           },
@@ -763,7 +957,7 @@ class _ProfileState extends State<Profile> {
                       flex: 1,
                       child: Container(
                         padding: EdgeInsets.only(top: 15),
-                        child: Text('Phone Number:'),
+                        child: Text('Phone Number:'.tr),
                       ),
                     ),
                     Expanded(
@@ -793,7 +987,7 @@ class _ProfileState extends State<Profile> {
                   margin: EdgeInsets.only(bottom: 5),
                   alignment: Alignment.centerLeft,
                   child: context.read<UserProvider>().thisUser.isPhoneActivated
-                      ? Text('Verified', style: TextStyle(color: Colors.green),)
+                      ? Text('Verified'.tr, style: TextStyle(color: Colors.green),)
                       : Text('Unverified', style: TextStyle(color: Colors.red),),
                 ),
                 Row(
@@ -812,7 +1006,7 @@ class _ProfileState extends State<Profile> {
                             ),
                             children: [
                               TextSpan(
-                                  text: 'Birthday:',
+                                  text: 'Birthday:'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   )
@@ -873,7 +1067,7 @@ class _ProfileState extends State<Profile> {
                           onTap: () => _selectDate(context),
                           validator: (val) {
                             if (val == null || val.isEmpty) {
-                              return "Please select your Birthday!";
+                              return "Please select your Birthday!".tr;
                             }
                             return null;
                           },
@@ -898,7 +1092,7 @@ class _ProfileState extends State<Profile> {
                             ),
                             children: [
                               TextSpan(
-                                  text: 'My Level:',
+                                  text: 'My Level:'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   )
@@ -958,7 +1152,7 @@ class _ProfileState extends State<Profile> {
                           },
                           validator: (val) {
                             if (val == null || val.isEmpty) {
-                              return "Please select your Level!";
+                              return "Please select your Level!".tr;
                             }
                             return null;
                           },
@@ -983,7 +1177,7 @@ class _ProfileState extends State<Profile> {
                             ),
                             children: [
                               TextSpan(
-                                  text: 'Want to learn:',
+                                  text: 'Want to learn:'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   )
@@ -1046,7 +1240,7 @@ class _ProfileState extends State<Profile> {
                             },
                             validator: (val) {
                               if (val == null || val.isEmpty) {
-                                return "Please select at least one subject!";
+                                return "Please select at least one subject!".tr;
                               }
                               return null;
                             },
@@ -1065,7 +1259,7 @@ class _ProfileState extends State<Profile> {
                           flex: 1,
                           child: Container(
                             padding: EdgeInsets.only(top: 10),
-                            child: Text('Study Schedule:'),
+                            child: Text('Study Schedule:'.tr),
                           ),
                         ),
                         Expanded(
@@ -1087,7 +1281,7 @@ class _ProfileState extends State<Profile> {
                                   borderSide: BorderSide(width: 1, color: Colors.blue),
                                   borderRadius: BorderRadius.all(Radius.circular(10)),
                                 ),
-                                hintText: 'Note the time of the week you want to study on LetTutor.',
+                                hintText: 'Note the time of the week you want to study on LetTutor.'.tr,
                                 isCollapsed: true,
                               ),
                             ),
@@ -1114,7 +1308,7 @@ class _ProfileState extends State<Profile> {
                             : Container(),
                         SizedBox(width: 5,),
                         Text(
-                          'Save changes',
+                          'Save changes'.tr,
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.white,
@@ -1155,9 +1349,6 @@ class _ProfileState extends State<Profile> {
                             }
                           }
                         }
-                        //print(postTest);
-                        //print(_ssController.text);
-                        //print(context.read<UserProvider>().thisUser.avatar);
 
                         var url = Uri.https('sandbox.api.lettutor.com', 'user/info');
 
@@ -1186,26 +1377,26 @@ class _ProfileState extends State<Profile> {
                           context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Successfully changed!', style: TextStyle(color: Colors.green),),
+                              content: Text('Successfully changed!'.tr, style: TextStyle(color: Colors.green),),
                               duration: Duration(seconds: 3),
                             ),
                           );
                         }
                       }
-                    }, //sửa sau
+                    },
                   ),
                 ),
               ],
             ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           onPressed: () {
             // Add your onPressed code here!
           },
           backgroundColor: Colors.grey,
           child: const Icon(Icons.message_outlined),
-        ),
+        ),*/
       ),
     );
   }
@@ -1249,7 +1440,7 @@ class _ProfileState extends State<Profile> {
       child: Column(
         children: <Widget>[
           Text(
-            "Choose Profile photo",
+            "Choose Profile photo".tr,
             style: TextStyle(
               fontSize: 20.0,
             ),
@@ -1263,14 +1454,15 @@ class _ProfileState extends State<Profile> {
               onPressed: () {
                 takePhoto(ImageSource.camera);
               },
-              label: Text("Camera"),
+              label: Text("Camera".tr),
             ),
             ElevatedButton.icon(
               icon: Icon(Icons.image),
               onPressed: () {
                 takePhoto(ImageSource.gallery);
+                Navigator.pop(context);
               },
-              label: Text("Gallery"),
+              label: Text("Gallery".tr),
             ),
           ])
         ],
@@ -1278,7 +1470,7 @@ class _ProfileState extends State<Profile> {
     );
   }
   void takePhoto(ImageSource source) async {
-    final pickedFile = await _picker.getImage(
+    final pickedFile = await _picker.pickImage(
       source: source,
     );
     if (pickedFile != null) {
@@ -1307,12 +1499,11 @@ class _ProfileState extends State<Profile> {
         context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully updated avatar!', style: TextStyle(color: Colors.green),),
+            content: Text('Successfully updated avatar!'.tr, style: TextStyle(color: Colors.green),),
             duration: Duration(seconds: 3),
           ),
         );
       }
-      Navigator.pop(context);
     }
   }
 }

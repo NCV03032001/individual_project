@@ -1,4 +1,4 @@
-import 'package:individual_project/model/User.dart';
+import 'package:individual_project/model/User/User.dart';
 
 class TestPreparationData {
   static final all = <TestPreparations>[

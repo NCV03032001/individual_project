@@ -4,35 +4,56 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:individual_project/model/Tutor.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/Tutor/Tutor.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
+import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+import 'package:number_paginator/number_paginator.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
-import 'package:booking_calendar/booking_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-import '../model/TutorProvider.dart';
+import '../main.dart';
+import '../model/Tutor/TutorProvider.dart';
+import '../model/User/User.dart';
+import '../notification/notification.dart';
 
 class TutorProfile extends StatefulWidget {
-  final String id;
-  const TutorProfile({Key? key, required this.id}) : super(key: key);
+  final ProfileArg theArg;
+
+  const TutorProfile({Key? key, required this.theArg}) : super(key: key);
 
   @override
   State<TutorProfile> createState() => _TutorProfileState();
 }
 
 class _TutorProfileState extends State<TutorProfile> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
   bool _isLoading = false;
+
   Tutor thisTutor = Tutor(
       name: "", isPublicRecord: false, courses: [],
       userId: "", video: "", bio: "", education: "", experience: "", profession: "",
       targetStudent: "", interests: "", languages: "", specialties: "", toShow: false);
 
-  TextEditingController _errorController = TextEditingController();
+  final TextEditingController _rpController = TextEditingController();
+  bool firstVal = false;
+  bool secondVal = false;
+  bool thirdVal = false;
+
+  final FocusNode _dialogFocus = FocusNode();
+  bool _isFbLoading = false;
+  List<FeedbackItem> fbList = [];
+  final TextEditingController _fbError = TextEditingController();
+  int _maxFbPage = 1;
+  
+
+  final TextEditingController _errorController = TextEditingController();
   String _videoErr = "";
 
   List<String> tooltipMsg = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
@@ -49,28 +70,26 @@ class _TutorProfileState extends State<TutorProfile> {
     {'inJson': 'toeic', 'toShow': 'TOEIC'},
   ];
 
-  bool isFav = false;
-
   late VideoPlayerController _videoPlayerController;
   ChewieController? _chewieController;
+
+  final CalendarController _calendarController = CalendarController();
 
   @override
   void initState() {
     super.initState();
-    mockBookingService = BookingService(
-        serviceName: 'Mock Service',
-        serviceDuration: 30,
-        bookingEnd: DateTime(now.year, now.month, now.day, 23, 59),
-        bookingStart: DateTime(now.year, now.month, now.day, 7, 0),);
+    _calendarController.selectedDate = now;
     setState(() {
       _isLoading = true;
       _errorController.text = "";
     });
     getATutor();
+    query['startTimestamp'] = getDate(now).millisecondsSinceEpoch.toString();
+    query['endTimestamp'] = (getDate(now.add(Duration(days: DateTime.daysPerWeek))).millisecondsSinceEpoch - 1).toString();
   }
 
   void getATutor() async {
-    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/${widget.id}');
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/${widget.theArg.id}');
     var response = await http.get(url,
       headers: {
         "Content-Type": "application/json",
@@ -98,6 +117,7 @@ class _TutorProfileState extends State<TutorProfile> {
         setState(() {
           _videoErr = _videoPlayerController.value.errorDescription!;
           _isLoading = false;
+          return;
         });
       }
     });
@@ -112,6 +132,311 @@ class _TutorProfileState extends State<TutorProfile> {
     });
   }
 
+  final Map<String, dynamic> query = {};
+
+  final now = DateTime.now();
+  List<TutorSchedule> scheList = [];
+  TextEditingController _noteController = TextEditingController();
+
+  DateTime getDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  void getTimeSheet(/*{int start = -1, int end = -1}*/) async {
+    query['tutorId'] = thisTutor.userId;
+    var url = Uri.https('sandbox.api.lettutor.com', 'schedule', query);
+    var response = await http.get(url);
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      print(err);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error getting Tutor\'s Schedule: $err', style: TextStyle(color: Colors.red),),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      setState(() {
+        scheList = List.from(parsed['scheduleOfTutor']).map((e) => TutorSchedule.fromJson(e['scheduleDetails'][0])).toList();
+      });
+    }
+  }
+
+  Appointment makeAppoint(TutorSchedule aSch) {
+    User thisUserInfo = context.read<UserProvider>().thisUser;
+    if (aSch.isBooked && aSch.bookingInfo.isNotEmpty) {
+      String tempId = aSch.bookingInfo.firstWhere((element) => !element.isDeleted).userId;
+      if (tempId == thisUserInfo.id) {
+        return Appointment(
+          startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
+          endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
+          subject: 'Booked',
+          notes: thisUserInfo.email,
+          id: aSch.id,
+        );
+      }
+      else {
+        return Appointment(
+          startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
+          endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
+          subject: 'Reserved',
+          notes: thisUserInfo.email,
+          id: aSch.id,
+        );
+      }
+    }
+    return Appointment(
+      startTime: DateTime.fromMillisecondsSinceEpoch(aSch.startPeriodTimestamp),
+      endTime: DateTime.fromMillisecondsSinceEpoch(aSch.endPeriodTimestamp),
+      subject: 'Book',
+      notes: thisUserInfo.email,
+      id: aSch.id,
+    );
+  }
+
+  _AppointmentDataSource _getCalendarDataSource() {
+    List<Appointment> appointments = <Appointment>[];
+    for (var element in scheList) {
+      appointments.add(makeAppoint(element));
+    }
+    return _AppointmentDataSource(appointments);
+  }
+
+  void bookClass(String id, String note, int startMili, String? email) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'booking');
+    var response = await http.post(url,
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+        },
+        body: jsonEncode({"scheduleDetailIds": [id], "note": note})
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          double width = MediaQuery.of(context).size.width;
+          double height = MediaQuery.of(context).size.height;
+          return AlertDialog(
+            title: Text('Booking details'.tr),
+            content: Container(
+              constraints: BoxConstraints(
+                maxHeight: height/2,
+              ),
+              width: width - 30,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 100,
+                      child: Image.asset('assets/images/icons/close.png'),
+                    ),
+                    Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        alignment: Alignment.center,
+                        child: Text('Booking failed'.tr, style: TextStyle(
+                          fontSize: 20,
+                        ),)
+                    ),
+                    Text(err, style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                    ),),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: Colors.blue, width: 2),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                child: Text(
+                  'Done'.tr,
+                  style: TextStyle(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+      );
+    }
+    else {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            double width = MediaQuery.of(context).size.width;
+            double height = MediaQuery.of(context).size.height;
+            NotificationService.addNotification(startMili, email);
+            return AlertDialog(
+              title: Text('Booking details'.tr),
+              content: Container(
+                constraints: BoxConstraints(
+                  maxHeight: height/2,
+                ),
+                width: width - 30,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 70,
+                        height: 100,
+                        child: Icon(Icons.check_circle, color: Colors.green, size: 70,),
+                      ),
+                      Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          alignment: Alignment.center,
+                          child: Text('Booking success'.tr, style: TextStyle(
+                            fontSize: 20,
+                          ),)
+                      ),
+                      Text('Check your Schedule to see class detail'.tr, style: TextStyle(
+                        fontWeight: FontWeight.w300,
+                      ),),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(context, 'OK'),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.blue, width: 2),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  ),
+                  child: Text(
+                    'Done'.tr,
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+      );
+
+      getTimeSheet();
+    }
+  }
+
+  void searchTutorList({Map<String, dynamic> postBody = const {
+    "filters": {
+      "date": null,
+      "nationality": {},
+      "specialties": [],
+      "tutoringTimeAvailable": [null, null]
+    },
+    "page": "1",
+    "perPage": 9,
+    "search": "",
+  }, }
+      ) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'tutor/search');
+    var response = await http.post(url,
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+        },
+        body: jsonEncode(postBody)
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      var tutorProv = Provider.of<TutorProvider>(context, listen: false);
+      tutorProv.fromSearchJson(parsed);
+
+      setState(() {
+        _errorController.text = "";
+      });
+    }
+  }
+  void sendReport(String id, String content) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'report', );
+    var response = await http.post(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+      body: jsonEncode({"tutorId": id, "content": content})
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err, style: TextStyle(color: Colors.red),),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    else {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err, style: TextStyle(color: Colors.green),),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+  void getFeedBack({Map<String, String> query = const {'perPage': '12', 'page': '1'}}) async {
+    var url = Uri.https('sandbox.api.lettutor.com', 'feedback/v2/${widget.theArg.id}', query);
+    var response = await http.get(url,
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
+      },
+    );
+    if (response.statusCode != 200) {
+      final Map parsed = json.decode(response.body);
+      final String err = parsed["message"];
+      setState(() {
+        _fbError.text = err;
+      });
+    }
+    else {
+      final Map<String, dynamic> parsed = json.decode(response.body);
+      setState(() {
+        _maxFbPage = parsed['data']['count'];
+        fbList = List.from(parsed['data']['rows']).map((e) => FeedbackItem.fromJson(e)).toList();
+      });
+    }
+
+    setState(() {
+      _isFbLoading = false;
+      if (_maxFbPage~/12 < _maxFbPage/12) {
+        _maxFbPage = _maxFbPage~/12 + 1;
+      }
+      else {
+        _maxFbPage = _maxFbPage~/12;
+      }
+
+      if (_maxFbPage < 1) _maxFbPage = 1;
+    });
+  }
+
   @override
   void dispose() {
     _videoPlayerController.dispose();
@@ -119,80 +444,15 @@ class _TutorProfileState extends State<TutorProfile> {
     super.dispose();
   }
 
-  List<String> FTutorTags = ['English for Business', 'Conversational', 'English for kids', 'IELTS', 'TOEIC'];
-
-  List<courseItem> courseList = [
-    courseItem(courseName: 'Basic Conversation Topics', courseLink: 'https://sandbox.app.lettutor.com/courses/46972669-1755-4f27-8a87-dc4dd2630492'),
-    courseItem(courseName: 'Life in the Internet Age', courseLink: 'https://sandbox.app.lettutor.com/courses/964bed84-6450-49ee-92d5-e8c565864bd9'),
-  ];
-
-  final now = DateTime.now();
-  late BookingService mockBookingService;
-
-  Stream<dynamic>? getBookingStreamMock({required DateTime end, required DateTime start}) {
-    return Stream.value([]);
-  }
-
-  Future<dynamic> uploadBookingMock({ required BookingService newBooking}) async {
-    await Future.delayed(const Duration(seconds: 1));
-    converted.add(DateTimeRange(
-        start: newBooking.bookingStart, end: newBooking.bookingEnd));
-    print('${newBooking.toJson()} has been uploaded');
-  }
-
-  List<DateTimeRange> converted = [];
-
-  List<DateTimeRange> convertStreamResultMock({dynamic streamResult}) {
-    ///here you can parse the streamresult and convert to [List<DateTimeRange>]
-    DateTime firstCall = DateTime(now.year, now.month, now.day, 8);
-    DateTime secondCall = DateTime(now.year, now.month, now.day, 10, 30);
-    DateTime thirdCall = DateTime(now.year, now.month, now.day, 14, 30);
-    DateTime fourthCall = DateTime(now.year, now.month, now.day, 16, 00);
-    DateTime fifthCall = DateTime(now.year, now.month, now.day, 20, 30);
-    DateTime sixthCall = DateTime(now.year, now.month, now.day, 22, 00);
-    converted.add(DateTimeRange(start: firstCall, end: firstCall.add(Duration(minutes: 25))));
-    //converted.add(DateTimeRange(start: secondCall, end: secondCall.add(Duration(minutes: 25))));
-    converted.add(DateTimeRange(start: thirdCall, end: thirdCall.add(Duration(minutes: 25))));
-    //converted.add(DateTimeRange(start: fourthCall, end: fourthCall.add(Duration(minutes: 25))));
-    converted.add(DateTimeRange(start: fifthCall, end: fifthCall.add(Duration(minutes: 25))));
-    converted.add(DateTimeRange(start: sixthCall, end: sixthCall.add(Duration(minutes: 25))));
-    return converted;
-  }
-
-  List<DateTimeRange> generatePauseSlots() {
-    return [
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 0, 0),
-          end: DateTime(now.year, now.month, now.day, 8, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 8, 30),
-          end: DateTime(now.year, now.month, now.day, 10, 30)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 11, 0),
-          end: DateTime(now.year, now.month, now.day, 14, 30)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 15, 0),
-          end: DateTime(now.year, now.month, now.day, 16, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 16, 30),
-          end: DateTime(now.year, now.month, now.day, 20, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 21, 00),
-          end: DateTime(now.year, now.month, now.day, 22, 0)),
-      DateTimeRange(
-          start: DateTime(now.year, now.month, now.day, 22, 30),
-          end: DateTime(now.year, now.month, now.day, 23, 59)),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic>? tempBody = widget.theArg.postBody;
 
     return Scaffold(
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/tutor');
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -212,7 +472,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -243,9 +503,14 @@ class _TutorProfileState extends State<TutorProfile> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -257,16 +522,21 @@ class _TutorProfileState extends State<TutorProfile> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -301,7 +571,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -309,25 +579,25 @@ class _TutorProfileState extends State<TutorProfile> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -339,7 +609,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -358,7 +628,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -377,7 +647,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -396,7 +666,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -404,25 +674,25 @@ class _TutorProfileState extends State<TutorProfile> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -434,7 +704,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -453,7 +723,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -472,7 +742,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -483,25 +753,25 @@ class _TutorProfileState extends State<TutorProfile> {
             ],
             onSelected: (value) {
               if (value == 'Profile') {
-                Navigator.popAndPushNamed(context, '/profile');
+                Navigator.pushNamed(context, '/profile');
               }
               else if (value == 'Tutor') {
-                Navigator.popAndPushNamed(context, '/tutor');
+                Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
               }
               else if (value == 'Schedule') {
-                Navigator.popAndPushNamed(context, '/schedule');
+                Navigator.pushNamed(context, '/schedule');
               }
               else if (value == 'History') {
-                Navigator.popAndPushNamed(context, '/history');
+                Navigator.pushNamed(context, '/history');
               }
               else if (value == 'Courses') {
-                Navigator.popAndPushNamed(context, '/courses');
+                Navigator.pushNamed(context, '/courses');
               }
               else if (value == 'BecomeTutor') {
-                Navigator.popAndPushNamed(context, '/become_tutor');
+                Navigator.pushNamed(context, '/become_tutor');
               }
               else if (value == 'Setting') {
-                Navigator.popAndPushNamed(context, '/setting');
+                Navigator.pushNamed(context, '/setting');
               }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
@@ -598,13 +868,13 @@ class _TutorProfileState extends State<TutorProfile> {
                                 ? Row(
                                 children: []..addAll(List.generate(thisTutor.rating!.toInt(), (index) {
                                   return Tooltip(
-                                    message: tooltipMsg[index],
+                                    message: tooltipMsg[index].tr,
                                     child: Icon(Icons.star, color: Colors.yellow,),
                                   );
                                 }))
                                   ..addAll(List.generate((5-thisTutor.rating!.toInt()), (index) {
                                     return Tooltip(
-                                      message: tooltipMsg[4-index],
+                                      message: tooltipMsg[4-index].tr,
                                       child: Icon(Icons.star, color: Colors.grey,),
                                     );
                                   }).reversed)..add(
@@ -613,7 +883,7 @@ class _TutorProfileState extends State<TutorProfile> {
                                     : Container(),
                                   )
                             )
-                                : Text('No reviews yet', style:  TextStyle(
+                                : Text('No review yet'.tr, style:  TextStyle(
                               fontStyle: FontStyle.italic,
                             ),),
                           ],
@@ -647,20 +917,44 @@ class _TutorProfileState extends State<TutorProfile> {
                 Expanded(
                   child: InkWell(
                       onTap: ()  async {
-                        setState(() {
-                          thisTutor.isFavorite = !thisTutor.isFavorite!;
-                        });
-                        var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(thisTutor.userId, context.read<UserProvider>().thisTokens.access.token);
-                        if (doFavRes != "Success") {
+                        var url = Uri.https('sandbox.api.lettutor.com', 'user/manageFavoriteTutor');
+                        var response = await http.post(url,
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': 'Bearer ${context.read<UserProvider>().thisTokens.access.token}',
+                            },
+                            body: jsonEncode({'tutorId': thisTutor.userId})
+                        );
+
+                        if (response.statusCode != 200) {
+                          final Map parsed = json.decode(response.body);
+                          final String err = parsed["message"];
                           setState(() {
-                            _errorController.text = doFavRes;
+                            _errorController.text = err;
                           });
                         }
                         else {
+                          if (tempBody != null) {
+                            searchTutorList(postBody: tempBody);
+                          } else {
+                            searchTutorList();
+                          }
                           setState(() {
                             _errorController.text = "";
+                            thisTutor.isFavorite = !thisTutor.isFavorite!;
                           });
                         }
+                        // var doFavRes = await Provider.of<TutorProvider>(context, listen: false).doFav(thisTutor.userId, context.read<UserProvider>().thisTokens.access.token);
+                        // if (doFavRes != "Success") {
+                        //   setState(() {
+                        //     _errorController.text = doFavRes;
+                        //   });
+                        // }
+                        // else {
+                        //   setState(() {
+                        //     _errorController.text = "";
+                        //   });
+                        // }
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -673,8 +967,8 @@ class _TutorProfileState extends State<TutorProfile> {
                                 : Image.asset('assets/images/icons/Heart_outline.png', color: Colors.blue,),
                           ),
                           SizedBox(height: 10,),
-                          Text('Favorite', style: TextStyle(
-                              color: isFav ? Colors.red : Colors.blue
+                          Text('Favorite'.tr, style: TextStyle(
+                              color: thisTutor.isFavorite == true ? Colors.red : Colors.blue
                           ),),
                         ],
                       )
@@ -682,7 +976,199 @@ class _TutorProfileState extends State<TutorProfile> {
                 ),
                 Expanded(
                   child: InkWell(
-                      onTap: null,
+                      onTap: () {
+                        _rpController.text = "";
+                        firstVal = false;
+                        secondVal = false;
+                        thirdVal = false;
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => StatefulBuilder(
+                            builder: (context, setState) {
+                              double width = MediaQuery.of(context).size.width;
+                              double height = MediaQuery.of(context).size.height;
+                              return Focus(
+                                focusNode: _dialogFocus,
+                                child: AlertDialog(
+                                  title: Text('Report'.tr +' ${thisTutor.name}'),
+                                  content: GestureDetector(
+                                    onTap: () {
+                                      _dialogFocus.requestFocus();
+                                    },
+                                    child: Container(
+                                      constraints: BoxConstraints(
+                                        maxHeight: height/2,
+                                      ),
+                                      width: width - 30,
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                                margin: EdgeInsets.only(bottom: 10),
+                                                alignment: Alignment.centerLeft,
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.info, color: Colors.blue,),
+                                                    SizedBox(width: 10,),
+                                                    Expanded(child: Text(
+                                                      'Help us understand what\'s happening'.tr,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),),
+                                                  ],
+                                                )
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Checkbox(
+                                                  value: firstVal,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      firstVal = !firstVal;
+                                                      if(firstVal == true) {
+                                                        _rpController.text = "${"This tutor is annoying me".tr}\n${_rpController.text}";
+                                                      }
+                                                      else {
+                                                        _rpController.text = _rpController.text.replaceAll("${"This tutor is annoying me".tr}\n", "")
+                                                            .replaceAll("This tutor is annoying me".tr, "");
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                                Expanded(child: Text("This tutor is annoying me".tr)),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Checkbox(
+                                                  value: secondVal,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      secondVal = !secondVal;
+                                                      if(secondVal == true) {
+                                                        _rpController.text = "${"This profile is pretending be someone or is fake".tr}\n${_rpController.text}";
+                                                      }
+                                                      else {
+                                                        _rpController.text = _rpController.text.replaceAll("${"This profile is pretending be someone or is fake".tr}\n", "")
+                                                            .replaceAll("This profile is pretending be someone or is fake".tr, "");
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                                Expanded(child: Text("This profile is pretending be someone or is fake".tr)),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Checkbox(
+                                                  value: thirdVal,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      thirdVal = !thirdVal;
+                                                      if(thirdVal == true) {
+                                                        _rpController.text = "${"Inappropriate profile photo".tr}\n${_rpController.text}";
+                                                      }
+                                                      else {
+                                                        _rpController.text = _rpController.text.replaceAll("${"Inappropriate profile photo".tr}\n", "")
+                                                            .replaceAll("Inappropriate profile photo".tr, "");
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                                Expanded(child: Text("Inappropriate profile photo".tr)),
+                                              ],
+                                            ),
+                                            Container(
+                                              margin: EdgeInsets.only(bottom: 10),
+                                              child: TextFormField(
+                                                keyboardType: TextInputType.multiline,
+                                                controller: _rpController,
+                                                minLines: 3,
+                                                maxLines: 8,
+                                                decoration: InputDecoration(
+                                                  contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 1, color: Colors.grey),
+                                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 1, color: Colors.blue),
+                                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                  ),
+                                                  hintText: "Please let us know details about your problem".tr,
+                                                  isCollapsed: true,
+                                                ),
+                                                onChanged: (val) {
+                                                  if (val.contains('This tutor is annoying me'.tr)) {
+                                                    setState(() {
+                                                      firstVal = true;
+                                                    });
+                                                  }
+                                                  if (val.contains('This profile is pretending be someone or is fake'.tr)) {
+                                                    setState(() {
+                                                      secondVal = true;
+                                                    });
+                                                  }
+                                                  if (val.contains('Inappropriate profile photo'.tr)) {
+                                                    setState(() {
+                                                      thirdVal = true;
+                                                    });
+                                                  }
+                                                  setState((){});
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  actions: [
+                                    OutlinedButton(
+                                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                        backgroundColor: Colors.white,
+                                        side: BorderSide(color: Colors.blue, width: 2),
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Cancel'.tr,
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () => _rpController.text.isNotEmpty ? Navigator.pop(context, 'OK') : null,
+                                      style: OutlinedButton.styleFrom(
+                                        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                        backgroundColor: _rpController.text.isNotEmpty ? Colors.blue : Colors.grey,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Submit'.tr,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          ),
+                        ).then((value) {
+                          if(value == "OK") {
+                            sendReport(thisTutor.userId, _rpController.text);
+                          }
+                        });
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -692,7 +1178,7 @@ class _TutorProfileState extends State<TutorProfile> {
                             child: Icon(Icons.info_outline, color: Colors.blue, size: 35,),
                           ),
                           SizedBox(height: 10,),
-                          Text('Report', style: TextStyle(
+                          Text('Report'.tr, style: TextStyle(
                             color: Colors.blue,
                           ),),
                         ],
@@ -701,7 +1187,152 @@ class _TutorProfileState extends State<TutorProfile> {
                 ),
                 Expanded(
                   child: InkWell(
-                      onTap: null,
+                      onTap: () async {
+                        setState(() {
+                          _isFbLoading = true;
+                        });
+                        Future<void> fetchFb() async{return getFeedBack();}
+                        await fetchFb();
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              double width = MediaQuery.of(context).size.width;
+                              double height = MediaQuery.of(context).size.height;
+                              final NumberPaginatorController pagiController = NumberPaginatorController();
+                              Map<String, String> query = {'perPage': '12','page': '1'};
+                                return StatefulBuilder(
+                                  builder: (context, setState) {
+                                    setState(() {});
+                                    return AlertDialog(
+                                      title: Text('Others review'.tr),
+                                      content: GestureDetector(
+                                        onTap: () {
+                                          FocusScope.of(context).requestFocus(_dialogFocus);
+                                        },
+                                        child: SizedBox(
+                                          width: width - 30,
+                                          height: height/2,
+                                          child: _isFbLoading == true
+                                          ? Center(
+                                            child: SizedBox(width: 80, height: 80, child: CircularProgressIndicator(),),
+                                          )
+                                          : _fbError.text.isNotEmpty
+                                          ? Text(_fbError.text)
+                                          : fbList.isNotEmpty
+                                          ? ListView(
+                                            children: fbList.map((e) {
+                                              return SizedBox(
+                                                height: 100,
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 50,
+                                                      height: 50,
+                                                      child: CircleAvatar(
+                                                        radius: 80.0,
+                                                        backgroundImage: e.avatar != null ? Image.network(e.avatar!).image : Image.network("").image,
+                                                      )
+                                                    ),
+                                                    SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    Expanded(
+                                                      child: SizedBox(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  e.name,
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis ,
+                                                                  style: TextStyle(
+                                                                    fontSize: 15,
+                                                                    fontWeight: FontWeight.w300,
+                                                                  ),
+                                                                ),
+                                                                SizedBox(width: 15,),
+                                                                Text(
+                                                                  timeago.format(DateTime.parse(e.createdAt), locale: c.testLocale.value.languageCode),//c.testLocale.value.languageCode),
+                                                                  style: TextStyle(
+                                                                    fontWeight: FontWeight.w400,
+                                                                    fontSize: 15,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Container(
+                                                              margin: EdgeInsets.only(bottom: 10),
+                                                              child: Row(
+                                                                children: [
+                                                                  e.rating != null
+                                                                      ? Row(
+                                                                      children: []..addAll(List.generate(e.rating!.toInt(), (index) {
+                                                                        return Icon(Icons.star, color: Colors.yellow, size: 15,);
+                                                                      }))
+                                                                        ..addAll(List.generate((5-e.rating!.toInt()), (index) {
+                                                                          return Icon(Icons.star, color: Colors.grey, size: 15,);
+                                                                        }))
+                                                                  )
+                                                                      : Text('No review yet'.tr, style:  TextStyle(
+                                                                    fontStyle: FontStyle.italic,
+                                                                  ),),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              height: 30,
+                                                              child: SingleChildScrollView(
+                                                                child: Text(e.content),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          )
+                                          : Center(
+                                            child: Text('No Review found.'.tr),
+                                          ),
+                                        ),
+                                      ),
+                                      actions: [
+                                        NumberPaginator(
+                                          controller: pagiController,
+                                          // by default, the paginator shows numbers as center content
+                                          config: NumberPaginatorUIConfig(
+                                            mode: ContentDisplayMode.dropdown,
+                                          ),
+                                          numberPages: _maxFbPage,
+                                          initialPage: 0,
+                                          onPageChange: (int index) async {
+                                            setState((){
+                                              _isFbLoading = true;
+                                            });
+                                            query['page'] = (pagiController.currentPage + 1).toString();
+                                            Future<void> fetchFb() async {
+                                              return getFeedBack(query: query);
+                                            }
+                                            await fetchFb();
+                                            setState(() {
+                                              //print(DateFormat('HH:mm EEEE, dd, MMM, yy').format(DateTime.parse(fbList.first.createdAt)));
+                                              print("In Dialog load: $_isFbLoading");
+                                            });
+                                          },
+                                        )
+                                      ],
+                                    );
+                                  }
+                              );
+                            }
+                        );
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -711,7 +1342,7 @@ class _TutorProfileState extends State<TutorProfile> {
                             child: Icon(Icons.star_border_purple500_sharp, color: Colors.blue, size: 35,),
                           ),
                           SizedBox(height: 10,),
-                          Text('Reviews', style: TextStyle(
+                          Text('Reviews'.tr, style: TextStyle(
                             color: Colors.blue,
                           ),),
                         ],
@@ -735,7 +1366,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.fromLTRB(0, 20, 0, 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Languages',
+              'Languages'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -774,7 +1405,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Specialties',
+              'Specialties'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -803,7 +1434,7 @@ class _TutorProfileState extends State<TutorProfile> {
                     color: Colors.blue,
                   ),
                   child: specList.indexWhere((e) => e['inJson'] == value) != -1
-                      ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!)
+                      ? Text(specList.firstWhere((sl) => sl['inJson'] == value)['toShow']!.tr)
                       : Text(value.toUpperCase()),
                 )).toList(),
               ),
@@ -814,7 +1445,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 10),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Suggested courses',
+              'Suggested courses'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -841,7 +1472,7 @@ class _TutorProfileState extends State<TutorProfile> {
                       ),
                     ),
                     TextSpan(
-                      text: "Link",
+                      text: "Link".tr,
                       style: TextStyle(
                           fontSize: 17,
                           color: Colors.blue
@@ -858,7 +1489,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.fromLTRB(0, 15, 0, 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Interests',
+              'Interests'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -878,7 +1509,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Teaching experience',
+              'Teaching experience'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -898,7 +1529,7 @@ class _TutorProfileState extends State<TutorProfile> {
             margin: EdgeInsets.only(bottom: 15),
             alignment: Alignment.centerLeft,
             child: Text(
-              'Schedule',
+              'Timesheet'.tr,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -908,27 +1539,216 @@ class _TutorProfileState extends State<TutorProfile> {
           Container(
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
             alignment: Alignment.centerLeft,
-            child: Text('Choose start time of classes to book.\nEach class lasts 25 minutes.',
+            child: Text('${"Each class lasts 25 minutes.".tr}\n${'Please wait for loading after each navigation.'.tr}',
               style: TextStyle(
                 fontSize: 15,
               ),),
           ),
-          Container(
-            width: double.infinity,
-            height: 800,
-            child: BookingCalendar(
-              bookingService: mockBookingService,
-              convertStreamResultToDateTimeRanges: convertStreamResultMock,
-              getBookingStream: getBookingStreamMock,
-              uploadBooking: uploadBookingMock,
-              pauseSlots: generatePauseSlots(),
-              pauseSlotText: 'Not have Class',
-              hideBreakTime: false,
-              loadingWidget: SizedBox(height: 50, width: 50, child: Text('Fetching data...'),),
-              uploadingWidget: SizedBox(height: 50, width: 50, child: CircularProgressIndicator(),),
-              startingDayOfWeek: StartingDayOfWeek.monday,
-              //disabledDays: const [1, 2, 3, 4, 5],
+          SfCalendar(
+            view: CalendarView.week,
+            controller: _calendarController,
+            minDate: DateTime.now(),
+            initialDisplayDate: DateTime.now(),
+            initialSelectedDate: DateTime.now(),
+            showNavigationArrow: true,
+            showDatePickerButton: true,
+            showCurrentTimeIndicator: false,
+            dataSource: _getCalendarDataSource(),
+            cellEndPadding: 0,
+            firstDayOfWeek: now.weekday,
+            timeSlotViewSettings: TimeSlotViewSettings(
+              timeInterval: Duration(minutes: 30),
+              timeFormat: "HH:mm",
             ),
+            appointmentBuilder: (BuildContext context, CalendarAppointmentDetails details) {
+              final Appointment meeting = details.appointments.first;
+              if (meeting.subject == "Reserved") {
+                return Container(
+                  color: Theme.of(context).backgroundColor,
+                  child: Center(
+                    child: Text(
+                        "Reserved".tr,
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 9,
+                        ),
+                    ),
+                  )
+                );
+              }
+              if (meeting.subject == "Booked") {
+                return Container(
+                    color: Theme.of(context).backgroundColor,
+                    child: Center(
+                      child: Text(
+                        "Booked".tr,
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 9,
+                        ),
+                      ),
+                    )
+                );
+              }
+              if (meeting.startTime.difference(now).compareTo(Duration(hours: 2)) <= 0) {
+                return OutlinedButton(
+                  onPressed: null,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.grey, width: 2),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  ),
+                  child: Text(
+                    'Book'.tr,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 9,
+                    ),
+                  ),
+                );
+              }
+              return OutlinedButton(
+                onPressed: () {
+                  _noteController.clear();
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        double width = MediaQuery.of(context).size.width;
+                        double height = MediaQuery.of(context).size.height;
+                        return Focus(
+                          focusNode: _dialogFocus,
+                          child: AlertDialog(
+                            title: Text('Booking details'.tr),
+                            content: GestureDetector(
+                              onTap: () {
+                                _dialogFocus.requestFocus();
+                              },
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxHeight: height/2,
+                                ),
+                                width: width - 30,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 10),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text('Booking Time'.tr)
+                                      ),
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 10),
+                                          alignment: Alignment.center,
+                                          child: Text('${DateFormat('HH:mm', c.testLocale.value.languageCode).format(meeting.startTime)}-${DateFormat('HH:mm EEEE, dd MM yyyy', c.testLocale.value.languageCode).format(meeting.endTime)}')
+                                      ),
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 10),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text('Notes'.tr)
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(bottom: 10),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.multiline,
+                                          controller: _noteController,
+                                          minLines: 3,
+                                          maxLines: 8,
+                                          decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(width: 1, color: Colors.grey),
+                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(width: 1, color: Colors.blue),
+                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                            ),
+                                            isCollapsed: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              OutlinedButton(
+                                onPressed: () => Navigator.pop(context, 'Cancel'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                  backgroundColor: Colors.white,
+                                  side: BorderSide(color: Colors.blue, width: 2),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel'.tr,
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                              OutlinedButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                  backgroundColor: Colors.blue,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Book'.tr,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                  ).then((value) {
+                    if(value == "OK") {
+                      bookClass(meeting.id.toString(), _noteController.text, meeting.startTime.millisecondsSinceEpoch, meeting.notes);
+                    }
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  backgroundColor: Colors.white,
+                  side: BorderSide(color: Colors.blue, width: 2),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                child: Text(
+                  'Book'.tr,
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 9,
+                  ),
+                ),
+              );
+            },
+            onViewChanged: (ViewChangedDetails details) {
+              List<DateTime> dates = details.visibleDates;
+              var tempStart = dates[0].millisecondsSinceEpoch;
+              var tempEnd = dates[dates.length-1].add(Duration(days: 1)).millisecondsSinceEpoch-1;
+              print(tempStart);
+              print(tempEnd);
+              query['startTimestamp'] = tempStart.toString();
+              query['endTimestamp'] = tempEnd.toString();
+              getTimeSheet();
+            },
+          ),
+          SizedBox(
+            height: 50,
           ),
         ],
       )
@@ -936,13 +1756,14 @@ class _TutorProfileState extends State<TutorProfile> {
           child: Text(_errorController.text),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
+          getTimeSheet();
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/
     );
   }
 
@@ -962,4 +1783,17 @@ class courseItem {
     required this.courseName,
     required this.courseLink,
   });
+}
+
+class ProfileArg {
+  final String id;
+  final Map<String, dynamic>? postBody;
+
+  ProfileArg(this.id, this.postBody);
+}
+
+class _AppointmentDataSource extends CalendarDataSource {
+  _AppointmentDataSource(List<Appointment> source){
+    appointments = source;
+  }
 }

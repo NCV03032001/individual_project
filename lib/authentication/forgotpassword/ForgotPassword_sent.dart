@@ -1,7 +1,8 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:email_validator/email_validator.dart';
+import 'package:get/get.dart';
+
+import '../../main.dart';
 
 class ForgotPassword_sent extends StatefulWidget {
   const ForgotPassword_sent({Key? key}) : super(key: key);
@@ -11,7 +12,7 @@ class ForgotPassword_sent extends StatefulWidget {
 }
 
 class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +53,7 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                       child: SizedBox(
                         width: 25,
                         height: 25,
-                        child: SvgPicture.asset(_firstSelected),
+                        child: SvgPicture.asset('${c.firstSelected}'),
                       ),
                     ),
                     Center(
@@ -83,9 +84,14 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish')
+                      Text('Engilish'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    
+                    c.updateImg('assets/images/usaFlag.svg'),
+                    c.updateLocale(Locale('en', 'US')),
+                  },
                 ),
                 PopupMenuItem(
                   value: 'assets/images/vnFlag.svg',
@@ -97,16 +103,21 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                         child: SvgPicture.asset('assets/images/vnFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Vietnamese')
+                      Text('Vietnamese'.tr)
                     ],
                   ),
+                  onTap: () => {
+                    
+                    c.updateImg('assets/images/vnFlag.svg'),
+                    c.updateLocale(Locale('vi', 'VN')),
+                  }, //
                 ),
               ],
-              onSelected: (String value) {
-                setState(() {
-                  _firstSelected = value;
-                });
-              },
+              /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
             ),
           ],
           //automaticallyImplyLeading: false,
@@ -129,7 +140,7 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                   Container(
                       margin: EdgeInsets.only(bottom: 20),
                       child: Text(
-                        'Reset Password',
+                        'Reset Password'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -139,7 +150,7 @@ class _ForgotPassword_sentState extends State<ForgotPassword_sent> {
                   Container(
                       margin: EdgeInsets.only(bottom: 20),
                       child: Text(
-                        'Please enter your email address to search for your account.',
+                        'Check your inbox for a link to reset your password.'.tr,
                         style: TextStyle(
                           fontSize: 15,
                         ),

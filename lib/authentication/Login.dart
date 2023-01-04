@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:email_validator/email_validator.dart';
-import 'package:individual_project/model/Tokens.dart';
-import 'package:individual_project/model/User.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:individual_project/model/User/Tokens.dart';
+import 'package:individual_project/model/User/User.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
+
+import '../main.dart';//
+
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -24,7 +28,7 @@ class _LoginState extends State<Login> {
   bool _isObscure = true;
   bool _isLoading = false;
 
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
 
   final _loginFormKey = GlobalKey<FormState>();
 
@@ -76,7 +80,7 @@ class _LoginState extends State<Login> {
                         child: SizedBox(
                           width: 25,
                           height: 25,
-                          child: SvgPicture.asset(_firstSelected),
+                          child: SvgPicture.asset('${c.firstSelected}'),
                         ),
                       ),
                       Center(
@@ -107,9 +111,14 @@ class _LoginState extends State<Login> {
                           child: SvgPicture.asset('assets/images/usaFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Engilish')
+                        Text('Engilish'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      
+                      c.updateImg('assets/images/usaFlag.svg'),
+                      c.updateLocale(Locale('en', 'US')),
+                    },
                   ),
                   PopupMenuItem(
                     value: 'assets/images/vnFlag.svg',
@@ -121,16 +130,21 @@ class _LoginState extends State<Login> {
                           child: SvgPicture.asset('assets/images/vnFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Vietnamese')
+                        Text('Vietnamese'.tr)
                       ],
                     ),
+                    onTap: () => {
+                      
+                      c.updateImg('assets/images/vnFlag.svg'),
+                      c.updateLocale(Locale('vi', 'VN')),
+                    }, //
                   ),
                 ],
-                onSelected: (String value) {
-                  setState(() {
-                    _firstSelected = value;
-                  });
-                },
+                /*onSelected: (String value) {
+              setState(() {
+                _firstSelected = value;
+              });
+            },*/
               ),
             ],
             //automaticallyImplyLeading: false,
@@ -154,8 +168,9 @@ class _LoginState extends State<Login> {
                       children: [
                         Container(
                             margin: EdgeInsets.only(bottom: 20),
+                            alignment: Alignment.centerLeft,
                             child: Text(
-                              'Say hello to your English tutors',
+                              'Say hello to your English tutors'.tr,
                               style: TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
@@ -166,7 +181,7 @@ class _LoginState extends State<Login> {
                         Container(
                             margin: EdgeInsets.only(bottom: 20),
                             child: Text(
-                              'Become fluent faster through one on one video chat lessons tailored to your goals.',
+                              'Become fluent faster through one on one video chat lessons tailored to your goals.'.tr,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -177,7 +192,7 @@ class _LoginState extends State<Login> {
                             margin: EdgeInsets.only(bottom: 10),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'EMAIL',
+                              'EMAIL'.tr,
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.grey,
@@ -215,9 +230,9 @@ class _LoginState extends State<Login> {
                               ),
                               validator: (val) {
                                 if(val == null || val.isEmpty){
-                                  return "Please input your Email!";
+                                  return "Please input your Email!".tr;
                                 } else if(!EmailValidator.validate(val, true)){
-                                  return "Invalid Email Address!";
+                                  return "Invalid Email Address!".tr;
                                 }
                                 return null;
                               }
@@ -227,7 +242,7 @@ class _LoginState extends State<Login> {
                             margin: EdgeInsets.only(bottom: 10),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'PASSWORD',
+                              'PASSWORD'.tr,
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.grey,
@@ -275,7 +290,7 @@ class _LoginState extends State<Login> {
                               ),
                               validator: (val) {
                                 if(val == null || val.isEmpty){
-                                  return "Please input your Password!";
+                                  return "Please input your Password!".tr;
                                 }
                                 return null;
                               }
@@ -304,7 +319,7 @@ class _LoginState extends State<Login> {
                           child: TextButton(
                             focusNode: _fgpwFocus,
                             child: Text(
-                              'Forgot Password?',
+                              'Forgot Password?'.tr,
                               style: TextStyle(
                                 color: Colors.blue,
                                 fontSize: 20,
@@ -335,7 +350,7 @@ class _LoginState extends State<Login> {
                                   : Container(),
                                   SizedBox(width: 15,),
                                   Text(
-                                    'LOG IN',
+                                    'LOG IN'.tr,
                                     style: TextStyle(
                                       fontSize: 25,
                                       fontWeight: FontWeight.bold,
@@ -387,7 +402,7 @@ class _LoginState extends State<Login> {
                         Container(
                           margin: EdgeInsets.only(bottom: 20),
                           child: Text(
-                            'Or continue with',
+                            'Or continue with'.tr,
                             style: TextStyle(
                               fontSize: 20,
                             ),
@@ -441,13 +456,16 @@ class _LoginState extends State<Login> {
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Not a member yet? ',
+                                  text: 'Not a member yet?'.tr,
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: "Sign up",
+                                  text: ' ',
+                                ),
+                                TextSpan(
+                                  text: "Sign up".tr,
                                   style: TextStyle(
                                     color: Colors.blue,
                                   ),

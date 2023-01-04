@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:individual_project/model/CourseList.dart';
-import 'package:individual_project/model/UserProvider.dart';
+import 'package:get/get.dart';
+import 'package:individual_project/model/Course/CourseList.dart';
+import 'package:individual_project/model/User/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+
+import '../main.dart';
 
 class CourseDetail extends StatefulWidget {
   final String id;
@@ -17,7 +20,7 @@ class CourseDetail extends StatefulWidget {
 }
 
 class _CourseDetailState extends State<CourseDetail> {
-  String _firstSelected ='assets/images/usaFlag.svg';
+  final theGetController c = Get.put(theGetController());
   CourseClass thisCourse = CourseClass(id: "", name: "", description: "", imageUrl: "", level: "",
       reason: "", purpose: "", otherDetails: "", defaultPrice: 0, coursePrice: 0, visible: true,
       createdAt: "", updatedAt: "", topics: [], categories: [], users: []);
@@ -86,7 +89,7 @@ class _CourseDetailState extends State<CourseDetail> {
       appBar: AppBar(backgroundColor: Theme.of(context).backgroundColor,
         title: GestureDetector(
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/tutor');
+              Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
             }, //sửa sau
             child: SizedBox(
               height: 30,
@@ -106,7 +109,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     child: SizedBox(
                       width: 25,
                       height: 25,
-                      child: SvgPicture.asset(_firstSelected),
+                      child: SvgPicture.asset('${c.firstSelected}'),
                     ),
                   ),
                   Center(
@@ -137,9 +140,14 @@ class _CourseDetailState extends State<CourseDetail> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish')
+                    Text('Engilish'.tr)
                   ],
                 ),
+                onTap: () => {
+                  
+                  c.updateImg('assets/images/usaFlag.svg'),
+                  c.updateLocale(Locale('en', 'US')),
+                },
               ),
               PopupMenuItem(
                 value: 'assets/images/vnFlag.svg',
@@ -151,16 +159,21 @@ class _CourseDetailState extends State<CourseDetail> {
                       child: SvgPicture.asset('assets/images/vnFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Vietnamese')
+                    Text('Vietnamese'.tr)
                   ],
                 ),
+                onTap: () => {
+                  
+                  c.updateImg('assets/images/vnFlag.svg'),
+                  c.updateLocale(Locale('vi', 'VN')),
+                }, //
               ),
             ],
-            onSelected: (String value) {
+            /*onSelected: (String value) {
               setState(() {
                 _firstSelected = value;
               });
-            },
+            },*/
           ),
           SizedBox(width: 10,),
           PopupMenuButton<String>(
@@ -190,12 +203,12 @@ class _CourseDetailState extends State<CourseDetail> {
                       height: 30,
                       child: CircleAvatar(
                         radius: 80.0,
-                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image
+                        backgroundImage: Image.network('${context.read<UserProvider>().thisUser.avatar}').image,
                       ),
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Profile',
+                      'Profile'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -203,25 +216,25 @@ class _CourseDetailState extends State<CourseDetail> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'BuyLessons',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'Buy Lessons',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'BuyLessons',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/BuyLessons.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'Buy Lessons',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'Tutor',
                 child: Row(
@@ -233,7 +246,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Tutor',
+                      'Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -252,7 +265,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Schedule',
+                      'Schedule'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -271,7 +284,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'History',
+                      'History'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -290,7 +303,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Courses',
+                      'Courses'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -298,25 +311,25 @@ class _CourseDetailState extends State<CourseDetail> {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'MyCourse',
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
-                    ),
-                    SizedBox(width: 20,),
-                    Text(
-                      'My Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+              /*PopupMenuItem(
+                  value: 'MyCourse',
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Image.asset('assets/images/icons/MyCourse.png', color: Colors.blue,),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      SizedBox(width: 20,),
+                      Text(
+                        'My Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),*/
               PopupMenuItem(
                 value: 'BecomeTutor',
                 child: Row(
@@ -328,7 +341,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Become a Tutor',
+                      'Become a Tutor'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -347,7 +360,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -366,7 +379,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     ),
                     SizedBox(width: 20,),
                     Text(
-                      'Logout',
+                      'Logout'.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -377,25 +390,25 @@ class _CourseDetailState extends State<CourseDetail> {
             ],
             onSelected: (value) {
               if (value == 'Profile') {
-                Navigator.popAndPushNamed(context, '/profile');
+                Navigator.pushNamed(context, '/profile');
               }
               else if (value == 'Tutor') {
-                Navigator.popAndPushNamed(context, '/tutor');
+                Navigator.of(context).pushNamedAndRemoveUntil('/tutor', (Route route) => false);
               }
               else if (value == 'Schedule') {
-                Navigator.popAndPushNamed(context, '/schedule');
+                Navigator.pushNamed(context, '/schedule');
               }
               else if (value == 'History') {
-                Navigator.popAndPushNamed(context, '/history');
+                Navigator.pushNamed(context, '/history');
               }
               else if (value == 'Courses') {
-                Navigator.popAndPushNamed(context, '/courses');
+                Navigator.pushNamed(context, '/courses');
               }
               else if (value == 'BecomeTutor') {
-                Navigator.popAndPushNamed(context, '/become_tutor');
+                Navigator.pushNamed(context, '/become_tutor');
               }
               else if (value == 'Setting') {
-                Navigator.popAndPushNamed(context, '/setting');
+                Navigator.pushNamed(context, '/setting');
               }
               else if (value == 'Logout') {
                 Navigator.of(context).pushNamedAndRemoveUntil("/login",
@@ -428,7 +441,7 @@ class _CourseDetailState extends State<CourseDetail> {
                       children: [
                         Container(
                           margin: EdgeInsets.only(bottom: 15),
-                          alignment: Alignment.center,
+                          alignment: Alignment.centerLeft,
                           child: Text(thisCourse.name, style: TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -437,9 +450,10 @@ class _CourseDetailState extends State<CourseDetail> {
                         ),
                         Container(
                           margin: EdgeInsets.only(bottom: 25),
+                          padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                           alignment: Alignment.centerLeft,
                           child: Text(thisCourse.description, style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 17,
                               overflow: TextOverflow.ellipsis
                           ), maxLines: 3,),
                         ),
@@ -453,13 +467,15 @@ class _CourseDetailState extends State<CourseDetail> {
                               shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                             ),
                             child: Text(
-                              'Discover',
+                              'Discover'.tr,
                               style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: null, //sửa sau
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/course_discover', arguments: DiscoverArg(0, thisCourse));
+                            }, //sửa sau
                           ),
                         ),
                       ],
@@ -479,7 +495,7 @@ class _CourseDetailState extends State<CourseDetail> {
                 ),
                 Container(
                   padding: EdgeInsets.all(10),
-                  child: Text('Overview', style: TextStyle(
+                  child: Text('Overview'.tr, style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 25,
                   ),),
@@ -497,7 +513,10 @@ class _CourseDetailState extends State<CourseDetail> {
                           alignment: PlaceholderAlignment.middle,
                           child: Image.asset('assets/images/icons/Question.png', color: Colors.red, width: 20, height: 20,),
                         ),
-                        TextSpan(text: ' Why take this course', style: TextStyle(
+                        TextSpan(
+                          text: " ",
+                        ),
+                        TextSpan(text: 'Why take this course'.tr, style: TextStyle(
                           fontSize: 17,
                         )),
                       ]
@@ -519,7 +538,10 @@ class _CourseDetailState extends State<CourseDetail> {
                           alignment: PlaceholderAlignment.middle,
                           child: Image.asset('assets/images/icons/Question.png', color: Colors.red, width: 20, height: 20,),
                         ),
-                        TextSpan(text: ' What will you be able to do', style: TextStyle(
+                        TextSpan(
+                          text: " ",
+                        ),
+                        TextSpan(text: 'What will you be able to do'.tr, style: TextStyle(
                           fontSize: 17,
                         )),
                       ]
@@ -541,7 +563,7 @@ class _CourseDetailState extends State<CourseDetail> {
                 ),
                 Container(
                   padding: EdgeInsets.all(10),
-                  child: Text('Experience Level', style: TextStyle(
+                  child: Text('Experience Level'.tr, style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 25,
                   ),),
@@ -576,7 +598,7 @@ class _CourseDetailState extends State<CourseDetail> {
                 ),
                 Container(
                   padding: EdgeInsets.all(10),
-                  child: Text('Course Length', style: TextStyle(
+                  child: Text('Course Length'.tr, style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 25,
                   ),),
@@ -594,7 +616,7 @@ class _CourseDetailState extends State<CourseDetail> {
                           alignment: PlaceholderAlignment.middle,
                           child: Icon(Icons.book, color: Colors.deepPurple, size: 20,),
                         ),
-                        TextSpan(text: ' ' + thisCourse.topics.length.toString() + ' topics', style: TextStyle(
+                        TextSpan(text: ' ${thisCourse.topics.length} ${'topics'.tr}', style: TextStyle(
                           fontSize: 17,
                         )),
                       ]
@@ -611,7 +633,7 @@ class _CourseDetailState extends State<CourseDetail> {
                 ),
                 Container(
                   padding: EdgeInsets.all(10),
-                  child: Text('List Topics', style: TextStyle(
+                  child: Text('List Topics'.tr, style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 25,
                   ),),
@@ -627,7 +649,7 @@ class _CourseDetailState extends State<CourseDetail> {
               mainAxisSpacing: 10.0,
               childAspectRatio: itemWidth < itemHeight ? (itemHeight / itemWidth - 0.4) : (itemWidth / itemHeight - 0.4),
               children: List.generate(thisCourse.topics.length, (i) {
-                return TopicGrid(i, thisCourse.topics[i].name);
+                return TopicGrid(i+1, thisCourse.topics[i].name);
               }),
             ),
             thisCourse.users.isNotEmpty
@@ -641,7 +663,7 @@ class _CourseDetailState extends State<CourseDetail> {
                 ),
                 Container(
                   padding: EdgeInsets.all(10),
-                  child: Text('Suggested Tutors', style: TextStyle(
+                  child: Text('Suggested Tutors'.tr, style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 25,
                   ),),
@@ -669,7 +691,10 @@ class _CourseDetailState extends State<CourseDetail> {
                             ),
                           ),
                           TextSpan(
-                            text: " More info",
+                            text: ' ',
+                          ),
+                          TextSpan(
+                            text: "More info".tr,
                             style: TextStyle(
                                 color: Colors.blue
                             ),
@@ -687,13 +712,13 @@ class _CourseDetailState extends State<CourseDetail> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*/*floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Add your onPressed code here!
         },
         backgroundColor: Colors.grey,
         child: const Icon(Icons.message_outlined),
-      ),
+      ),*/*/
     );
   }
 
@@ -701,7 +726,9 @@ class _CourseDetailState extends State<CourseDetail> {
     return Card(
       child: InkWell(
           splashColor: Colors.blue.withAlpha(30),
-          onTap: null,
+          onTap: () {
+            Navigator.pushNamed(context, '/course_discover', arguments: DiscoverArg(index-1, thisCourse));
+          },
           child: Container(
             padding: EdgeInsets.all(15),
             child: Column(
@@ -723,4 +750,11 @@ class _CourseDetailState extends State<CourseDetail> {
       ),
     );
   }
+}
+
+class DiscoverArg {
+  final CourseClass thisCourse;
+  final int index;
+
+  DiscoverArg(this.index, this.thisCourse);
 }
