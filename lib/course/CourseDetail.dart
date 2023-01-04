@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 import '../main.dart';
+import '../tutor/TutorProfile.dart';
 
 class CourseDetail extends StatefulWidget {
   final String id;
@@ -699,7 +700,7 @@ class _CourseDetailState extends State<CourseDetail> {
                                 color: Colors.blue
                             ),
                             recognizer: TapGestureRecognizer()..onTap = () {
-                              Navigator.pushNamed(context, '/tutor_profile', arguments:  e.id);
+                              Navigator.pushNamed(context, '/tutor_profile', arguments: ProfileArg(e.id, null));
                             }, //sửa sau
                           ),
                         ]
