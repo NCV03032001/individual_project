@@ -279,7 +279,14 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                 _errorController.text = "";
                               });
                               var url = Uri.https('sandbox.api.lettutor.com', 'user/forgotPassword');
-                              var response = await http.post(url, body: {'email': _emailController.text});
+                              var response = await http.post(url,
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    'referer': "https://sandbox.app.lettutor.com/",
+                                    'origin': "https://sandbox.app.lettutor.com",
+                                  },
+                                  body: {'email': _emailController.text}
+                              );
                               if (response.statusCode != 200) {
                                 final Map parsed = json.decode(response.body);
                                 final String err = parsed["message"];

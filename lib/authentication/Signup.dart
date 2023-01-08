@@ -356,7 +356,8 @@ class _SignupState extends State<Signup> {
                                   url,
                                   headers: {
                                     "Content-Type": "application/json",
-                                    'Referer': "https://sandbox.api.lettutor.com/",
+                                    'referer': "https://sandbox.app.lettutor.com/",
+                                    'origin': "https://sandbox.app.lettutor.com",
                                   },
                                   body: jsonEncode(<String, dynamic>{'email': _emailController.text, 'password': _pwController.text, "source": "https://sandbox.api.lettutor.com/"}));
                               if (response.statusCode != 201) {

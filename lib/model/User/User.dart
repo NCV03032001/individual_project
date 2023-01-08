@@ -16,7 +16,7 @@ class User {
   late List<LearnTopics>? learnTopics;
   late List<TestPreparations>? testPreparations;
   late bool isPhoneActivated;
-  late int timezone;
+  //late int? timezone;
   late String? studySchedule;
   //bool canSendMessage;
 
@@ -37,7 +37,7 @@ class User {
         this.learnTopics,
         this.testPreparations,
         required this.isPhoneActivated,
-        required this.timezone,
+        //required this.timezone,
         this.studySchedule,
         //this.canSendMessage
   });
@@ -77,7 +77,7 @@ class User {
       });
     }
     isPhoneActivated = json['isPhoneActivated'];
-    timezone = json['timezone'];
+    //timezone = json['timezone'];
     studySchedule = json['studySchedule'];
     //canSendMessage = json['canSendMessage'];
   }
@@ -117,7 +117,7 @@ class User {
       });
     }
     isPhoneActivated = json['isPhoneActivated'];
-    timezone = json['timezone'];
+    //timezone = json['timezone'];
     studySchedule = json['studySchedule'];
     //canSendMessage = json['canSendMessage'];
   }
@@ -150,7 +150,7 @@ class User {
           this.testPreparations?.map((v) => v.id).toList();
     }
     data['isPhoneActivated'] = this.isPhoneActivated;
-    data['timezone'] = this.timezone;
+    //data['timezone'] = this.timezone;
     data['studySchedule'] = this.studySchedule;
     //data['canSendMessage'] = this.canSendMessage;
     return data;

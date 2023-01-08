@@ -15,7 +15,7 @@ class Tutor {
     this.isActivated,
     this.isPhoneActivated,
     //this.requireNote,
-    this.timezone,
+    //this.timezone,
     this.phoneAuth,
     this.isPhoneAuthActivated,
     this.studySchedule,
@@ -66,7 +66,7 @@ class Tutor {
   late bool? isActivated;
   late bool? isPhoneActivated;
   //late bool? requireNote;
-  late int? timezone;
+  //late int? timezone;
   late String? phoneAuth;
   late bool? isPhoneAuthActivated;
   late String? studySchedule;
@@ -119,7 +119,7 @@ class Tutor {
     isActivated = json['isActivated'];
     isPhoneActivated = json['isActivated'];
     //requireNote = null;
-    timezone = json['timezone'];
+    //timezone = json['timezone'];
     phoneAuth = json['phoneAuth'];
     isPhoneAuthActivated = json['isPhoneAuthActivated'];
     studySchedule = json['studySchedule'];
@@ -172,7 +172,7 @@ class Tutor {
     isActivated = json['isActivated'];
     isPhoneActivated = json['isActivated'];
     //requireNote = null;
-    timezone = json['timezone'];
+    //timezone = json['timezone'];
     phoneAuth = json['phoneAuth'];
     isPhoneAuthActivated = json['isPhoneAuthActivated'];
     studySchedule = json['studySchedule'];
@@ -228,7 +228,7 @@ class Tutor {
     isActivated = json["secondInfo"]['isActivated'];
     isPhoneActivated = json["secondInfo"]['isActivated'];
     //requireNote = null;
-    timezone = json["secondInfo"]['timezone'];
+    //timezone = json["secondInfo"]['timezone'];
     phoneAuth = json["secondInfo"]['phoneAuth'];
     isPhoneAuthActivated = json["secondInfo"]['isPhoneAuthActivated'];
     studySchedule = json["secondInfo"]['studySchedule'];
@@ -325,7 +325,7 @@ class Tutor {
     data['isActivated'] = isActivated;
     data['isPhoneActivated'] = isPhoneActivated;
     //_data['requireNote'] = requireNote;
-    data['timezone'] = timezone;
+    //data['timezone'] = timezone;
     data['phoneAuth'] = phoneAuth;
     data['isPhoneAuthActivated'] = isPhoneAuthActivated;
     data['studySchedule'] = studySchedule;
