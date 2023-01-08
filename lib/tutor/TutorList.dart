@@ -721,7 +721,7 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(top: 5),
                           child: totalLearn > 0
                           ? Text(
-                            'Total lesson time is'.tr + ' ${totalLearn~/60} ' + 'hours'.tr + ' ${totalLearn%60} ' + 'minutes'.tr,
+                            '${'Total lesson time is'.tr} ${totalLearn~/60} ${'hours'.tr} ${totalLearn%60} ${'minutes'.tr}',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
@@ -764,14 +764,14 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(bottom: 10),
                           child: _countMode > 0
                             ? Text(
-                            '(starts in'.tr + ' $hours:$minutes:$seconds)',
+                            '${'(starts in'.tr} $hours:$minutes:$seconds)',
                             style: TextStyle(
                               color: Colors.yellow,
                               fontSize: 15,
                             ),
                           )
                           : Text(
-                            '(class time'.tr + ' $hours:$minutes:$seconds)',
+                            '${'(class time'.tr} $hours:$minutes:$seconds)',
                             style: TextStyle(
                               color: Colors.green,
                               fontSize: 15,
@@ -835,7 +835,7 @@ class _TutorState extends State<Tutor> {
                           margin: EdgeInsets.only(top: 5),
                           child: totalLearn > 0
                               ? Text(
-                            'Total lesson time is'.tr + ' ${totalLearn~/60} ' + 'hours'.tr + ' ${totalLearn%60} ' + 'minutes'.tr,
+                            '${'Total lesson time is'.tr} ${totalLearn~/60} ${'hours'.tr} ${totalLearn%60} ${'minutes'.tr}',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,

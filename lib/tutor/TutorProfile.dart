@@ -1465,7 +1465,7 @@ class _TutorProfileState extends State<TutorProfile> {
                   ),
                   children: [
                     TextSpan(
-                      text: value.name + ': ',
+                      text: '${value.name}: ',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).primaryColor,
