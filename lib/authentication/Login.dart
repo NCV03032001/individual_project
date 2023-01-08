@@ -111,7 +111,7 @@ class _LoginState extends State<Login> {
                           child: SvgPicture.asset('assets/images/usaFlag.svg'),
                         ),
                         SizedBox(width: 20,),
-                        Text('Engilish'.tr)
+                        Text('English'.tr)
                       ],
                     ),
                     onTap: () => {

@@ -90,7 +90,7 @@ class _SettingState extends State<Setting> {
                       child: SvgPicture.asset('assets/images/usaFlag.svg'),
                     ),
                     SizedBox(width: 20,),
-                    Text('Engilish'.tr)
+                    Text('English'.tr)
                   ],
                 ),
                 onTap: () => {

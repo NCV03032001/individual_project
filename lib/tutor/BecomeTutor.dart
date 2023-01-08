@@ -81,7 +81,7 @@ class _BecomeTutorState extends State<BecomeTutor> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish'.tr)
+                      Text('English'.tr)
                     ],
                   ),
                   onTap: () => {

@@ -406,7 +406,7 @@ class _TutorState extends State<Tutor> {
                         child: SvgPicture.asset('assets/images/usaFlag.svg'),
                       ),
                       SizedBox(width: 20,),
-                      Text('Engilish'.tr)
+                      Text('English'.tr)
                     ],
                   ),
                   onTap: () => {
@@ -873,7 +873,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Specify tutor detail:'.tr,
+                        'Specify tutor detail'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -954,7 +954,7 @@ class _TutorState extends State<Tutor> {
                                     borderSide: BorderSide(width: 1, color: Colors.blue),
                                     borderRadius: BorderRadius.all(Radius.circular(50)),
                                   ),
-                                  hintText: 'Select tutor nationnality'.tr,
+                                  hintText: 'Select tutor nationality'.tr,
                                 ),
                               ),
                               onChanged: (val) {
@@ -1122,7 +1122,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.only(bottom: 5),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Select specialtie:'.tr,
+                        'Select specialities'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -1298,7 +1298,7 @@ class _TutorState extends State<Tutor> {
                       margin: EdgeInsets.fromLTRB(0, 15, 0, 30),
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Recommened Tutors'.tr,
+                        'Recommended Tutors'.tr,
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
