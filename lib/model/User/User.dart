@@ -5,7 +5,7 @@ class User {
   late String avatar;
   late String? country;
   late String phone;
-  late List<String> roles;
+  //late List<String> roles;
   //late String language;
   late String? birthday;
   late bool isActivated;
@@ -26,7 +26,7 @@ class User {
         required this.avatar,
         this.country,
         required this.phone,
-        required this.roles,
+        //required this.roles,
         //this.language,
         this.birthday,
         required this.isActivated,
@@ -49,7 +49,7 @@ class User {
     avatar = json['avatar'];
     country = json['country'];
     phone = json['phone'];
-    roles = json['roles'].cast<String>();
+    //roles = json['roles'].cast<String>();
     //language = json['language'];
     birthday = json['birthday'];
     isActivated = json['isActivated'];
@@ -89,7 +89,7 @@ class User {
     avatar = json['avatar'];
     country = json['country'];
     phone = json['phone'];
-    roles = json['roles'].cast<String>();
+    //roles = json['roles'].cast<String>();
     //language = json['language'];
     birthday = json['birthday'];
     isActivated = json['isActivated'];
@@ -130,7 +130,7 @@ class User {
     data['avatar'] = this.avatar;
     data['country'] = this.country;
     data['phone'] = this.phone;
-    data['roles'] = this.roles;
+    //data['roles'] = this.roles;
     //data['language'] = this.language;
     data['birthday'] = this.birthday;
     data['isActivated'] = this.isActivated;
