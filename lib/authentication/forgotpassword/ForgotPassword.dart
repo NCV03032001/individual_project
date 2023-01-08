@@ -285,7 +285,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                     'referer': "https://sandbox.app.lettutor.com/",
                                     'origin': "https://sandbox.app.lettutor.com",
                                   },
-                                  body: {'email': _emailController.text}
+                                  body: jsonEncode({'email': _emailController.text})
                               );
                               if (response.statusCode != 200) {
                                 final Map parsed = json.decode(response.body);
