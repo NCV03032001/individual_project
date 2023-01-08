@@ -553,7 +553,7 @@ class _ProfileState extends State<Profile> {
                   margin: EdgeInsets.only(bottom: 20),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Proflie'.tr,
+                    'Profile'.tr,
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -1422,24 +1422,7 @@ class _ProfileState extends State<Profile> {
               showModalBottomSheet(
                 context: context,
                 builder: ((builder) => bottomSheet()),
-              ).then((value) {
-                if (value == 'OK') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Successfully updated avatar!'.tr, style: TextStyle(color: Colors.green),),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
-                }
-                else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(value, style: TextStyle(color: Colors.red),),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
-                }
-              });
+              );
             },
             child: Icon(
               Icons.camera_alt,
@@ -1507,22 +1490,37 @@ class _ProfileState extends State<Profile> {
       source: source,
     );
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = pickedFile;
-      });
       Map<String, String> headers = {
         'Authorization': "Bearer ${context.read<UserProvider>().thisTokens.access.token}"
       };
       var url = Uri.https('sandbox.api.lettutor.com', 'user/uploadAvatar');
       var request = http.MultipartRequest('POST', url);
       request.headers.addAll(headers);
-      request.files.add(await http.MultipartFile.fromPath('avatar', _imageFile!.path));
+      request.files.add(await http.MultipartFile.fromPath('avatar', pickedFile.path));
       var res = await request.send();
+      final Map parsed = json.decode(await res.stream.bytesToString());
       if (res.statusCode != 200) {
-        final Map parsed = json.decode(await res.stream.bytesToString());
         final String err = parsed["message"];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(err, style: TextStyle(color: Colors.red),),
+            duration: Duration(seconds: 3),
+          ),
+        );
         return err;
       }
+
+      Provider.of<UserProvider>(context, listen: false).thisUser.avatar = parsed['avatar'];
+
+      setState(() {
+        _imageFile = pickedFile;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Successfully updated avatar!'.tr, style: TextStyle(color: Colors.green),),
+          duration: Duration(seconds: 3),
+        ),
+      );
       return 'OK';
     }
     return 'File not picked';
