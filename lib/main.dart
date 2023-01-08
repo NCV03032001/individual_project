@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_flavor/flutter_flavor.dart';
 
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -29,9 +30,17 @@ import 'package:get_storage/get_storage.dart';//
 
 import 'LocaleString.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true; }
+}
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = new MyHttpOverrides();
 
   await Settings.init(cacheProvider: SharePreferenceCache());
   await GetStorage.init();

@@ -1422,7 +1422,24 @@ class _ProfileState extends State<Profile> {
               showModalBottomSheet(
                 context: context,
                 builder: ((builder) => bottomSheet()),
-              );
+              ).then((value) {
+                if (value == 'OK') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Successfully updated avatar!'.tr, style: TextStyle(color: Colors.green),),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                }
+                else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(value, style: TextStyle(color: Colors.red),),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                }
+              });
             },
             child: Icon(
               Icons.camera_alt,
@@ -1457,20 +1474,26 @@ class _ProfileState extends State<Profile> {
             ElevatedButton.icon(
               icon: Icon(Icons.camera),
               onPressed: () async {
-                Future<void> getPhoto() async { return takePhoto(ImageSource.camera);}
-                await getPhoto();
-
-                Navigator.pop(context);
+                String getImage = await takePhoto(ImageSource.camera);
+                if (getImage == 'OK') {
+                  Navigator.pop(context, 'OK');
+                }
+                else if (getImage != 'File not picked') {
+                  Navigator.pop(context, getImage);
+                }
               },
               label: Text("Camera".tr),
             ),
             ElevatedButton.icon(
               icon: Icon(Icons.image),
               onPressed: () async {
-                Future<void> getPhoto() async { return takePhoto(ImageSource.gallery);}
-                await getPhoto();
-
-                Navigator.pop(context);
+                String getImage = await takePhoto(ImageSource.gallery);
+                if (getImage == 'OK') {
+                  Navigator.pop(context, 'OK');
+                }
+                else if (getImage != 'File not picked') {
+                  Navigator.pop(context, getImage);
+                }
               },
               label: Text("Gallery".tr),
             ),
@@ -1479,7 +1502,7 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
-  void takePhoto(ImageSource source) async {
+  Future<String> takePhoto(ImageSource source) async {
     final pickedFile = await _picker.pickImage(
       source: source,
     );
@@ -1498,22 +1521,10 @@ class _ProfileState extends State<Profile> {
       if (res.statusCode != 200) {
         final Map parsed = json.decode(await res.stream.bytesToString());
         final String err = parsed["message"];
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(err, style: TextStyle(color: Colors.red),),
-            duration: Duration(seconds: 3),
-          ),
-        );
+        return err;
       }
-      else {
-        context.read<UserProvider>().getUser(context.read<UserProvider>().thisTokens.access);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Successfully updated avatar!'.tr, style: TextStyle(color: Colors.green),),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
+      return 'OK';
     }
+    return 'File not picked';
   }
 }
