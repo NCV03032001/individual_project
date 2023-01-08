@@ -151,7 +151,12 @@ class _ProfileState extends State<Profile> {
     _nameController.text = "${thisUserProvider.thisUser.name}";
 
     postCt = thisUserProvider.thisUser.country;
-    selectedDate = DateTime.parse(thisUserProvider.thisUser.birthday);
+    if (thisUserProvider.thisUser.birthday != null) {
+      selectedDate = DateTime.parse(thisUserProvider.thisUser.birthday);
+    }
+    else {
+      selectedDate = DateTime.now();
+    }
     testCon = Country.tryParse(postCt.toString());
     _ctController.text = testCon == null ?  "" : testCon!.name;
     _bdController.text = thisUserProvider.thisUser.birthday ?? "";
