@@ -735,7 +735,7 @@ class _CourseDetailState extends State<CourseDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(index.toString() + '.'),
+                Text('$index.'),
                 Container(
                   margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
                   alignment: Alignment.centerLeft,

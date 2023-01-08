@@ -927,7 +927,7 @@ class _CoursesState extends State<Courses> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(level),
-                      Text(lessonNum + ' Lessons'),
+                      Text('$lessonNum Lessons'),
                     ],
                   )
                 ],
